@@ -48,7 +48,7 @@ one_way_anova <- function(data,
   formula_str <- as.formula(paste(numeric_var, "~", factor_var))
   aov_model <- aov(formula_str, data = data)
   aov_summary <- summary(aov_model)
-  tukey_res <- TukeyHSD(aov_model)
+  tukey_res <- stats::TukeyHSD(aov_model)
 
   # 3. Estimated Marginal Means & Letters
   emmean <- emmeans::emmeans(aov_model, specs = as.formula(paste("~", factor_var)))

@@ -14,12 +14,12 @@
 #'
 #' @return A list containing the MANOVA test summary, univariate ANOVA summaries, and the ggplot object.
 #'
-#' @import ggplot2 RColorBrewer dplyr tidyr MASS
+#' @import ggplot2 RColorBrewer dplyr tidyr
 #' @importFrom stats manova lm as.formula summary.aov predict
 #' @importFrom dplyr %>%
 #' @importFrom tidyr pivot_longer
-#' @importFrom MASS lda
 #' @export
+#'
 manova_analysis <- function(data,
                             response_vars,
                             factor_var,

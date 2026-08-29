@@ -7,8 +7,8 @@
 \format{
 A data frame with 90 rows and 2 variables:
 \describe{
-\item{Habitat}{A factor representing the sampling environment (Marine, Estuary, River).}
-\item{Weight_g}{A numeric vector representing the body weight of the fish in grams.}
+  \item{Habitat}{A factor representing the sampling environment (Marine, Estuary, River).}
+  \item{Weight_g}{A numeric vector representing the body weight of the fish in grams.}
 }
 }
 \usage{

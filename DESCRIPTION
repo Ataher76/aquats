@@ -1,14 +1,31 @@
 Package: aanova
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Type: Package
+Title: Robust Ecological and Fisheries Data Analysis and Visualization
+Version: 1.0.1
+Authors@R: person(given = "Ataher",
+                family = "Ali",
+                role = c("aut", "cre"),
+                email = "ataher.cu.ms@gmail.com")
+Description: A comprehensive statistical and visualization toolkit tailored for fisheries science, stock assessment workflows, and aquatic ecology. It provides streamlined wrappers for univariate and factorial ANOVA, ANCOVA, MANOVA, generalized linear models (GLMs) for count data, non-linear morphometric regressions, custom correlation heatmaps, and integrated Mantel test network linkages.
+License: MIT + file LICENSE
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
-Depends: 
-    R (>= 3.5)
 LazyData: true
+RoxygenNote: 7.3.2
+Imports: 
+    RColorBrewer,
+    dplyr,
+    emmeans,
+    ggplot2,
+    ggpubr,
+    multcomp,
+    tidyr,
+    stringr,
+    MASS,
+    vegan
+Suggests: 
+    knitr,
+    multcompView,
+    rmarkdown
+VignetteBuilder: knitr
+Depends: 
+    R (>= 3.5.0)

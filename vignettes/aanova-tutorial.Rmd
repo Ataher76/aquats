@@ -1,0 +1,248 @@
+```yaml
+---
+title: "Comprehensive Ecological and Fisheries Data Analysis with aanova"
+author: "Ataher Ali"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Comprehensive Ecological and Fisheries Data Analysis with aanova}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  message = FALSE,
+  warning = FALSE
+)
+
+```
+
+# Introduction
+
+The `aanova` package provides a robust, streamlined statistical and visualization toolkit tailored specifically for fisheries science, stock assessment workflows, and aquatic ecology. It bridges standard parametric models (ANOVA, ANCOVA, MANOVA) with advanced ecological tools, including non-linear morphometric regressions, generalized linear models (GLMs) for count data, customizable correlation heatmaps, and integrated Mantel test network linkages.
+
+Load the package and required dependencies to begin:
+
+```{r setup}
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+library(multcomp)
+library(MASS)
+library(aanova)
+
+```
+
+---
+
+# 1. Univariate and Factorial ANOVA Modules
+
+## One-Way ANOVA
+
+When evaluating a single categorical driver against a continuous response variable—such as comparing fish body weight across ecological habitats—use `one_way_anova()`.
+
+```{r one-way}
+res_one <- one_way_anova(
+  data = hilsa_weight, 
+  factor_var = "Habitat", 
+  numeric_var = "Weight_g", 
+  factor_levels = c("River", "Estuary", "Marine"),
+  plot_type = "boxplot",
+  sig_display = "letters"
+)
+
+print(res_one$ANOVA_Summary)
+print(res_one$Plot)
+
+```
+
+## Two-Way ANOVA
+
+To examine how two independent factors and their interaction influence stock weight parameters (e.g., Habitat combined with Fishing Season), use `two_way_anova()`.
+
+```{r two-way}
+res_two <- two_way_anova(
+  data = hilsa_two_way,
+  factor1_var = "Habitat",
+  factor2_var = "Season",
+  numeric_var = "Weight_g",
+  factor1_levels = c("River", "Estuary", "Marine"),
+  factor2_levels = c("Dry", "Monsoon"),
+  plot_type = "boxplot"
+)
+
+print(res_two$ANOVA_Summary)
+print(res_two$Plot)
+
+```
+
+## Three-Way ANOVA with Faceting
+
+For complex monitoring datasets spanning multiple life history stages, `three_way_anova()` incorporates three categorical factors and automatically generates faceted interaction plots with compact letter displays.
+
+```{r three-way}
+res_three <- three_way_anova(
+  data = hilsa_three_way,
+  factor1_var = "Habitat",
+  factor2_var = "Season",
+  factor3_var = "Size_Class",
+  numeric_var = "Weight_g",
+  factor1_levels = c("River", "Estuary", "Marine"),
+  factor2_levels = c("Dry", "Monsoon"),
+  factor3_levels = c("Juvenile", "Adult"),
+  y_limits = c(0, 1600),
+  plot_type = "boxplot"
+)
+
+print(res_three$ANOVA_Summary)
+print(res_three$Plot)
+
+```
+
+---
+
+# 2. Multivariate Analysis of Variance (MANOVA)
+
+When analyzing multiple correlated morphometric traits simultaneously (e.g., body depth, head length, and fin length across habitats), standard univariate ANOVA is insufficient. The `manova_analysis()` function handles multivariate testing and supports both faceted trait boxplots and Canonical Discriminant Analysis (LDA) ordination space.
+
+```{r manova}
+res_lda <- manova_analysis(
+  data = hilsa_morphology,
+  response_vars = c("Body_Depth_cm", "Head_Length_cm", "Fin_Length_cm"),
+  factor_var = "Habitat",
+  factor_levels = c("River", "Estuary", "Marine"),
+  plot_type = "lda",
+  color_palette = "Set1"
+)
+
+print(res_lda$MANOVA_Summary)
+print(res_lda$Plot)
+
+```
+
+---
+
+# 3. Analysis of Covariance (ANCOVA)
+
+To test group differences in a continuous response variable while controlling for a continuous covariate (such as comparing fish weight across habitats while adjusting for total length), use `ancova_analysis()`.
+
+```{r ancova}
+res_ancova <- ancova_analysis(
+  data = hilsa_ancova,
+  response_var = "Weight_g",
+  factor_var = "Habitat",
+  covariate_var = "Total_Length_cm",
+  factor_levels = c("River", "Estuary", "Marine"),
+  color_palette = "Set1"
+)
+
+print(res_ancova$ANCOVA_Table)
+print(res_ancova$Adjusted_Means)
+print(res_ancova$Plot)
+
+```
+
+---
+
+# 4. Multi-Model Regression Analysis
+
+The `regression_analysis()` function fits linear, logarithmic (log-log power curves for length-weight relationships), or polynomial curves. It automatically computes $R^2$ and $p$-values, generating publication-ready plots with shaded confidence intervals.
+
+```{r regression}
+res_reg <- regression_analysis(
+  data = hilsa_regression,
+  x_var = "Total_Length_cm",
+  y_var = "Weight_g",
+  fit_type = "logarithmic",
+  group_var = "Habitat",
+  color_palette = "Set1"
+)
+
+print(res_reg$Model_Summary)
+print(res_reg$Plot)
+
+```
+
+---
+
+# 5. Generalized Linear Models (GLMs) for Count Data
+
+Fisheries count data (such as catch-per-unit-effort or abundance counts) often violate normal distribution assumptions. The `glm_analysis()` function fits Poisson, Quasipoisson, or Binomial models and outputs a forest plot of Incident Rate Ratios (IRR) or Odds Ratios.
+
+```{r glm}
+res_glm <- glm_analysis(
+  data = hilsa_catch,
+  response_var = "Catch_Count",
+  predictor_vars = c("Habitat", "Season", "Fishing_Hours"),
+  family_type = "quasipoisson",
+  color_palette = "Set1"
+)
+
+print(res_glm$Model_Summary)
+print(res_glm$Plot)
+
+```
+
+---
+
+# 6. Correlation Matrices and Custom Heatmaps
+
+To explore collinearity among environmental parameters, `correlation_heatmap()` computes Pearson, Spearman, or Kendall correlation matrices and renders customizable circle or square heatmaps with triangle layout options.
+
+```{r correlation}
+res_cor <- correlation_heatmap(
+  data = hilsa_env,
+  method = "pearson",
+  shape = "circle",
+  view = "lower",
+  color_palette = "RdBu"
+)
+
+print(res_cor$Correlation_Matrix)
+print(res_cor$Plot)
+
+```
+
+---
+
+# 7. Integrated Mantel Test & Correlation Heatmap
+
+The `mantel_heatmap_analysis()` function combines internal environmental correlation matrices with community Mantel test linkages into a publication-grade network-heatmap layout.
+
+```{r mantel}
+set.seed(42)
+env_test <- data.frame(
+  pH = rnorm(40, 7.5, 0.4),
+  DO = rnorm(40, 6.2, 0.7),
+  Temp = rnorm(40, 27.5, 1.5),
+  Salinity = rnorm(40, 14.0, 2.5)
+)
+
+comm_test <- data.frame(
+  Taxon_A = rpois(40, 12),
+  Taxon_B = rpois(40, 18),
+  Taxon_C = rpois(40, 7)
+)
+
+res_mantel <- mantel_heatmap_analysis(
+  comm_data = comm_test,
+  env_data = env_test,
+  method = "pearson",
+  color_palette = "RdBu"
+)
+
+print(res_mantel$Plot)
+
+```
+
+```
+
+```

@@ -90,3 +90,38 @@
 #' }
 "hilsa_regression"
 
+
+#' Catch Count Dataset for Hilsa Shad GLMs
+#'
+#' A simulated dataset containing catch counts, fishing effort, and environmental
+#' variables for Hilsa shad (Tenualosa ilisha) to demonstrate Generalized Linear Models (GLMs).
+#'
+#' @format A data frame with 120 rows and 4 variables:
+#' \describe{
+#'   \item{Habitat}{A factor representing the environment (Marine, Estuary, River).}
+#'   \item{Season}{A factor representing the season (Monsoon, Dry).}
+#'   \item{Fishing_Hours}{A numeric vector representing fishing effort in hours.}
+#'   \item{Catch_Count}{An integer vector representing the number of fish caught (count response).}
+#' }
+"hilsa_catch"
+
+
+
+#' Environmental and Catch Parameters for Correlation Analysis
+#'
+#' A simulated dataset containing oceanographic measurements and catch weights
+#' to demonstrate customizable correlation matrix heatmaps.
+#'
+#' @format A data frame with 100 rows and 6 variables:
+#' \describe{
+#'   \item{SST_C}{Sea Surface Temperature in degrees Celsius.}
+#'   \item{Salinity_ppt}{Water salinity in parts per thousand.}
+#'   \item{Depth_m}{Water depth in meters.}
+#'   \item{DO_mgL}{Dissolved oxygen in milligrams per liter.}
+#'   \item{Chlorophyll_a}{Chlorophyll-a concentration.}
+#'   \item{Catch_kg}{Total fish catch in kilograms.}
+#' }
+"hilsa_env"
+
+
+

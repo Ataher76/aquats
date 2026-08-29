@@ -8,9 +8,11 @@ one_way_anova(
   data,
   factor_var,
   numeric_var,
+  factor_levels = NULL,
   plot_type = "boxplot",
   error_type = "se",
   sig_display = "letters",
+  y_limits = NULL,
   add_jitter = TRUE,
   show_mean = TRUE,
   mean_color = "darkred",
@@ -24,22 +26,26 @@ one_way_anova(
 
 \item{numeric_var}{Character; the name of the continuous response variable.}
 
-\item{plot_type}{Character; type of plot: "boxplot", "barplot", or "pointrange".}
+\item{factor_levels}{Optional character vector; specifies the exact order of the categorical levels on the x-axis.}
 
-\item{error_type}{Character; error bar type for bar/pointrange plots: "se" (Standard Error) or "sd" (Standard Deviation). Default is "se".}
+\item{plot_type}{Character; type of plot: "boxplot", "barplot", or "pointrange". Default is "boxplot".}
+
+\item{error_type}{Character; error bar type for bar/pointrange plots: "se" (Standard Error) or "sd" (Standard Deviation).}
 
 \item{sig_display}{Character; display significance via "letters" (compact letter display) or "stars" (p-value brackets).}
 
-\item{add_jitter}{Logical; if TRUE, adds jittered points to the boxplot. Default is TRUE.}
+\item{y_limits}{Optional numeric vector of length 2; explicitly sets the Y-axis limits (e.g., c(0, 1500)).}
 
-\item{show_mean}{Logical; if TRUE, displays a mean point inside the boxplot. Default is TRUE.}
+\item{add_jitter}{Logical; if TRUE, adds jittered points to the boxplot.}
 
-\item{mean_color}{Character; color for the mean point in the boxplot. Default is "darkred".}
+\item{show_mean}{Logical; if TRUE, displays a mean point inside the boxplot.}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
+\item{mean_color}{Character; color for the mean point in the boxplot.}
+
+\item{color_palette}{Character; name of a color palette from RColorBrewer.}
 }
 \value{
-A list containing the ANOVA summary, Tukey HSD results, EMMs, and the ggplot object.
+A list containing the ANOVA summary, Tukey HSD results, EMMs, a clean summary table, and the ggplot object.
 }
 \description{
 This function performs a one-way ANOVA, calculates Tukey's HSD post-hoc test,

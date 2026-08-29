@@ -87,7 +87,7 @@ regression_analysis <- function(data,
       x = axis_x_label,
       y = axis_y_label,
       title = paste0("Regression Analysis (", stringr::str_to_title(fit_type), " Fit)"),
-      subtitle = sprintf("R² = %.3f | p-value = %.4g", r_squared, p_val),
+      subtitle = sprintf("R2 = %.3f | p-value = %.4g", r_squared, p_val),
       color = group_var,
       fill = group_var
     ) +

@@ -1,7 +1,7 @@
 Package: aanova
 Type: Package
 Title: Robust Ecological and Fisheries Data Analysis and Visualization
-Version: 1.0.1
+Version: 1.1.0
 Authors@R: person(given = "Ataher",
                 family = "Ali",
                 role = c("aut", "cre"),
@@ -21,7 +21,8 @@ Imports:
     tidyr,
     stringr,
     MASS,
-    vegan
+    vegan,
+    ggrepel
 Suggests: 
     knitr,
     multcompView,

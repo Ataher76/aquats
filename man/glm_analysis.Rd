@@ -2,7 +2,7 @@
 % Please edit documentation in R/glm_analysis.R
 \name{glm_analysis}
 \alias{glm_analysis}
-\title{Generalized Linear Models (GLMs) for Fisheries Count and Binary Data}
+\title{Generalized Linear Modeling (GLM) for Aquatic & Ecological Data}
 \usage{
 glm_analysis(
   data,
@@ -13,21 +13,25 @@ glm_analysis(
 )
 }
 \arguments{
-\item{data}{A data frame containing the variables.}
+\item{data}{A \code{data.frame}, \code{matrix}, or tibble.}
 
-\item{response_var}{Character; the name of the numeric count or binary response variable.}
+\item{response_var}{Character. Name of the dependent response variable.}
 
-\item{predictor_vars}{Character vector; the names of the independent predictor variables.}
+\item{predictor_vars}{Character vector. Name(s) of continuous or categorical predictor variables.}
 
-\item{family_type}{Character; distribution family: "poisson", "quasipoisson", or "binomial". Default is "poisson".}
+\item{family_type}{Character. Distribution family: \code{"gaussian"}, \code{"poisson"},
+\code{"binomial"}, or \code{"gamma"}.}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
+\item{color_palette}{Character. RColorBrewer palette name (default: \code{"Dark2"}).}
 }
 \value{
-A list containing the model summary, coefficient table, and the ggplot object.
+A list containing:
+  \item{Model}{The fitted \code{glm} object.}
+  \item{Summary}{The model summary object.}
+  \item{Anova_Table}{Analysis of deviance table.}
+  \item{Plot}{A publication-ready \code{ggplot} object.}
 }
 \description{
-This function fits Generalized Linear Models (e.g., Poisson, Quasipoisson, Binomial)
-to non-normal ecological data, extracts model summaries, incident rate ratios (IRR) or
-odds ratios, and generates a publication-ready forest plot visualizing effect sizes.
+Fits generalized linear models (GLM) across Gaussian, Poisson, Binomial,
+and Gamma families with publication-ready diagnostic and prediction graphics.
 }

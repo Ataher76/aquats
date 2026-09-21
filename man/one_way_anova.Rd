@@ -2,12 +2,13 @@
 % Please edit documentation in R/one_way_anova.R
 \name{one_way_anova}
 \alias{one_way_anova}
-\title{One-Way Analysis of Variance (ANOVA) with Visualization}
+\title{One-Way Analysis of Variance (ANOVA) with Faceting & Visualization}
 \usage{
 one_way_anova(
   data,
   factor_var,
   numeric_var,
+  facet_var = NULL,
   factor_levels = NULL,
   plot_type = "boxplot",
   error_type = "se",
@@ -22,9 +23,11 @@ one_way_anova(
 \arguments{
 \item{data}{A data frame in long format.}
 
-\item{factor_var}{Character; the name of the categorical independent variable.}
+\item{factor_var}{Character; the name of the primary categorical independent variable.}
 
 \item{numeric_var}{Character; the name of the continuous response variable.}
+
+\item{facet_var}{Optional character; the name of a secondary categorical variable to facet the plot by (default: \code{NULL}).}
 
 \item{factor_levels}{Optional character vector; specifies the exact order of the categorical levels on the x-axis.}
 
@@ -34,7 +37,7 @@ one_way_anova(
 
 \item{sig_display}{Character; display significance via "letters" (compact letter display) or "stars" (p-value brackets).}
 
-\item{y_limits}{Optional numeric vector of length 2; explicitly sets the Y-axis limits (e.g., c(0, 1500)).}
+\item{y_limits}{Optional numeric vector of length 2; explicitly sets the Y-axis limits.}
 
 \item{add_jitter}{Logical; if TRUE, adds jittered points to the boxplot.}
 
@@ -45,9 +48,10 @@ one_way_anova(
 \item{color_palette}{Character; name of a color palette from RColorBrewer.}
 }
 \value{
-A list containing the ANOVA summary, Tukey HSD results, EMMs, a clean summary table, and the ggplot object.
+A list containing the ANOVA summary, Tukey HSD results, EMMs, summary table, and ggplot object.
 }
 \description{
 This function performs a one-way ANOVA, calculates Tukey's HSD post-hoc test,
-extracts Estimated Marginal Means (EMMs), and generates a publication-ready plot.
+extracts Estimated Marginal Means (EMMs), and generates a publication-ready plot
+with optional faceting by a secondary categorical variable.
 }

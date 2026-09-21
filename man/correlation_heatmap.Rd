@@ -2,38 +2,58 @@
 % Please edit documentation in R/correlation_heatmap.R
 \name{correlation_heatmap}
 \alias{correlation_heatmap}
-\title{Flexible Correlation Matrix and Heatmap Generator}
+\title{Flexible Correlation Matrix and Heatmap Generator for Environmental Data}
 \usage{
 correlation_heatmap(
   data,
   numeric_vars = NULL,
-  method = "pearson",
-  shape = "circle",
-  view = "lower",
-  show_text = NULL,
-  color_palette = "RdBu"
+  method = c("pearson", "spearman", "kendall"),
+  shape = c("square", "circle"),
+  view = c("lower", "upper", "full"),
+  diag = FALSE,
+  label_type = NULL,
+  sig_level = NULL,
+  color_palette = "RdBu",
+  title = NULL
 )
 }
 \arguments{
-\item{data}{A data frame containing numeric variables.}
+\item{data}{A \code{data.frame} or \code{matrix} containing numeric variables.}
 
-\item{numeric_vars}{Optional character vector of numeric column names to include. If NULL, all numeric columns are used.}
+\item{numeric_vars}{Optional character vector specifying numeric columns to include.
+If \code{NULL}, all numeric columns are automatically detected.}
 
-\item{method}{Character; correlation method: "pearson", "spearman", or "kendall". Default is "pearson".}
+\item{method}{Character. Correlation method: \code{"pearson"} (default),
+\code{"spearman"}, or \code{"kendall"}.}
 
-\item{shape}{Character; marker shape for the heatmap: "circle" or "square". Default is "circle".}
+\item{shape}{Character. Heatmap marker shape: \code{"square"} (default) or \code{"circle"}.}
 
-\item{view}{Character; matrix display layout: "full", "lower", or "upper". Default is "lower".}
+\item{view}{Character. Matrix layout view: \code{"lower"} (default), \code{"upper"}, or \code{"full"}.}
 
-\item{show_text}{Logical; whether to display numeric correlation values inside markers. Default is FALSE for circles and TRUE for squares.}
+\item{diag}{Logical. Whether to show diagonal self-correlations (default: \code{FALSE}).}
 
-\item{color_palette}{Character; name of a diverging color palette from RColorBrewer. Default is "RdBu".}
+\item{label_type}{Character. Content displayed inside cells: \code{"both"} (number + stars),
+\code{"stars"} (only asterisks, recommended for circles), \code{"values"} (only numbers),
+or \code{"none"}. Defaults to \code{"both"} for squares and \code{"stars"} for circles.}
+
+\item{sig_level}{Optional numeric (e.g., 0.05). If specified, non-significant correlations
+are rendered transparent or blanked out.}
+
+\item{color_palette}{Character. Diverging palette name for \code{scale_fill_distiller}
+(default: \code{"RdBu"}). Alternatives: \code{"RdYlBu"}, \code{"Spectral"}, \code{"BrBG"}.}
+
+\item{title}{Optional character. Plot title.}
 }
 \value{
-A list containing the correlation matrix, p-value matrix, and the ggplot object.
+A list containing:
+  \item{Correlation_Matrix}{Symmetric matrix of correlation coefficients.}
+  \item{P_Value_Matrix}{Matrix of p-values.}
+  \item{Summary_Table}{Tidy data frame of pairwise correlations, p-values, and significance.}
+  \item{Plot}{A publication-ready \code{ggplot} object.}
 }
 \description{
-Computes correlation matrices (Pearson, Spearman, or Kendall) and generates
-publication-ready heatmaps with customizable shapes (circles, squares), layout
-views (full, lower, upper), and optional text labels.
+Computes correlation matrices (Pearson, Spearman, or Kendall) with exact p-values
+and generates publication-ready heatmaps. Supports customizable shapes (squares, circles),
+triangle views (lower, upper, full), optional diagonal display, significance asterisks,
+and automated contrast text adjustment.
 }

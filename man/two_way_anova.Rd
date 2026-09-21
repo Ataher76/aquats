@@ -2,13 +2,14 @@
 % Please edit documentation in R/two_way_anova.R
 \name{two_way_anova}
 \alias{two_way_anova}
-\title{Two-Way Analysis of Variance (ANOVA) with Interaction Visualization}
+\title{Two-Way Analysis of Variance (ANOVA) with Interaction & Faceting Visualization}
 \usage{
 two_way_anova(
   data,
   factor1_var,
   factor2_var,
   numeric_var,
+  facet_var = NULL,
   factor1_levels = NULL,
   factor2_levels = NULL,
   plot_type = "boxplot",
@@ -21,37 +22,44 @@ two_way_anova(
 )
 }
 \arguments{
-\item{data}{A data frame in long format.}
+\item{data}{A data frame or matrix in long format.}
 
-\item{factor1_var}{Character; the name of the first categorical independent variable (x-axis).}
+\item{factor1_var}{Character; the primary independent variable (x-axis).}
 
-\item{factor2_var}{Character; the name of the second categorical independent variable (groups/fill).}
+\item{factor2_var}{Character; the secondary independent variable (fill/color/groups).}
 
-\item{numeric_var}{Character; the name of the continuous response variable.}
+\item{numeric_var}{Character; the continuous response variable.}
 
-\item{factor1_levels}{Optional character vector; custom order for the first factor levels.}
+\item{facet_var}{Optional character; variable to facet by (e.g., \code{factor2_var}). Default is \code{NULL}.}
 
-\item{factor2_levels}{Optional character vector; custom order for the second factor levels.}
+\item{factor1_levels}{Optional character vector; custom level ordering for factor 1.}
 
-\item{plot_type}{Character; type of interaction plot: "boxplot", "barplot", or "pointrange". Default is "boxplot".}
+\item{factor2_levels}{Optional character vector; custom level ordering for factor 2.}
 
-\item{error_type}{Character; error bar type for bar/pointrange plots: "se" or "sd". Default is "se".}
+\item{plot_type}{Character; "boxplot", "barplot", or "pointrange". Default is "boxplot".}
 
-\item{y_limits}{Optional numeric vector of length 2; explicitly sets the Y-axis limits.}
+\item{error_type}{Character; error bar type: "se" (Standard Error) or "sd" (Standard Deviation).}
 
-\item{add_jitter}{Logical; if TRUE, adds jittered points to the boxplot. Default is TRUE.}
+\item{y_limits}{Optional numeric vector of length 2; explicitly sets Y-axis limits.}
 
-\item{show_mean}{Logical; if TRUE, displays a mean point inside the boxplot. Default is TRUE.}
+\item{add_jitter}{Logical; if TRUE, adds jittered points to boxplots. Default is TRUE.}
 
-\item{mean_color}{Character; color for the mean point in the boxplot. Default is "darkred".}
+\item{show_mean}{Logical; if TRUE, displays mean points inside boxplots. Default is TRUE.}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
+\item{mean_color}{Character; color for mean markers. Default is "darkred".}
+
+\item{color_palette}{Character; valid RColorBrewer palette name. Default is "Set1".}
 }
 \value{
-A list containing the ANOVA summary, Tukey HSD results, EMMs, summary statistics table, and the ggplot object.
+A list containing:
+  \item{ANOVA_Summary}{Global ANOVA summary table with interaction terms.}
+  \item{TukeyHSD}{Tukey HSD pairwise comparison results.}
+  \item{EMMs}{Estimated Marginal Means object.}
+  \item{Summary_Table}{Aggregated means, SDs, SEs, and confidence limits.}
+  \item{Plot}{The publication-ready ggplot object.}
 }
 \description{
-This function performs a two-way ANOVA with interaction effects, calculates
+Performs a two-way factorial ANOVA with interaction effects, calculates
 Tukey's HSD post-hoc tests, extracts Estimated Marginal Means (EMMs), and
-generates publication-ready interaction plots with compact letter displays.
+generates publication-ready interaction plots with optional facetting.
 }

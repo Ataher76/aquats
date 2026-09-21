@@ -1,32 +1,45 @@
-Package: aanova
+Package: aquats
 Type: Package
 Title: Robust Ecological and Fisheries Data Analysis and Visualization
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: person(given = "Ataher",
-                family = "Ali",
-                role = c("aut", "cre"),
-                email = "ataher.cu.ms@gmail.com")
-Description: A comprehensive statistical and visualization toolkit tailored for fisheries science, stock assessment workflows, and aquatic ecology. It provides streamlined wrappers for univariate and factorial ANOVA, ANCOVA, MANOVA, generalized linear models (GLMs) for count data, non-linear morphometric regressions, custom correlation heatmaps, and integrated Mantel test network linkages.
+                  family = "Ali",
+                  role = c("aut", "cre"),
+                  email = "ataher.cu.ms@gmail.com")
+Description: A comprehensive statistical and visualization toolkit tailored 
+    for fisheries science, stock assessment workflows, and aquatic ecology. 
+    It provides streamlined wrappers for univariate and factorial ANOVA, 
+    ANCOVA, MANOVA, generalized linear models, non-linear morphometric 
+    regressions with embedded algebraic equations, ordination techniques 
+    (NMDS, PCA, RDA, db-RDA, hierarchical clustering), correlation heatmaps, 
+    integrated Mantel test network linkages, alpha diversity indices, 
+    species accumulation curves, water quality indices (WAWQI), heavy metal 
+    ecotoxicological contamination indices, and multi-factor longitudinal 
+    time-series tracking with uncertainty ribbons.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
+Depends: 
+    R (>= 3.5.0)
 Imports: 
-    RColorBrewer,
     dplyr,
     emmeans,
     ggplot2,
     ggpubr,
-    multcomp,
-    tidyr,
-    stringr,
+    ggrepel,
     MASS,
-    vegan,
-    ggrepel
+    multcomp,
+    RColorBrewer,
+    rlang,
+    tidyr,
+    vegan
 Suggests: 
+    cowplot,
     knitr,
     multcompView,
-    rmarkdown
+    patchwork,
+    readxl,
+    rmarkdown,
+    writexl
 VignetteBuilder: knitr
-Depends: 
-    R (>= 3.5.0)

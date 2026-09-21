@@ -1,127 +1,43 @@
-#' Body Weights of Hilsa Shad Across Habitats
+#' Comprehensive Master Dataset for Hilsa Shad Ecology and Statistics
 #'
-#' A simulated dataset containing the body weights of Hilsa shad
-#' (Tenualosa ilisha) sampled from three distinct ecological environments:
-#' Marine, Estuary, and River. This dataset is designed to demonstrate
-#' one-way ANOVA and variance visualization.
+#' A comprehensive, unified dataset containing morphological measurements, environmental
+#' parameters, catch records, and multi-factor experimental groupings for Hilsa shad
+#' (Tenualosa ilisha) across various habitats, seasons, and size classes. Designed to
+#' power all parametric, non-parametric, regression, and multivariate functions in the package.
 #'
-#' @format A data frame with 90 rows and 2 variables:
+#' @format A data frame with 120 rows and 14 variables:
 #' \describe{
-#'   \item{Habitat}{A factor representing the sampling environment (Marine, Estuary, River).}
-#'   \item{Weight_g}{A numeric vector representing the body weight of the fish in grams.}
+#'   \item{Habitat}{Factor; sampling environment (Marine, Estuary, River).}
+#'   \item{Season}{Factor; fishing season (Monsoon, Dry).}
+#'   \item{Size_Class}{Factor; growth stage (Juvenile, Adult).}
+#'   \item{Weight_g}{Numeric; body weight in grams.}
+#'   \item{Total_Length_cm}{Numeric; total length in centimeters.}
+#'   \item{Body_Depth_cm}{Numeric; maximum body depth in centimeters.}
+#'   \item{Head_Length_cm}{Numeric; head length in centimeters.}
+#'   \item{Fin_Length_cm}{Numeric; pectoral fin length in centimeters.}
+#'   \item{Fishing_Hours}{Numeric; fishing effort in hours.}
+#'   \item{Catch_Count}{Integer; number of fish caught (count response).}
+#'   \item{SST_C}{Numeric; Sea Surface Temperature in degrees Celsius.}
+#'   \item{Salinity_ppt}{Numeric; water salinity in parts per thousand.}
+#'   \item{Depth_m}{Numeric; water depth in meters.}
+#'   \item{Catch_kg}{Numeric; total fish catch in kilograms.}
 #' }
-"hilsa_weight"
+"hilsa_master"
 
 
-#' Multi-Factor Body Weights of Hilsa Shad
+#' Multi-Trophic Community Abundance Master List
 #'
-#' A simulated dataset containing the body weights of Hilsa shad
-#' (Tenualosa ilisha) across different habitats and fishing seasons
-#' to demonstrate two-way ANOVA interaction effects.
+#' A curated list containing species abundance matrices for phytoplankton, zooplankton,
+#' and benthic macroinvertebrates, designed for community ecology analyses, PERMANOVA,
+#' SIMPER, and multi-matrix Mantel network visualizations.
 #'
-#' @format A data frame with 90 rows and 3 variables:
+#' @format A named list with 3 data frames:
 #' \describe{
-#'   \item{Habitat}{A factor representing the environment (Marine, Estuary, River).}
-#'   \item{Season}{A factor representing the season (Monsoon, Dry).}
-#'   \item{Weight_g}{A numeric vector representing fish body weight in grams.}
+#'   \item{Phytoplankton}{Data frame of diatom, cyanobacteria, and green algae counts.}
+#'   \item{Zooplankton}{Data frame of copepod, cladoceran, and rotifer counts.}
+#'   \item{Benthos}{Data frame of chironomid, oligochaete, and mollusc counts.}
 #' }
-"hilsa_two_way"
-
-
-
-#' Comprehensive Body Weights of Hilsa Shad (Three-Way)
-#'
-#' A simulated dataset containing body weights of Hilsa shad (Tenualosa ilisha)
-#' across multiple habitats, fishing seasons, and size classes to demonstrate
-#' three-way ANOVA interaction models and faceted visualization.
-#'
-#' @format A data frame with 120 rows and 4 variables:
-#' \describe{
-#'   \item{Habitat}{A factor representing the environment (Marine, Estuary, River).}
-#'   \item{Season}{A factor representing the season (Monsoon, Dry).}
-#'   \item{Size_Class}{A factor representing growth stage (Juvenile, Adult).}
-#'   \item{Weight_g}{A numeric vector representing fish body weight in grams.}
-#' }
-"hilsa_three_way"
-
-
-#' Morphometric Measurements of Hilsa Shad
-#'
-#' A simulated dataset containing multiple continuous morphological traits
-#' of Hilsa shad (Tenualosa ilisha) across different aquatic habitats to
-#' demonstrate Multivariate Analysis of Variance (MANOVA).
-#'
-#' @format A data frame with 90 rows and 4 variables:
-#' \describe{
-#'   \item{Habitat}{A factor representing the environment (Marine, Estuary, River).}
-#'   \item{Body_Depth_cm}{A numeric vector representing maximum body depth in centimeters.}
-#'   \item{Head_Length_cm}{A numeric vector representing head length in centimeters.}
-#'   \item{Fin_Length_cm}{A numeric vector representing pectoral fin length in centimeters.}
-#' }
-"hilsa_morphology"
-
-
-#' Length-Weight ANCOVA Dataset for Hilsa Shad
-#'
-#' A simulated dataset containing body weight, total length, and habitat types
-#' of Hilsa shad (Tenualosa ilisha) to demonstrate Analysis of Covariance (ANCOVA).
-#'
-#' @format A data frame with 90 rows and 3 variables:
-#' \describe{
-#'   \item{Habitat}{A factor representing the environment (Marine, Estuary, River).}
-#'   \item{Total_Length_cm}{A numeric vector representing total fish length in centimeters (covariate).}
-#'   \item{Weight_g}{A numeric vector representing fish body weight in grams (response).}
-#' }
-"hilsa_ancova"
-
-
-
-#' Morphometric Regression Dataset for Hilsa Shad
-#'
-#' A simulated dataset containing length and weight measurements of Hilsa shad
-#' (Tenualosa ilisha) across various habitats for evaluating linear, logarithmic,
-#' and polynomial regression models.
-#'
-#' @format A data frame with 100 rows and 3 variables:
-#' \describe{
-#'   \item{Total_Length_cm}{A numeric vector representing total fish length in centimeters.}
-#'   \item{Weight_g}{A numeric vector representing fish body weight in grams.}
-#'   \item{Habitat}{A factor representing the environment (River, Estuary, Marine).}
-#' }
-"hilsa_regression"
-
-
-#' Catch Count Dataset for Hilsa Shad GLMs
-#'
-#' A simulated dataset containing catch counts, fishing effort, and environmental
-#' variables for Hilsa shad (Tenualosa ilisha) to demonstrate Generalized Linear Models (GLMs).
-#'
-#' @format A data frame with 120 rows and 4 variables:
-#' \describe{
-#'   \item{Habitat}{A factor representing the environment (Marine, Estuary, River).}
-#'   \item{Season}{A factor representing the season (Monsoon, Dry).}
-#'   \item{Fishing_Hours}{A numeric vector representing fishing effort in hours.}
-#'   \item{Catch_Count}{An integer vector representing the number of fish caught (count response).}
-#' }
-"hilsa_catch"
-
-
-
-#' Environmental and Catch Parameters for Correlation Analysis
-#'
-#' A simulated dataset containing oceanographic measurements and catch weights
-#' to demonstrate customizable correlation matrix heatmaps.
-#'
-#' @format A data frame with 100 rows and 6 variables:
-#' \describe{
-#'   \item{SST_C}{Sea Surface Temperature in degrees Celsius.}
-#'   \item{Salinity_ppt}{Water salinity in parts per thousand.}
-#'   \item{Depth_m}{Water depth in meters.}
-#'   \item{DO_mgL}{Dissolved oxygen in milligrams per liter.}
-#'   \item{Chlorophyll_a}{Chlorophyll-a concentration.}
-#'   \item{Catch_kg}{Total fish catch in kilograms.}
-#' }
-"hilsa_env"
+"community_master"
 
 
 

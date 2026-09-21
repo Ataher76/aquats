@@ -14,7 +14,7 @@ manova_analysis(
 )
 }
 \arguments{
-\item{data}{A data frame in long format.}
+\item{data}{A data frame or matrix in long format.}
 
 \item{response_vars}{Character vector; the names of the continuous numeric response variables.}
 
@@ -27,11 +27,14 @@ manova_analysis(
 \item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
 }
 \value{
-A list containing the MANOVA test summary, univariate ANOVA summaries, and the ggplot object.
+A list containing:
+  \item{MANOVA_Summary}{Multivariate test summary based on Pillai's trace.}
+  \item{Univariate_ANOVAs}{Univariate ANOVA tables for each response variable.}
+  \item{Plot}{Publication-ready ggplot object.}
 }
 \description{
-This function performs a one-way MANOVA across multiple continuous response
-variables grouped by a categorical factor, extracts multivariate test statistics,
-univariate ANOVA breakdowns, and generates either faceted boxplots or a Canonical
-Discriminant Analysis (LDA) multivariate scatter plot.
+Performs a one-way MANOVA across multiple continuous response variables grouped
+by a categorical factor, extracts multivariate test statistics (Pillai's Trace),
+provides univariate ANOVA breakdowns, and generates either faceted trait boxplots
+or a Canonical Discriminant Analysis (LDA) multivariate ordination scatter plot.
 }

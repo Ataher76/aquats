@@ -23,15 +23,15 @@ three_way_anova(
 )
 }
 \arguments{
-\item{data}{A data frame in long format.}
+\item{data}{A data frame or matrix in long format.}
 
-\item{factor1_var}{Character; the name of the first categorical independent variable (x-axis).}
+\item{factor1_var}{Character; the first categorical independent variable (x-axis).}
 
-\item{factor2_var}{Character; the name of the second categorical independent variable (groups/fill).}
+\item{factor2_var}{Character; the second categorical independent variable (groups/fill).}
 
-\item{factor3_var}{Character; the name of the third categorical independent variable (facets).}
+\item{factor3_var}{Character; the third categorical independent variable (facets).}
 
-\item{numeric_var}{Character; the name of the continuous response variable.}
+\item{numeric_var}{Character; the continuous response variable.}
 
 \item{factor1_levels}{Optional character vector; custom order for the first factor.}
 
@@ -39,25 +39,31 @@ three_way_anova(
 
 \item{factor3_levels}{Optional character vector; custom order for the third factor.}
 
-\item{plot_type}{Character; type of interaction plot: "boxplot", "barplot", or "pointrange". Default is "boxplot".}
+\item{plot_type}{Character; "boxplot", "barplot", or "pointrange". Default is "boxplot".}
 
-\item{error_type}{Character; error bar type for bar/pointrange plots: "se" or "sd". Default is "se".}
+\item{error_type}{Character; error bar type: "se" (Standard Error) or "sd" (Standard Deviation).}
 
 \item{y_limits}{Optional numeric vector of length 2; explicitly sets the Y-axis limits.}
 
-\item{add_jitter}{Logical; if TRUE, adds jittered points to the boxplot. Default is TRUE.}
+\item{add_jitter}{Logical; if TRUE, adds jittered points to boxplots. Default is TRUE.}
 
-\item{show_mean}{Logical; if TRUE, displays a mean point inside the boxplot. Default is TRUE.}
+\item{show_mean}{Logical; if TRUE, displays mean points inside boxplots. Default is TRUE.}
 
-\item{mean_color}{Character; color for the mean point in the boxplot. Default is "darkred".}
+\item{mean_color}{Character; color for mean markers. Default is "darkred".}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
+\item{color_palette}{Character; valid RColorBrewer palette name. Default is "Set1".}
 }
 \value{
-A list containing the ANOVA summary, Tukey HSD results, EMMs, summary statistics table, and the ggplot object.
+A list containing:
+  \item{ANOVA_Summary}{Global ANOVA summary table with 3-way interaction terms.}
+  \item{TukeyHSD}{Tukey HSD pairwise comparison results.}
+  \item{EMMs}{Estimated Marginal Means object.}
+  \item{Summary_Table}{Aggregated means, SDs, SEs, and confidence limits.}
+  \item{Plot}{The publication-ready faceted ggplot object.}
 }
 \description{
-This function performs a three-way ANOVA with full interaction effects, calculates
+Performs a three-way factorial ANOVA with full interaction effects, calculates
 Tukey's HSD post-hoc tests, extracts Estimated Marginal Means (EMMs), and generates
 faceted publication-ready interaction plots with compact letter displays.
+Automatically handles NA values safely, converts matrix inputs, and coerces categorical variables.
 }

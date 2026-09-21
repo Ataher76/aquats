@@ -1,0 +1,3684 @@
+---
+title: "Comprehensive Ecological and Fisheries Data Analysis with aquats"
+author: "Ataher Ali"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Comprehensive Ecological and Fisheries Data Analysis with aquats}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  message = FALSE,
+  warning = FALSE
+)
+
+```
+
+# Introduction
+
+The `aquats` package provides a robust, streamlined statistical and visualization toolkit tailored specifically for fisheries science, stock assessment workflows, and aquatic ecology. It bridges standard parametric models (ANOVA, ANCOVA, MANOVA) with advanced ecological tools, including non-linear morphometric regressions, generalized linear models (GLMs) for count data, customizable correlation heatmaps, and integrated Mantel test network linkages.
+
+Load the package and required dependencies to begin:
+
+```{r setup}
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+library(multcomp)
+library(MASS)
+library(aquats)
+
+```
+
+---
+
+## 1. One-Way Analysis of Variance (ANOVA)
+
+The `one_way_anova()` function provides an end-to-end analytical and graphical pipeline for evaluating differences in a continuous response variable across levels of a single categorical factor. In aquatic and fisheries research, this is commonly employed to compare water quality parameters across sampling stations, fish morphometric indices across river reaches, or nutrient concentrations across seasons.
+
+The function handles defensive data cleaning, model fitting, computation of global F-tests, extraction of Estimated Marginal Means (EMMs), pairwise post-hoc contrasts with compact letter displays (CLD), and automated generation of publication-ready ggplot2 figures.
+
+### 1.1 Conceptual Framework and Statistical Formulation
+
+A classical fixed-effects One-Way ANOVA partitions the total variance in the response variable into between-group (explained) variance and within-group (unexplained error) variance:
+
+$$y_{ij} = \mu + \alpha_i + \varepsilon_{ij}$$
+
+where:
+
+* $y_{ij}$ represents the $j$-th observation from the $i$-th treatment or habitat group ($i = 1, 2, \dots, k$; $j = 1, 2, \dots, n_i$),
+* $\mu$ represents the grand population mean,
+* $\alpha_i = \mu_i - \mu$ is the differential effect associated with group $i$, subject to the constraint $\sum n_i \alpha_i = 0$,
+* $\varepsilon_{ij} \overset{\text{i.i.d.}}{\sim} \mathcal{N}(0, \sigma^2)$ represents random residual error.
+
+#### 1.1.1 Hypotheses and Test Statistics
+
+The omnibus null hypothesis states that all group means are identical:
+
+$$H_0: \mu_1 = \mu_2 = \dots = \mu_k$$
+
+$$H_1: \text{At least one group mean differs from the others.}$$
+
+The hypothesis is evaluated using the F-statistic:
+
+$$F = \frac{\text{MS}_{\text{between}}}{\text{MS}_{\text{within}}} = \frac{\text{SS}_{\text{between}} / (k - 1)}{\text{SS}_{\text{within}} / (N - k)}$$
+
+When $H_0$ is rejected ($p < 0.05$), pairwise differences are resolved using Tukey's Honest Significant Difference (HSD) test:
+
+$$q = \frac{\bar{y}_i - \bar{y}_j}{\sqrt{\frac{\text{MS}_{\text{within}}}{2} \left(\frac{1}{n_i} + \frac{1}{n_j}\right)}}$$
+
+Groups sharing the same letter in the Compact Letter Display (CLD) are not statistically distinguishable at the specified significance threshold ($\alpha = 0.05$).
+
+### 1.2 In-Vignette Data Generation
+
+To illustrate the functionality, we simulate a standard riverine biomonitoring dataset evaluating Dissolved Oxygen (DO, mg/L) across three river zones: `Upper Basin` (forested reference), `Mid Reach` (agricultural run-off), and `Lower Estuary` (downstream industrial/tidal influence).
+
+```{r anova_data_prep}
+set.seed(101)
+n_obs <- 30
+
+do_survey <- data.frame(
+  Zone = factor(
+    rep(c("Upper Basin", "Mid Reach", "Lower Estuary"), each = n_obs),
+    levels = c("Upper Basin", "Mid Reach", "Lower Estuary")
+  ),
+  DO_mgL = c(
+    rnorm(n_obs, mean = 8.50, sd = 0.45),
+    rnorm(n_obs, mean = 6.80, sd = 0.55),
+    rnorm(n_obs, mean = 4.90, sd = 0.60)
+  )
+)
+
+head(do_survey, 6)
+
+```
+
+### 1.3 Visualization Styles
+
+The `one_way_anova()` function supports multiple layout types depending on reporting requirements.
+
+#### 1.3.1 Style A: Publication Boxplot with Jitter and Mean Marker (Default)
+
+This style shows median lines, interquartile ranges, raw sample distributions via jittered points, and group means displayed as diamonds (`show_mean = TRUE`). Tukey post-hoc letters are automatically placed above each group distribution:
+
+```{r anova_boxplot, fig.width = 6.5, fig.height = 5.0, fig.align = "center"}
+res_box <- one_way_anova(
+  data           = do_survey,
+  factor_var     = "Zone",
+  numeric_var    = "DO_mgL",
+  plot_type      = "boxplot",
+  add_jitter     = TRUE,
+  show_mean      = TRUE,
+  mean_color     = "darkred",
+  sig_display    = "letters",
+  color_palette  = "Blues"
+)
+
+res_box$Plot
+
+```
+
+#### 1.3.2 Style B: Grouped Barplot with Standard Error Bars (Mean ± SE)
+
+For aquaculture trials or fisheries management reports, `plot_type = "barplot"` aggregates observations to their mean and attaches directional error bars (`error_type = "se"` or `error_type = "sd"`):
+
+```{r anova_barplot, fig.width = 6.5, fig.height = 5.0, fig.align = "center"}
+res_bar <- one_way_anova(
+  data           = do_survey,
+  factor_var     = "Zone",
+  numeric_var    = "DO_mgL",
+  plot_type      = "barplot",
+  error_type     = "se",
+  sig_display    = "letters",
+  color_palette  = "Blues"
+)
+
+res_bar$Plot
+
+```
+
+#### 1.3.3 Style C: Minimalist Point-Range Geometry
+
+`plot_type = "pointrange"` provides a clean, modern alternative for comparing group means without column bars:
+
+```{r anova_pointrange, fig.width = 6.5, fig.height = 5.0, fig.align = "center"}
+res_point <- one_way_anova(
+  data           = do_survey,
+  factor_var     = "Zone",
+  numeric_var    = "DO_mgL",
+  plot_type      = "pointrange",
+  error_type     = "se",
+  sig_display    = "letters",
+  color_palette  = "Dark2"
+)
+
+res_point$Plot
+
+```
+
+### 1.4 Model Inspection and Numerical Summaries
+
+The function returns a comprehensive list containing the underlying ANOVA model, post-hoc pairwise comparisons, Estimated Marginal Means, and a summary statistics table:
+
+```{r anova_inspection}
+# Global ANOVA Table (F-statistic and p-value)
+res_box$ANOVA_Summary
+
+# Pairwise Tukey HSD Differences
+res_box$TukeyHSD
+
+# Estimated Marginal Means (EMMs)
+res_box$EMMs
+
+# Computed Summary Statistics Table
+res_box$Summary_Table
+
+```
+
+```
+
+```
+## 2. Two-Way Analysis of Variance (ANOVA)
+
+The `two_way_anova()` function performs factorial analysis of variance to simultaneously test the main effects of two categorical factors as well as their multiplicative interaction on a continuous aquatic response variable. In fisheries biology and aquatic ecology, factorial designs are standard practice for assessing seasonal variation across river basins, depth profiles across salinity gradients, or growth performance across diet and temperature treatments.
+
+The function handles automated missing value filtering, model parameter estimation, computation of interaction sum-of-squares, post-hoc contrast grouping (via Estimated Marginal Means and Tukey's HSD), and renders both grouped interaction plots and faceted sub-panel displays.
+
+### 2.1 Conceptual Framework and Statistical Formulation
+
+A classical fixed-effects balanced or unbalanced Two-Way ANOVA models the continuous response $y_{ijk}$ as:
+
+$$y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} + \varepsilon_{ijk}$$
+
+where:
+- $y_{ijk}$ is the $k$-th replicate observation within level $i$ of Factor A and level $j$ of Factor B ($i = 1, \dots, a$; $j = 1, \dots, b$; $k = 1, \dots, n_{ij}$),
+- $\mu$ is the overall population grand mean,
+- $\alpha_i$ is the main effect of Factor A, subject to the identifiability constraint $\sum n_i \alpha_i = 0$,
+- $\beta_j$ is the main effect of Factor B, subject to the identifiability constraint $\sum n_j \beta_j = 0$,
+- $(\alpha\beta)_{ij}$ represents the interaction term capturing non-additive synergies or antagonisms between factors,
+- $\varepsilon_{ijk} \overset{\text{i.i.d.}}{\sim} \mathcal{N}(0, \sigma^2)$ is the random error term.
+
+#### 2.1.1 Hypotheses and Variance Partitioning
+
+The test partitions the total sum of squares ($\text{SS}_{\text{Total}}$) into orthogonal components:
+
+$$\text{SS}_{\text{Total}} = \text{SS}_{A} + \text{SS}_{B} + \text{SS}_{AB} + \text{SS}_{\text{Residual}}$$
+
+The three core hypotheses evaluated by the model are:
+
+1. **Main Effect of Factor A:**
+   $$H_0^{(A)}: \alpha_1 = \dots = \alpha_a = 0 \quad \text{vs.} \quad F_A = \frac{\text{MS}_A}{\text{MS}_{\text{Residual}}}$$
+
+2. **Main Effect of Factor B:**
+   $$H_0^{(B)}: \beta_1 = \dots = \beta_b = 0 \quad \text{vs.} \quad F_B = \frac{\text{MS}_B}{\text{MS}_{\text{Residual}}}$$
+
+3. **Interaction Effect ($A \times B$):**
+   $$H_0^{(AB)}: (\alpha\beta)_{11} = \dots = (\alpha\beta)_{ab} = 0 \quad \text{vs.} \quad F_{AB} = \frac{\text{MS}_{AB}}{\text{MS}_{\text{Residual}}}$$
+
+If the interaction effect is statistically significant ($p < 0.05$), main effects cannot be interpreted in isolation, and post-hoc pairwise contrasts are computed across the joint interaction levels using Estimated Marginal Means (EMMs).
+
+### 2.2 In-Vignette Data Generation
+
+We simulate a biomonitoring dataset evaluating fish condition factor ($K$) across three river basins (`Upper`, `Central`, `Lower`) sampled over two distinct hydrological periods (`Wet Season` vs `Dry Season`):
+
+```{r twoway_data_prep}
+set.seed(42)
+n_reps <- 15
+
+basins <- c("Upper Reach", "Central Basin", "Lower Estuary")
+seasons <- c("Wet Season", "Dry Season")
+
+fish_condition <- data.frame(
+  Basin = factor(rep(rep(basins, each = n_reps), times = 2), levels = basins),
+  Season = factor(rep(seasons, each = n_reps * length(basins)), levels = seasons),
+  Condition_Factor = c(
+    # Wet Season: Upper, Central, Lower
+    rnorm(n_reps, mean = 1.35, sd = 0.08),
+    rnorm(n_reps, mean = 1.18, sd = 0.09),
+    rnorm(n_reps, mean = 1.05, sd = 0.10),
+    # Dry Season: Upper, Central, Lower
+    rnorm(n_reps, mean = 1.20, sd = 0.07),
+    rnorm(n_reps, mean = 0.98, sd = 0.08),
+    rnorm(n_reps, mean = 0.82, sd = 0.09)
+  )
+)
+
+head(fish_condition, 6)
+
+```
+
+### 2.3 Visualization Styles
+
+The `two_way_anova()` function renders both grouped interaction plots (dodged) and faceted sub-panel displays across all standard geometries.
+
+#### 2.3.1 Style A: Dodged Boxplot with Interaction Letters (Default)
+
+This style groups the primary factor along the x-axis, using color fill to contrast the secondary factor side-by-side with raw sample jitters and mean indicators:
+
+```{r twoway_boxplot, fig.width = 7.0, fig.height = 5.2, fig.align = "center"}
+res_two_box <- two_way_anova(
+  data           = fish_condition,
+  factor1_var    = "Basin",
+  factor2_var    = "Season",
+  numeric_var    = "Condition_Factor",
+  plot_type      = "boxplot",
+  add_jitter     = TRUE,
+  show_mean      = TRUE,
+  mean_color     = "darkred",
+  color_palette  = "Set2"
+)
+
+res_two_box$Plot
+
+```
+
+#### 2.3.2 Style B: Faceted Barplot with Standard Error Bars (Mean ± SE)
+
+By specifying `facet_var = "Season"`, the visualization cleanly segments the interaction into independent panels, preventing crowded error bars and overlapping categories:
+
+```{r twoway_barplot_faceted, fig.width = 7.0, fig.height = 4.8, fig.align = "center"}
+res_two_bar <- two_way_anova(
+  data           = fish_condition,
+  factor1_var    = "Basin",
+  factor2_var    = "Season",
+  numeric_var    = "Condition_Factor",
+  facet_var      = "Season",
+  plot_type      = "barplot",
+  error_type     = "se",
+  color_palette  = "Set2"
+)
+
+res_two_bar$Plot
+
+```
+
+#### 2.3.3 Style C: Minimalist Point-Range Interaction
+
+The point-range display plots mean coordinates and directional standard error bars, making it straightforward to inspect interaction divergence between levels:
+
+```{r twoway_pointrange, fig.width = 7.0, fig.height = 5.0, fig.align = "center"}
+res_two_point <- two_way_anova(
+  data           = fish_condition,
+  factor1_var    = "Basin",
+  factor2_var    = "Season",
+  numeric_var    = "Condition_Factor",
+  plot_type      = "pointrange",
+  error_type     = "se",
+  color_palette  = "Dark2"
+)
+
+res_two_point$Plot
+
+```
+
+### 2.4 Model Inspection and Numerical Summaries
+
+The function returns the comprehensive ANOVA table showing degrees of freedom, sum-of-squares, mean-squares, $F$-values, and $p$-values for both main factors and their interaction:
+
+```{r twoway_inspection}
+# Factorial ANOVA Table (Main effects and Basin:Season interaction)
+res_two_box$ANOVA_Summary
+
+# Post-hoc pairwise differences (Tukey HSD)
+res_two_box$TukeyHSD
+
+# Estimated Marginal Means with compact letter displays
+res_two_box$EMMs
+
+# Summary statistics table
+res_two_box$Summary_Table
+
+```
+
+```
+
+```
+## 3. Three-Way Analysis of Variance (ANOVA)
+
+The `three_way_anova()` function evaluates the simultaneous influence of three categorical factors and their complete interaction structure on a continuous aquatic response variable. In limnology, marine biology, and ecotoxicology, three-way factorial designs are commonly implemented to examine community or physiological responses across spatial zones, hydrological seasons, and water column depths simultaneously (e.g., Basin × Season × Depth).
+
+The function automates factorial model fitting, calculation of main and interaction $F$-tests, derivation of Estimated Marginal Means across the complete three-way interaction lattice, post-hoc Tukey HSD letter grouping, and publication-ready faceted plotting.
+
+### 3.1 Conceptual Framework and Statistical Formulation
+
+The full three-way fixed-effects factorial model partitions the response variable $y_{ijkl}$ into three main factor effects, three two-way interaction terms, and one three-way interaction term:
+
+$$y_{ijkl} = \mu + \alpha_i + \beta_j + \gamma_k + (\alpha\beta)_{ij} + (\alpha\gamma)_{ik} + (\beta\gamma)_{jk} + (\alpha\beta\gamma)_{ijk} + \varepsilon_{ijkl}$$
+
+where:
+- $y_{ijkl}$ represents the $l$-th observation under treatment combination $(i, j, k)$,
+- $\mu$ represents the grand population mean,
+- $\alpha_i$, $\beta_j$, and $\gamma_k$ represent the main effects of Factor 1 (e.g., Basin), Factor 2 (e.g., Season), and Factor 3 (e.g., Depth Layer),
+- $(\alpha\beta)_{ij}$, $(\alpha\gamma)_{ik}$, and $(\beta\gamma)_{jk}$ represent the two-way interaction effects,
+- $(\alpha\beta\gamma)_{ijk}$ represents the three-way interaction capturing higher-order non-linear dependencies across all factor levels,
+- $\varepsilon_{ijkl} \overset{\text{i.i.d.}}{\sim} \mathcal{N}(0, \sigma^2)$ is the random error term.
+
+#### 3.1.1 Variance Partitioning and Hypotheses
+
+Total variation is partitioned into seven distinct explained components alongside the residual error:
+
+$$\text{SS}_{\text{Total}} = \text{SS}_A + \text{SS}_B + \text{SS}_C + \text{SS}_{AB} + \text{SS}_{AC} + \text{SS}_{BC} + \text{SS}_{ABC} + \text{SS}_{\text{Residual}}$$
+
+Each source of variation is tested against the residual mean square ($\text{MS}_{\text{Residual}}$). If the three-way interaction term $(\alpha\beta\gamma)_{ijk}$ is significant ($p < 0.05$), the response to Factor A depends simultaneously on the levels of both Factor B and Factor C. In this scenario, lower-order terms cannot be interpreted independently, and post-hoc contrasts are conducted across all joint treatment combinations.
+
+### 3.2 In-Vignette Data Generation
+
+We simulate a limnological biomonitoring dataset evaluating Phytoplankton Chlorophyll-a concentrations ($\mu\text{g/L}$) across two Lake Basins (`North Basin`, `South Basin`), two Seasons (`Pre-Monsoon`, `Post-Monsoon`), and two Depth Zones (`Epilimnion`, `Hypolimnion`):
+
+```{r threeway_data_prep}
+set.seed(303)
+n_reps <- 10
+
+basins  <- c("North Basin", "South Basin")
+seasons <- c("Pre-Monsoon", "Post-Monsoon")
+depths  <- c("Epilimnion", "Hypolimnion")
+
+design_grid <- expand.grid(
+  Basin  = basins,
+  Season = seasons,
+  Depth  = depths
+)
+
+chla_data <- do.call(rbind, lapply(seq_len(nrow(design_grid)), function(idx) {
+  row_info <- design_grid[idx, ]
+  
+  # Baseline Chlorophyll-a dynamic
+  base_val <- 14.0
+  if (row_info$Basin == "South Basin") base_val <- base_val + 4.5
+  if (row_info$Season == "Post-Monsoon") base_val <- base_val + 6.0
+  if (row_info$Depth == "Hypolimnion") base_val <- base_val - 5.5
+  
+  # Three-way synergistic interaction in productive shallow waters
+  if (row_info$Basin == "South Basin" && row_info$Season == "Post-Monsoon" && row_info$Depth == "Epilimnion") {
+    base_val <- base_val + 8.0
+  }
+  
+  data.frame(
+    Basin   = factor(rep(row_info$Basin, n_reps), levels = basins),
+    Season  = factor(rep(row_info$Season, n_reps), levels = seasons),
+    Depth   = factor(rep(row_info$Depth, n_reps), levels = depths),
+    Chla_ugL = rnorm(n_reps, mean = base_val, sd = 1.2)
+  )
+}))
+
+head(chla_data, 6)
+
+```
+
+### 3.3 Visualization Styles
+
+The `three_way_anova()` function maps Factor 1 to the x-axis, Factor 2 to fill/color groupings, and uses `facet_wrap` to partition panels by Factor 3.
+
+#### 3.3.1 Style A: Faceted Boxplot with Jitter and Means (Default)
+
+Displays medians, IQRs, observation jitters, diamond mean markers, and three-way interaction letters:
+
+```{r threeway_boxplot, fig.width = 7.5, fig.height = 5.2, fig.align = "center"}
+res_three_box <- three_way_anova(
+  data          = chla_data,
+  factor1_var   = "Basin",
+  factor2_var   = "Season",
+  factor3_var   = "Depth",
+  numeric_var   = "Chla_ugL",
+  plot_type     = "boxplot",
+  add_jitter    = TRUE,
+  show_mean     = TRUE,
+  mean_color    = "darkred",
+  color_palette = "Set1"
+)
+
+res_three_box$Plot
+
+```
+
+#### 3.3.2 Style B: Faceted Barplot with Standard Error Bars (Mean ± SE)
+
+Displays aggregated group means with directional standard error bars across faceted sub-panels:
+
+```{r threeway_barplot, fig.width = 7.5, fig.height = 5.2, fig.align = "center"}
+res_three_bar <- three_way_anova(
+  data          = chla_data,
+  factor1_var   = "Basin",
+  factor2_var   = "Season",
+  factor3_var   = "Depth",
+  numeric_var   = "Chla_ugL",
+  plot_type     = "barplot",
+  error_type    = "se",
+  color_palette = "Set1"
+)
+
+res_three_bar$Plot
+
+```
+
+#### 3.3.3 Style C: Minimalist Faceted Point-Range Geometry
+
+Presents mean values and error bounds across faceted panels:
+
+```{r threeway_pointrange, fig.width = 7.5, fig.height = 5.2, fig.align = "center"}
+res_three_point <- three_way_anova(
+  data          = chla_data,
+  factor1_var   = "Basin",
+  factor2_var   = "Season",
+  factor3_var   = "Depth",
+  numeric_var   = "Chla_ugL",
+  plot_type     = "pointrange",
+  error_type    = "se",
+  color_palette = "Dark2"
+)
+
+res_three_point$Plot
+
+```
+
+### 3.4 Model Inspection and Numerical Summaries
+
+Extract the global three-way ANOVA summary, pairwise Tukey HSD differences, and Estimated Marginal Means:
+
+```{r threeway_inspection}
+# Global Three-Way ANOVA Table (Main effects, 2-way, and 3-way interactions)
+res_three_box$ANOVA_Summary
+
+# Post-hoc pairwise differences (Tukey HSD)
+res_three_box$TukeyHSD
+
+# Estimated Marginal Means across the 3-way interaction grid
+res_three_box$EMMs
+
+# Aggregated summary statistics
+res_three_box$Summary_Table
+
+```
+
+```
+
+```
+
+## 4. Analysis of Covariance (ANCOVA)
+
+The `ancova_analysis()` function combines linear regression and Analysis of Variance to test for differences in a continuous response variable across categorical treatment groups while statistically controlling for a continuous nuisance variable (covariate)[cite: 8]. In fisheries stock assessment and aquatic ecology, ANCOVA is routinely used to compare fish weight across sampling locations while controlling for body length, or to compare metabolic excretion rates across diet formulations while controlling for individual biomass.
+
+The function handles missing value removal, fits an additive general linear model, extracts the omnibus ANCOVA table, computes Estimated Marginal Means (EMMs) adjusted to the mean value of the covariate, and renders publication-quality scatter plots with parallel regression trend lines[cite: 8].
+
+### 4.1 Conceptual Framework and Statistical Formulation
+
+The additive fixed-effects ANCOVA model represents the response variable $y_{ij}$ as:
+
+$$y_{ij} = \mu + \alpha_i + \beta (x_{ij} - \bar{x}) + \varepsilon_{ij}$$
+
+where:
+- $y_{ij}$ is the response observed for the $j$-th individual in group $i$ ($i = 1, \dots, k$; $j = 1, \dots, n_i$),
+- $\mu$ is the overall adjusted grand mean,
+- $\alpha_i$ is the categorical treatment effect of group $i$, subject to the constraint $\sum n_i \alpha_i = 0$,
+- $\beta$ is the common pooled regression slope relating the continuous covariate $x$ to response $y$,
+- $x_{ij}$ is the covariate value for individual $j$ in group $i$, centered around the grand covariate mean $\bar{x}$,
+- $\varepsilon_{ij} \overset{\text{i.i.d.}}{\sim} \mathcal{N}(0, \sigma^2)$ is the normally distributed random error term.
+
+#### 4.1.1 Homogeneity of Slopes and Adjusted Means
+
+A core assumption of additive ANCOVA is the **homogeneity of regression slopes**, meaning the relationship between the covariate ($x$) and the response ($y$) does not vary across factor levels ($\beta_1 = \beta_2 = \dots = \beta_k = \beta$). 
+
+When this assumption holds, the categorical factor effect evaluates whether the elevations (y-intercepts) of the parallel regression lines differ significantly:
+
+$$H_0: \alpha_1 = \alpha_2 = \dots = \alpha_k = 0$$
+$$H_1: \text{At least one group elevation differs.}$$
+
+Because raw group means are confounded by variations in the covariate, `ancova_analysis()` computes Estimated Marginal Means (EMMs)[cite: 8]. The adjusted mean for group $i$ ($\hat{\mu}_i$) is evaluated at the grand mean of the covariate ($\bar{x}_{\bullet\bullet}$):
+
+$$\hat{\mu}_i = \bar{y}_{i\bullet} - \hat{\beta}(\bar{x}_{i\bullet} - \bar{x}_{\bullet\bullet})$$
+
+### 4.2 In-Vignette Data Generation
+
+We simulate a fisheries length-weight dataset evaluating somatic body weight ($\text{Weight}$, $\text{g}$) across three distinct aquatic habitats (`Estuary`, `River`, `Marine`) while controlling for continuous total body length ($\text{Length}$, $\text{cm}$)[cite: 8]:
+
+```{r ancova_data_prep}
+set.seed(2026)
+n_per_habitat <- 35
+
+habitats <- c("Estuary", "River", "Marine")
+
+fish_growth <- do.call(rbind, lapply(habitats, function(hab) {
+  # Generate continuous covariate: fish total length (cm)
+  len <- runif(n_per_habitat, min = 12.0, max = 38.0)
+  
+  # Group elevation shifts (intercept differences)
+  elevation_shift <- switch(hab,
+    "Estuary" = -12.0,
+    "River"   = -4.0,
+    "Marine"  = 8.0
+  )
+  
+  # Additive response: common slope (beta = 3.25) + habitat elevation + noise
+  wt <- 3.25 * len + elevation_shift + rnorm(n_per_habitat, mean = 0, sd = 4.2)
+  
+  data.frame(
+    Habitat = factor(rep(hab, n_per_habitat), levels = habitats),
+    Length  = len,
+    Weight  = wt
+  )
+}))
+
+head(fish_growth, 6)
+
+```
+
+### 4.3 Visualization Styles
+
+`ancova_analysis()` plots the empirical observations alongside model-fitted regression lines. This preserves the parallel slopes of the additive model, avoiding the misleading non-parallel lines produced by unconstrained smoothers.
+
+#### 4.3.1 Style A: Single-Panel Parallel Slopes Comparison (Default)
+
+Presents all groups on a shared coordinate grid (`facet = FALSE`), allowing direct visual comparison of vertical line separations (elevation differences):
+
+```{r ancova_plot_single, fig.width = 7.0, fig.height = 5.0, fig.align = "center"}
+res_ancova <- ancova_analysis(
+  data          = fish_growth,
+  response_var  = "Weight",
+  factor_var    = "Habitat",
+  covariate_var = "Length",
+  facet         = FALSE,
+  color_palette = "Dark2"
+)
+
+# Render publication plot
+res_ancova$Plot
+
+```
+
+#### 4.3.2 Style B: Faceted Panel View
+
+When working with dense datasets or multiple overlapping factor levels, setting `facet = TRUE` separates each group into its own panel using `facet_wrap`, while keeping the coordinate scales fixed for consistent comparison:
+
+```{r ancova_plot_faceted, fig.width = 7.5, fig.height = 4.2, fig.align = "center"}
+res_ancova_facet <- ancova_analysis(
+  data          = fish_growth,
+  response_var  = "Weight",
+  factor_var    = "Habitat",
+  covariate_var = "Length",
+  facet         = TRUE,
+  color_palette = "Dark2"
+)
+
+res_ancova_facet$Plot
+
+```
+
+### 4.4 Model Inspection and Numerical Summaries
+
+The returned list object provides the ANOVA table testing the covariate and categorical factor effects, as well as the covariate-adjusted Estimated Marginal Means:
+
+```{r ancova_inspection}
+# 1. ANCOVA Table (Testing covariate and factor significance)
+res_ancova$ANCOVA_Table
+
+# 2. Estimated Marginal Means (EMMs adjusted to mean Length)
+res_ancova$Adjusted_Means
+
+```
+
+```
+
+```
+
+## 5. Multivariate Analysis of Variance (MANOVA)
+
+The `manova_analysis()` function extends analysis of variance to multi-response hypotheses, testing whether mean vectors of several correlated continuous variables differ across levels of a categorical grouping variable. In fisheries biology and aquatic ecology, MANOVA is commonly applied in morphometric stock discrimination (e.g., comparing head length, body depth, and caudal peduncle length simultaneously across river populations) or multi-metric water quality assessments (e.g., evaluating simultaneous variations in nitrates, phosphates, and ammonium across wetland sites).
+
+The function conducts defensive data verification, fits the multivariate general linear model, evaluates omnibus significance using Pillai's trace criterion, derives univariate ANOVA decompositions, and provides two distinct visualization geometries: faceted univariate trait boxplots and Canonical Discriminant Analysis (LDA) scatter plots with 95% confidence ellipses.
+
+### 5.1 Conceptual Framework and Statistical Formulation
+
+Let $\mathbf{y}_{ij} = [y_{ij1}, y_{ij2}, \dots, y_{ijp}]^T$ represent a $p$-dimensional vector of continuous response measurements recorded for the $j$-th specimen in treatment group $i$ ($i = 1, \dots, k$; $j = 1, \dots, n_i$). The one-way multivariate linear model is defined as:
+
+$$\mathbf{y}_{ij} = \boldsymbol{\mu} + \boldsymbol{\alpha}_i + \boldsymbol{\varepsilon}_{ij}$$
+
+where:
+- $\boldsymbol{\mu} = [\mu_1, \dots, \mu_p]^T$ represents the grand centroid vector across all $p$ traits,
+- $\boldsymbol{\alpha}_i = [\alpha_{i1}, \dots, \alpha_{ip}]^T$ represents the differential group effect vector for group $i$,
+- $\boldsymbol{\varepsilon}_{ij} \overset{\text{i.i.d.}}{\sim} \mathcal{N}_p(\mathbf{0}, \boldsymbol{\Sigma})$ represents the multivariate normal random error vector with variance-covariance matrix $\boldsymbol{\Sigma}$.
+
+#### 5.1.1 Hypothesis Testing and Test Statistics
+
+The omnibus multivariate null hypothesis states that group centroids are identical across all $p$ dimensions:
+
+$$H_0: \boldsymbol{\mu}_1 = \boldsymbol{\mu}_2 = \dots = \boldsymbol{\mu}_k$$
+$$H_1: \text{At least two group centroid vectors differ.}$$
+
+The total variance-covariance matrix is partitioned into the Between-Group Sum of Squares and Cross-Products matrix ($\mathbf{H}$) and the Within-Group (Error) Sum of Squares and Cross-Products matrix ($\mathbf{E}$):
+
+$$\mathbf{H} = \sum_{i=1}^k n_i (\bar{\mathbf{y}}_{i\bullet} - \bar{\mathbf{y}}_{\bullet\bullet})(\bar{\mathbf{y}}_{i\bullet} - \bar{\mathbf{y}}_{\bullet\bullet})^T$$
+
+$$\mathbf{E} = \sum_{i=1}^k \sum_{j=1}^{n_i} (\mathbf{y}_{ij} - \bar{\mathbf{y}}_{i\bullet})(\mathbf{y}_{ij} - \bar{\mathbf{y}}_{i\bullet})^T$$
+
+While several test criteria exist (Wilks' Lambda, Hotelling-Lawley trace, Roy's largest root), `manova_analysis()` defaults to **Pillai's Trace** ($V$) due to its robustness against departures from multivariate normality and moderate covariance heterogeneity:
+
+$$V = \text{tr}\left[\mathbf{H}(\mathbf{H} + \mathbf{E})^{-1}\right] = \sum_{m=1}^s \frac{\lambda_m}{1 + \lambda_m}$$
+
+where $\lambda_m$ represents the eigenvalues of $\mathbf{E}^{-1}\mathbf{H}$, and $s = \min(p, k - 1)$. The statistic is converted to an approximate $F$-distribution to establish statistical significance.
+
+### 5.2 In-Vignette Data Generation
+
+We simulate a morphometric stock identification survey measuring four anatomical truss traits (Total Length `TL`, Head Length `HL`, Body Depth `BD`, and Caudal Width `CW` in cm) across three wild fish populations (`River_A`, `River_B`, and `River_C`):
+
+```{r manova_data_prep}
+set.seed(505)
+n_fish <- 25
+
+populations <- c("River_A", "River_B", "River_C")
+
+# Simulate multivariate normal morphometric data
+morpho_data <- do.call(rbind, lapply(populations, function(pop) {
+  # Baseline centroid shifts per population
+  shift <- switch(pop,
+    "River_A" = c(TL = 24.0, HL = 5.2, BD = 6.5, CW = 2.1),
+    "River_B" = c(TL = 28.5, HL = 6.4, BD = 7.8, CW = 2.6),
+    "River_C" = c(TL = 21.0, HL = 4.8, BD = 5.9, CW = 1.9)
+  )
+  
+  data.frame(
+    Population = factor(rep(pop, n_fish), levels = populations),
+    TL = rnorm(n_fish, mean = shift["TL"], sd = 1.5),
+    HL = rnorm(n_fish, mean = shift["HL"], sd = 0.4),
+    BD = rnorm(n_fish, mean = shift["BD"], sd = 0.5),
+    CW = rnorm(n_fish, mean = shift["CW"], sd = 0.2)
+  )
+}))
+
+head(morpho_data, 6)
+
+```
+
+### 5.3 Visualization Styles
+
+The `manova_analysis()` function provides two complementary visual perspectives: faceted univariate trait distributions and multivariate canonical ordination.
+
+#### 5.3.1 Style A: Faceted Univariate Trait Boxplots (Default)
+
+Decomposes the multivariate space into separate panels for each continuous trait, showing median values, interquartile ranges, and individual observation distributions:
+
+```{r manova_boxplot, fig.width = 7.5, fig.height = 5.5, fig.align = "center"}
+res_manova_box <- manova_analysis(
+  data           = morpho_data,
+  response_vars  = c("TL", "HL", "BD", "CW"),
+  factor_var     = "Population",
+  plot_type      = "boxplot",
+  color_palette  = "Set2"
+)
+
+# Render faceted traits
+res_manova_box$Plot
+
+```
+
+#### 5.3.2 Style B: Canonical Discriminant Analysis (LDA) Ordination
+
+Projects the multi-trait measurements into canonical discriminant space (Linear Discriminant axes `LD1` and `LD2`), displaying multivariate centroid separation and 95% group confidence ellipses:
+
+```{r manova_lda, fig.width = 7.0, fig.height = 5.0, fig.align = "center"}
+res_manova_lda <- manova_analysis(
+  data           = morpho_data,
+  response_vars  = c("TL", "HL", "BD", "CW"),
+  factor_var     = "Population",
+  plot_type      = "lda",
+  color_palette  = "Set2"
+)
+
+# Render canonical discriminant ordination
+res_manova_lda$Plot
+
+```
+
+### 5.4 Model Inspection and Numerical Summaries
+
+The returned list delivers both the global multivariate Pillai's trace summary and the individual univariate ANOVA breakdowns:
+
+```{r manova_inspection}
+# 1. Omnibus MANOVA Summary (Pillai's Trace, F-approximation, p-value)
+res_manova_box$MANOVA_Summary
+
+# 2. Univariate ANOVA Breakdowns for Each Morphometric Trait
+res_manova_box$Univariate_ANOVAs
+
+```
+
+```
+
+```
+
+## 6. Parametric & Non-Linear Regression Modeling
+
+The `regression_analysis()` function models functional dependencies between continuous aquatic parameters—including morphometric fish growth, allometric length-weight relationships ($W = a \cdot L^b$), nutrient saturation kinetics, chemical calibration lines, and thermal performance curves.
+
+The function provides:
+1. **Dynamic Equation Generation:** Automatically extracts model coefficients, evaluates statistical significance ($R^2$ and $p$-value), and prints the parsed algebraic formula directly on the plot canvas.
+2. **Dual Uncertainty Bands:** Toggles between **Confidence Intervals** (measuring precision of the expected mean response $\mu_{y\vert{}x}$) and **Prediction Intervals** (capturing individual biological variation of future single specimens).
+3. **Comprehensive Functional Forms:** Fits linear ($y = \beta_0 + \beta_1 x$), allometric power ($y = a \cdot x^b$), exponential ($y = a \cdot e^{kx}$), logarithmic ($y = \beta_0 + \beta_1 \ln(x)$), quadratic polynomial ($y = \beta_0 + \beta_1 x + \beta_2 x^2$), or cubic polynomial ($y = \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3$) models across single-panel and multi-panel faceted designs.
+
+### 6.1 Conceptual Framework & Confidence vs. Prediction Bounds
+
+For a linear or linearized model $Y_i = \beta_0 + \beta_1 X_i + \varepsilon_i$ with residual variance $s^2$:
+
+#### 6.1.1 Confidence Interval for the Mean Response
+Measures uncertainty in estimating the true conditional population mean $\mathbb{E}(Y \mid x_0)$ at a specified predictor value $x_0$:
+
+$$\text{CI}_{95\%}(x_0) = \hat{y}_0 \pm t_{n-2, \, 0.975} \times s \sqrt{\frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i=1}^n (x_i - \bar{x})^2}}$$
+
+As sample size increases ($n \to \infty$), the confidence band contracts toward zero width around the fitted trajectory.
+
+#### 6.1.2 Prediction Interval for Individual Observations
+Predicts the boundary within which a single newly sampled organism $Y_{\text{new}}$ is expected to fall:
+
+$$\text{PI}_{95\%}(x_0) = \hat{y}_0 \pm t_{n-2, \, 0.975} \times s \sqrt{1 + \frac{1}{n} + \frac{(x_0 - \bar{x})^2}{\sum_{i=1}^n (x_i - \bar{x})^2}}$$
+
+The additional unit term ($1$) inside the radical accounts for irreducible biological variance ($\sigma^2$), making prediction bands substantially wider than confidence intervals.
+
+### 6.2 In-Vignette Data Generation
+
+We simulate a riverine fisheries biometric dataset tracking Total Length (cm) and Body Weight (g) across 75 specimens collected from three river basins (`River A`, `River B`, `River C`):
+
+```{r regression_data_prep}
+set.seed(606)
+n_fish <- 25
+rivers <- c("River A", "River B", "River C")
+
+fish_allometry <- do.call(rbind, lapply(rivers, function(rv) {
+  len <- runif(n_fish, min = 12, max = 38)
+  # Allometric power parameters: W = a * L^b
+  a_param <- switch(rv, "River A" = 0.012, "River B" = 0.009, "River C" = 0.015)
+  b_param <- switch(rv, "River A" = 3.05,  "River B" = 3.18,  "River C" = 2.92)
+  
+  wt <- a_param * (len^b_param) * exp(rnorm(n_fish, mean = 0, sd = 0.12))
+  data.frame(
+    River  = rv,
+    Length = len,
+    Weight = wt,
+    stringsAsFactors = FALSE
+  )
+}))
+
+head(fish_allometry, 6)
+
+```
+
+### 6.3 Visualization Styles Across Functional Models
+
+`regression_analysis()` handles linear, power-law, exponential, logarithmic, and higher-order polynomial relationships.
+
+#### 6.3.1 Style A: Allometric Power-Law Model ($W = a \cdot L^b$) with 95% Prediction Interval
+
+Fits an allometric power curve, calculates wide 95% prediction intervals to accommodate individual specimen growth scatter, and plots the power formula on the canvas:
+
+```{r regression_power_pred, fig.width = 7.0, fig.height = 5.0, fig.align = "center"}
+res_power_reg <- regression_analysis(
+  data          = fish_allometry,
+  x_var         = "Length",
+  y_var         = "Weight",
+  fit_type      = "power",
+  interval      = "prediction",
+  show_equation = TRUE,
+  title         = "Allometric Fish Length-Weight Relationship (95% PI)"
+)
+
+# Render allometric power plot
+res_power_reg$Plot
+
+```
+
+#### 6.3.2 Style B: Exponential Growth/Decay ($y = a \cdot e^{kx}$) with 95% Confidence Interval
+
+Models exponential trajectories (e.g., mortality catch curves, light attenuation) with confidence intervals around the expected conditional mean:
+
+```{r regression_exponential, fig.width = 7.0, fig.height = 5.0, fig.align = "center"}
+res_exp_reg <- regression_analysis(
+  data          = fish_allometry,
+  x_var         = "Length",
+  y_var         = "Weight",
+  fit_type      = "exponential",
+  interval      = "confidence",
+  show_equation = TRUE,
+  title         = "Exponential Length-Weight Curve (95% CI)"
+)
+
+# Render exponential curve
+res_exp_reg$Plot
+
+```
+
+#### 6.3.3 Style C: Faceted Quadratic Polynomial ($y = \beta_0 + \beta_1 x + \beta_2 x^2$)
+
+Fits 2nd-order polynomial curves across river systems with `facet = TRUE`, placing panel-specific equations and $R^2$ values in each sub-panel:
+
+```{r regression_poly_facet, fig.width = 7.5, fig.height = 4.5, fig.align = "center"}
+res_poly_reg <- regression_analysis(
+  data          = fish_allometry,
+  x_var         = "Length",
+  y_var         = "Weight",
+  fit_type      = "polynomial",
+  group_var     = "River",
+  facet         = TRUE,
+  interval      = "confidence",
+  show_equation = TRUE,
+  color_palette = "Dark2",
+  title         = "Faceted Quadratic Growth Trajectories by Basin"
+)
+
+# Render faceted quadratic curves
+res_poly_reg$Plot
+
+```
+
+#### 6.3.4 Style D: Faceted Cubic Polynomial ($y = \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3$)
+
+Accommodates complex, multi-inflection trajectories (e.g., seasonal thermal tolerance limits or multi-stage cohort growth) using a 3rd-order polynomial:
+
+```{r regression_cubic_facet, fig.width = 7.5, fig.height = 4.5, fig.align = "center"}
+res_cubic_reg <- regression_analysis(
+  data          = fish_allometry,
+  x_var         = "Length",
+  y_var         = "Weight",
+  fit_type      = "cubic",
+  group_var     = "River",
+  facet         = TRUE,
+  interval      = "confidence",
+  show_equation = TRUE,
+  color_palette = "Set1",
+  title         = "Faceted Cubic Growth Polynomials Across Basins"
+)
+
+# Render faceted cubic curves
+res_cubic_reg$Plot
+
+```
+
+### 6.4 Model Inspection & Diagnostics
+
+The returned list object provides access to algebraic formulas, goodness-of-fit statistics ($R^2$, $F$-test $p$-values), fitted `lm` model objects, and evaluation grids:
+
+```{r regression_inspection_updated}
+# 1. Tidy summary of model equations, R2 values, and p-values
+res_poly_reg$Equation_Table
+
+# 2. Inspect underlying linear model coefficients for River A
+summary(res_poly_reg$Models[["River A"]])
+
+# 3. Preview calculated prediction grid with 95% confidence intervals
+head(res_poly_reg$Predictions, 6)
+
+```
+
+```
+
+```
+
+## 7. Generalized Linear Models (GLMs)
+
+The `glm_analysis()` function handles non-normal aquatic survey data where standard ordinary least squares (OLS) assumptions are violated. In fisheries surveys, biodiversity assessments, and habitat modeling, empirical data frequently feature discrete integer counts with positive skew (e.g., fish catch per unit effort, abundance of invasive species) or binary presence/absence states (e.g., detection of endangered fauna or disease occurrence).
+
+The function fits models across Poisson, Quasipoisson (for overdispersed counts), or Binomial error distributions using link functions ($g(\cdot)$). It extracts Wald parameter estimates, derives multiplicative effect metrics—Incident Rate Ratios (IRR) for count families or Odds Ratios (OR) for binary families—computes 95% Wald confidence bounds, and generates a publication-ready forest plot.
+
+### 7.1 Conceptual Framework and Statistical Formulation
+
+A Generalized Linear Model consists of three components:
+1. **Random Component:** An exponential dispersion family distribution for the response variable $Y_i$.
+2. **Systematic Component:** A linear predictor combination of $p$ explanatory variables:
+   $$\eta_i = \beta_0 + \sum_{j=1}^p \beta_j x_{ij}$$
+3. **Link Function:** A monotonic function $g(\cdot)$ mapping the expected mean $\mu_i = \mathbb{E}(Y_i)$ to the linear predictor:
+   $$\eta_i = g(\mu_i)$$
+
+#### 7.1.1 Poisson and Quasipoisson Regression (Count Dynamics)
+
+For count data (e.g., CPUE or species richness), the log link ensures strictly positive predicted yields:
+
+$$\ln(\mu_i) = \beta_0 + \beta_1 x_{i1} + \dots + \beta_p x_{ip}$$
+
+Exponentiating coefficients yields the **Incident Rate Ratio (IRR)**:
+
+$$\text{IRR}_j = \exp(\beta_j)$$
+
+An $\text{IRR} > 1$ denotes a multiplicative increase in the expected count per unit increase in $x_j$, while an $\text{IRR} < 1$ represents a proportional reduction. When the variance exceeds the mean ($\text{Var}(Y) = \phi \mu$ with dispersion parameter $\phi > 1$), the `quasipoisson` family inflates parameter standard errors by $\sqrt{\phi}$ to account for overdispersion without altering point estimates.
+
+#### 7.1.2 Binomial Logistic Regression (Presence / Absence)
+
+For binary occurrence states $Y_i \in \{0, 1\}$, the logit link maps probability $p_i = P(Y_i = 1)$ to continuous space:
+
+$$\text{logit}(p_i) = \ln\left(\frac{p_i}{1 - p_i}\right) = \beta_0 + \beta_1 x_{i1} + \dots + \beta_p x_{ip}$$
+
+Exponentiating estimates yields the **Odds Ratio (OR)**:
+
+$$\text{OR}_j = \exp(\beta_j)$$
+
+The 95% Wald confidence intervals for effect sizes are calculated as:
+
+$$\text{CI}_{95\%} = \exp(\hat{\beta}_j \pm 1.96 \times \text{SE}(\hat{\beta}_j))$$
+
+If the confidence interval spans $1.0$, the predictor does not exert a statistically detectable multiplicative effect at $\alpha = 0.05$.
+
+### 7.2 In-Vignette Data Generation
+
+We simulate an estuarine fish survey monitoring the abundance (count per haul) of a juvenile target species across 120 sampling trawls. The response count is modeled as a function of Water Temperature (°C), Salinity (PSU), Dissolved Oxygen (mg/L), and Substrate Type (`Mud` vs. `Sand`):
+
+```{r glm_data_prep}
+set.seed(707)
+n_trawls <- 120
+
+temp_c   <- runif(n_trawls, min = 18, max = 30)
+sal_psu  <- runif(n_trawls, min = 5, max = 32)
+do_mgl   <- runif(n_trawls, min = 3.5, max = 9.0)
+substr   <- sample(c("Mud", "Sand"), size = n_trawls, replace = TRUE)
+
+# Multiplicative linear predictor
+log_mu <- -1.8 + 
+  0.08 * temp_c + 
+  -0.04 * sal_psu + 
+  0.22 * do_mgl + 
+  ifelse(substr == "Sand", 0.35, 0.0)
+
+# Simulate Poisson counts
+catch_counts <- rpois(n_trawls, lambda = exp(log_mu))
+
+trawl_survey <- data.frame(
+  Abundance   = catch_counts,
+  Temperature = temp_c,
+  Salinity    = sal_psu,
+  DO          = do_mgl,
+  Substrate   = factor(substr, levels = c("Mud", "Sand"))
+)
+
+head(trawl_survey, 6)
+
+```
+
+### 7.3 Visualization Styles
+
+The forest plot produced by `glm_analysis()` centers predictor effects relative to the reference null line at $\text{Effect Size} = 1.0$.
+
+#### 7.3.1 Style A: Count Regression Forest Plot (Poisson Model)
+
+Evaluates the Incident Rate Ratio (IRR) across environmental drivers, with horizontal error bars showing 95% confidence intervals:
+
+```{r glm_poisson_plot, fig.width = 7.0, fig.height = 4.8, fig.align = "center"}
+res_glm_count <- glm_analysis(
+  data           = trawl_survey,
+  response_var   = "Abundance",
+  predictor_vars = c("Temperature", "Salinity", "DO", "Substrate"),
+  family_type    = "poisson",
+  color_palette  = "Dark2"
+)
+
+# Render forest plot
+res_glm_count$Plot
+
+```
+
+#### 7.3.2 Style B: Binary Occurrence Forest Plot (Binomial Model)
+
+When the response variable is converted into occurrence (presence/absence), `family_type = "binomial"` generates Odds Ratios (OR):
+
+```{r glm_binomial_plot, fig.width = 7.0, fig.height = 4.8, fig.align = "center"}
+# Create binary presence/absence column
+trawl_survey$Presence <- ifelse(trawl_survey$Abundance > 0, 1, 0)
+
+res_glm_binary <- glm_analysis(
+  data           = trawl_survey,
+  response_var   = "Presence",
+  predictor_vars = c("Temperature", "Salinity", "DO", "Substrate"),
+  family_type    = "binomial",
+  color_palette  = "Set1"
+)
+
+res_glm_binary$Plot
+
+```
+
+### 7.4 Model Inspection and Numerical Summaries
+
+The returned list provides the GLM model summary and a coefficient table with calculated effect sizes:
+
+```{r glm_inspection}
+# 1. Global GLM Summary (Deviance, Dispersion, Estimates, z-values, p-values)
+res_glm_count$Model_Summary
+
+# 2. Tidy Coefficient Table with Exponentiated Effect Sizes (IRR) and 95% CIs
+res_glm_count$Coefficient_Table
+
+```
+
+```
+
+```
+
+## 8. Non-metric Multidimensional Scaling (NMDS)
+
+The `nmds_analysis()` function performs unconstrained multivariate ordination for community composition datasets (e.g., phytoplankton, zooplankton, macroinvertebrates, and fish assemblages). Unlike eigenvalue-based ordination techniques (e.g., PCA), NMDS avoids assuming linear relationships between species abundances and underlying environmental gradients. Instead, it relies on rank-order dissimilarities, making it resilient to zero-inflated ecological count matrices.
+
+The function supports input ingestion (data frames, matrices, lists), implements standard ecological transformations (e.g., Hellinger, Wisconsin double standardization), runs iterative ordination using `vegan::metaMDS`, monitors convergence stress, overlays 95% normal confidence ellipses, and projects significant environmental vectors using `vegan::envfit`.
+
+### 8.1 Conceptual Framework and Mathematical Formulation
+
+Let $\mathbf{Y}_{n \times p}$ denote a community matrix of $n$ sampling sites and $p$ taxa. Pairwise ecological dissimilarity between site $j$ and site $k$ is calculated using an appropriate index (typically Bray-Curtis dissimilarity for abundance data):
+
+$$d_{jk} = \frac{\sum_{i=1}^p \vert{}y_{ij} - y_{ik}\vert{}}{\sum_{i=1}^p (y_{ij} + y_{ik})}$$
+
+NMDS seeks a low-dimensional configuration ($k = 2$ or $3$ dimensions) of site coordinates $\mathbf{X}_{n \times k}$ such that the Euclidean distances between points in ordination space ($\hat{d}_{jk} = \Vert{}\mathbf{x}_j - \mathbf{x}_k\Vert{}$) preserve the monotonic rank order of the original dissimilarities ($d_{jk}$):
+
+$$d_{jk} \approx f(\hat{d}_{jk})$$
+
+where $f$ is a monotonic step or regression function fitted using isotonic regression.
+
+#### 8.1.1 Stress Evaluation and Quality Criteria
+
+The goodness-of-fit of the configuration is measured by **Kruskal's Stress** ($S$):
+
+$$S = \sqrt{\frac{\sum_{j < k} (d_{jk} - \hat{d}_{jk})^2}{\sum_{j < k} d_{jk}^2}}$$
+
+Stress measures the rank-order discrepancy between original ecological dissimilarities and low-dimensional mapped distances:
+- $S < 0.05$: Excellent representation with minimal distortion.
+- $0.05 \le S < 0.10$: Good ordination with reliable configuration.
+- $0.10 \le S \le 0.20$: Usable ordination; 2D configuration provides an adequate representation, but higher-order details should be interpreted with care.
+- $S > 0.20$: High stress; results should be interpreted cautiously, and increasing ordination dimensionality ($k = 3$) may be warranted.
+
+#### 8.1.2 Pre-Ordination Hellinger Transformation
+
+To alleviate the "horseshoe" or "arch" effect common in raw Euclidean distance models, `transform = "hellinger"` applies the Hellinger metric:
+
+$$y'_{ij} = \sqrt{\frac{y_{ij}}{\sum_{m=1}^p y_{mj}}}$$
+
+This downweights dominant taxa and eliminates the zero-inflation paradox without dropping absent species.
+
+### 8.2 In-Vignette Data Generation
+
+We simulate a river basin macroinvertebrate community survey across 45 sampling stations distributed among three Habitat types (`Riffle`, `Run`, `Pool`). Seven diagnostic taxa counts are generated, along with three continuous water quality parameters (Flow Velocity, Dissolved Oxygen, and Water Temperature):
+
+```{r nmds_data_prep}
+set.seed(808)
+n_sites <- 15
+habitats <- c("Riffle", "Run", "Pool")
+
+# Macroinvertebrate community matrix (7 diagnostic taxa)
+comm_list <- lapply(habitats, function(hab) {
+  # Baseline taxon abundance profiles
+  means <- switch(hab,
+    "Riffle" = c(Ephem = 28, Plecop = 22, Trichop = 18, Chirono = 4, Oligoch = 1, Odonat = 2, Gastrop = 1),
+    "Run"    = c(Ephem = 12, Plecop = 8,  Trichop = 14, Chirono = 16, Oligoch = 6, Odonat = 5, Gastrop = 3),
+    "Pool"   = c(Ephem = 2,  Plecop = 0,  Trichop = 4,  Chirono = 32, Oligoch = 24, Odonat = 12, Gastrop = 18)
+  )
+  
+  # Simulate Poisson counts
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_sites, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Habitat <- hab
+  df
+})
+
+macro_data <- do.call(rbind, comm_list)
+# Place metadata as first column
+macro_data <- macro_data[, c("Habitat", setdiff(names(macro_data), "Habitat"))]
+
+# Corresponding environmental matrix
+env_data <- data.frame(
+  Velocity_ms = c(rnorm(n_sites, 0.85, 0.1), rnorm(n_sites, 0.45, 0.08), rnorm(n_sites, 0.12, 0.04)),
+  DO_mgl      = c(rnorm(n_sites, 9.2, 0.4),  rnorm(n_sites, 7.8, 0.5),   rnorm(n_sites, 5.4, 0.6)),
+  Temp_C      = c(rnorm(n_sites, 19.5, 0.8), rnorm(n_sites, 22.0, 0.7),  rnorm(n_sites, 25.8, 1.1))
+)
+
+head(macro_data[, 1:6], 6)
+
+```
+
+### 8.3 Visualization Styles
+
+`nmds_analysis()` displays sample site scores color-coded by habitat with 95% confidence ellipses, and can overlay significant environmental gradient vectors.
+
+#### 8.3.1 Style A: Community Ordination with 95% Confidence Ellipses
+
+Computes Hellinger-transformed Bray-Curtis NMDS ordination and projects cluster confidence regions:
+
+```{r nmds_plot_basic, fig.width = 7.0, fig.height = 5.2, fig.align = "center"}
+res_nmds <- nmds_analysis(
+  data        = macro_data,
+  group_col   = "Habitat",
+  transform   = "hellinger",
+  dist_method = "bray",
+  palette     = "Dark2"
+)
+
+# Render ordination plot
+res_nmds$Plot
+
+```
+
+#### 8.3.2 Style B: Community Ordination with Environmental Vector Fitting (`envfit`)
+
+Supplying `env_data` automatically runs `vegan::envfit` (999 permutations) and projects significant ($p \le 0.05$) environmental directional arrows into the ordination space:
+
+```{r nmds_plot_envfit, fig.width = 7.5, fig.height = 5.5, fig.align = "center"}
+res_nmds_env <- nmds_analysis(
+  data        = macro_data,
+  group_col   = "Habitat",
+  env_data    = env_data,
+  transform   = "hellinger",
+  dist_method = "bray",
+  palette     = "Set2",
+  title       = "Macroinvertebrate Community NMDS with Environmental Drivers"
+)
+
+res_nmds_env$Plot
+
+```
+
+### 8.4 Model Inspection and Numerical Summaries
+
+The returned list provides the stress value, tidy site coordinate scores, underlying `metaMDS` object, and permutation vector fits:
+
+```{r nmds_inspection}
+# 1. Final Ordination Stress
+res_nmds$Stress
+
+# 2. Tidy NMDS Axis Coordinates
+head(res_nmds$Plot_Data, 6)
+
+# 3. Environmental Vector Fits (r2, p-values)
+res_nmds_env$Envfit_Results
+
+```
+
+```
+
+```
+
+## 9. Permutational Multivariate Analysis of Variance (PERMANOVA)
+
+The `permanova_analysis()` function performs non-parametric multivariate hypothesis testing on ecological distance matrices using `vegan::adonis2`[cite: 13]. While ordination techniques such as NMDS graphically portray patterns of community resemblance, PERMANOVA tests whether spatial, seasonal, or experimental groups occupy statistically distinct regions in multivariate ecological space.
+
+Because community data are non-normal, zero-inflated, and contain complex species co-dependencies, standard parametric MANOVA assumptions (multivariate normality and homogeneous covariance matrices) are regularly violated. PERMANOVA resolves this by partitioning dissimilarity matrices and calculating significance via permutation testing[cite: 13].
+
+### 9.1 Conceptual Framework and Statistical Formulation
+
+Let $\mathbf{D} = [d_{ij}]$ represent an $N \times N$ symmetric ecological distance matrix (e.g., Bray-Curtis or Euclidean distances) among $N$ samples across $g$ distinct groups. The total sum of squared dissimilarities ($\text{SS}_{\text{Total}}$) is partitioned into within-group ($\text{SS}_W$) and between-group ($\text{SS}_A$) components:
+
+$$\text{SS}_{\text{Total}} = \frac{1}{N} \sum_{i=1}^{N-1} \sum_{j=i+1}^N d_{ij}^2$$
+
+$$\text{SS}_W = \sum_{k=1}^g \frac{1}{n_k} \sum_{i=1}^{n_k-1} \sum_{j=i+1}^{n_k} d_{ij(k)}^2$$
+
+$$\text{SS}_A = \text{SS}_{\text{Total}} - \text{SS}_W$$
+
+where $n_k$ is the sample size in group $k$.
+
+#### 9.1.1 The Pseudo-$F$ Test Statistic
+
+The non-parametric pseudo-$F$ statistic compares the between-group variance to within-group variance:
+
+$$F = \frac{\text{SS}_A / (g - 1)}{\text{SS}_W / (N - g)}$$
+
+Because the null distribution of pseudo-$F$ does not follow an ordinary parametric $F$-distribution under arbitrary distance metrics, significance ($p$-value) is determined through Monte Carlo permutation of sample labels:
+
+$$p = \frac{\sum_{m=1}^M \mathbb{I}(F^{\pi}_m \ge F_{\text{obs}}) + 1}{M + 1}$$
+
+where $M$ is the number of permutations (typically 999), $F_{\text{obs}}$ is the pseudo-$F$ calculated on the intact dataset, and $F^{\pi}_m$ is the pseudo-$F$ obtained from the $m$-th randomly permuted configuration[cite: 13].
+
+### 9.2 In-Vignette Data Generation
+
+We simulate a marine benthic community monitoring study assessing macrobenthic invertebrate abundances across three seabed sediment classes (`Coarse Gravel`, `Fine Sand`, and `Silty Mud`):
+
+```{r permanova_data_prep}
+set.seed(909)
+n_reps <- 12
+
+substrates <- c("Coarse Gravel", "Fine Sand", "Silty Mud")
+
+benthic_survey <- do.call(rbind, lapply(substrates, function(sub) {
+  # Diagnostic species abundance baselines
+  means <- switch(sub,
+    "Coarse Gravel" = c(Polychaeta = 14, Bivalvia = 6,  Amphipoda = 28, Decapoda = 12, Echinodermata = 16),
+    "Fine Sand"     = c(Polychaeta = 22, Bivalvia = 18, Amphipoda = 15, Decapoda = 8,  Echinodermata = 4),
+    "Silty Mud"     = c(Polychaeta = 35, Bivalvia = 26, Amphipoda = 4,  Decapoda = 2,  Echinodermata = 1)
+  )
+  
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_reps, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Substrate <- sub
+  df
+}))
+
+# Organize Substrate as grouping metadata column
+benthic_survey <- benthic_survey[, c("Substrate", setdiff(names(benthic_survey), "Substrate"))]
+
+head(benthic_survey, 6)
+
+```
+
+### 9.3 Statistical Execution and Permutation Testing
+
+We test for differences in community structure across substrate types using the Bray-Curtis distance metric with Hellinger pre-transformation:
+
+```{r permanova_run}
+res_permanova <- permanova_analysis(
+  data         = benthic_survey,
+  group_col    = "Substrate",
+  dist_method  = "bray",
+  transform    = "hellinger",
+  permutations = 999,
+  seed         = 42
+)
+
+```
+
+### 9.4 Model Inspection and Numerical Summaries
+
+The returned list provides the ANOVA-style summary table detailing degrees of freedom, sum-of-squares, $R^2$ (variation explained by the grouping factor), pseudo-$F$ values, and permutation-based $p$-values:
+
+```{r permanova_inspection}
+# 1. PERMANOVA Table (adonis2 results)
+res_permanova$PERMANOVA_Table
+
+# 2. Distance Metric Applied
+res_permanova$Distance_Method
+
+# 3. Cleaned and Transformed Data Preview
+head(res_permanova$Cleaned_Data, 4)
+
+```
+
+```
+
+```
+
+## 10. Similarity Percentages (SIMPER) Analysis
+
+The `simper_analysis()` function identifies which individual taxa or species drive community-level differences between ecological groups. While NMDS visualizes spatial or experimental separation and PERMANOVA evaluates whether those differences are statistically significant, SIMPER (Similarity Percentages) decomposes the overall Bray-Curtis dissimilarity into percentage contributions attributable to each individual taxon.
+
+In fisheries ecology, benthic surveys, and aquatic biomonitoring, SIMPER serves as an indicator species detection tool—revealing which particular taxa characterize undisturbed reference sites versus human-impacted habitats, or which species drive seasonal community turnover.
+
+### 10.1 Conceptual Framework and Mathematical Formulation
+
+Consider two groups of samples, Group $1$ and Group $2$. The Bray-Curtis dissimilarity between sample $j$ in Group $1$ and sample $k$ in Group $2$ is given by:
+
+$$d_{jk} = \frac{\sum_{i=1}^p \vert{}y_{ij} - y_{ik}\vert{}}{\sum_{i=1}^p (y_{ij} + y_{ik})}$$
+
+SIMPER decomposes this total dissimilarity into the specific contribution of the $i$-th taxon:
+
+$$\delta_{jk}^{(i)} = \frac{\vert{}y_{ij} - y_{ik}\vert{}}{\sum_{m=1}^p (y_{mj} + y_{mk})}$$
+
+#### 10.1.1 Average Contribution and Diagnostic Ratios
+
+The average contribution of species $i$ ($\bar{\delta}_i$) across all $n_1 \times n_2$ pairwise comparisons between Group $1$ and Group $2$ is:
+
+$$\bar{\delta}_i = \frac{1}{n_1 n_2} \sum_{j=1}^{n_1} \sum_{k=1}^{n_2} \delta_{jk}^{(i)}$$
+
+Taxa are ranked in descending order of $\bar{\delta}_i$. The cumulative percentage contribution of the top $m$ species is:
+
+$$\text{Cumulative Contribution (\%)} = \frac{\sum_{i=1}^m \bar{\delta}_i}{\sum_{i=1}^p \bar{\delta}_i} \times 100$$
+
+A high average contribution combined with a consistent ratio of contribution to standard deviation indicates that a species is a reliable discriminator between the two environmental or biological groups.
+
+### 10.2 In-Vignette Data Generation
+
+We simulate a lake fish assemblage survey monitoring abundances across three habitat zones (`Littoral`, `Pelagic`, and `Profundal`). Six representative fish taxa are surveyed across 36 sampling stations:
+
+```{r simper_data_prep}
+set.seed(1010)
+n_stations <- 12
+zones <- c("Littoral", "Pelagic", "Profundal")
+
+lake_survey <- do.call(rbind, lapply(zones, function(zn) {
+  # Distinct abundance profiles across lake zones
+  means <- switch(zn,
+    "Littoral"  = c(Perch = 32, Pike = 8,  Roach = 45, Bream = 22, Bleak = 12, Zander = 2),
+    "Pelagic"   = c(Perch = 10, Pike = 1,  Roach = 18, Bream = 6,  Bleak = 55, Zander = 14),
+    "Profundal" = c(Perch = 2,  Pike = 0,  Roach = 4,  Bream = 1,  Bleak = 2,  Zander = 28)
+  )
+  
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_stations, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Zone <- zn
+  df
+}))
+
+# Organize Zone as grouping metadata column
+lake_survey <- lake_survey[, c("Zone", setdiff(names(lake_survey), "Zone"))]
+
+head(lake_survey, 6)
+
+```
+
+### 10.3 Visualization Styles
+
+The `simper_analysis()` function extracts the top $N$ taxa contributing to dissimilarity for each pairwise comparison and displays them using faceted horizontal bar charts.
+
+#### 10.3.1 Style A: Faceted Top Contributing Taxa (Default)
+
+Decomposes all pairwise group comparisons (`Littoral_Pelagic`, `Littoral_Profundal`, `Pelagic_Profundal`) and displays the top 5 discriminating species per comparison:
+
+```{r simper_barplot, fig.width = 8.0, fig.height = 5.2, fig.align = "center"}
+res_simper <- simper_analysis(
+  data         = lake_survey,
+  group_col    = "Zone",
+  top_n        = 5,
+  transform    = "hellinger",
+  permutations = 999,
+  seed         = 42
+)
+
+# Render faceted contribution plot
+res_simper$Plot
+
+```
+
+### 10.4 Model Inspection and Numerical Summaries
+
+The returned list contains the raw `vegan::simper` object, along with a tidy data frame listing each species' average contribution, cumulative percentage, and permutation $p$-value:
+
+```{r simper_inspection}
+# 1. Tidy summary table of top discriminating taxa
+head(res_simper$Summary_Table, 10)
+
+# 2. Inspect raw vegan SIMPER summary for a specific comparison
+summary(res_simper$SIMPER_Object)$Littoral_Pelagic[1:5, ]
+
+```
+
+```
+
+```
+
+## 11. Principal Component Analysis (PCA) Community Biplot
+
+The `pca_community_biplot()` function performs unconstrained linear ordination using Principal Component Analysis (`vegan::rda()`) to project aquatic communities into a reduced orthogonal subspace. While non-metric multidimensional scaling (NMDS) is non-parametric and rank-based, PCA constructs synthetic axes that maximize total explained variance.
+
+A key advantage of PCA for ecological communities is the simultaneous display of both sampling sites (points) and taxa (loadings) as directional vectors—forming a classical biplot. In this representation, the cosine of the angle between two species vectors approximates their linear correlation, while the projection of site points onto a species arrow indicates the relative abundance of that taxon at those sampling stations.
+
+### 11.1 Conceptual Framework and Mathematical Formulation
+
+Let $\mathbf{Y}_{n \times p}$ denote an abundance or biomass matrix of $n$ sampling sites and $p$ aquatic species. PCA decomposes the centered (and optionally standardized) variance-covariance matrix $\mathbf{S} = \frac{1}{n-1} \mathbf{Y}^T \mathbf{Y}$ via singular value decomposition (SVD) or spectral decomposition:
+
+$$\mathbf{S} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^T$$
+
+where:
+- $\boldsymbol{\Lambda} = \text{diag}(\lambda_1, \lambda_2, \dots, \lambda_p)$ is the diagonal matrix of eigenvalues sorted in descending order ($\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_p \ge 0$),
+- $\mathbf{V} = [\mathbf{v}_1, \mathbf{v}_2, \dots, \mathbf{v}_p]$ is the matrix of orthonormal eigenvectors containing the species loadings.
+
+The percentage of total community variance explained by the $k$-th principal component ($\text{PC}_k$) is:
+
+$$\text{Variance Explained (\%)} = \frac{\lambda_k}{\sum_{m=1}^p \lambda_m} \times 100$$
+
+Site coordinates in the reduced 2D ordination space are computed as:
+
+$$\mathbf{F} = \mathbf{Y} \mathbf{V}_2$$
+
+where $\mathbf{V}_2$ denotes the first two eigenvector columns corresponding to $\lambda_1$ and $\lambda_2$.
+
+#### 11.1.1 Transformation-Based PCA (tb-PCA)
+
+Raw Euclidean distance applied to unstandardized species counts can suffer from the "horseshoe" or "arch" artifact because double zeros (joint absences) are treated as evidence of ecological similarity. To address this, `transform = "hellinger"` applies Legendre & Gallagher's Hellinger transformation prior to ordination:
+
+$$y'_{ij} = \sqrt{\frac{y_{ij}}{\sum_{m=1}^p y_{mj}}}$$
+
+This tb-PCA preserves Hellinger distances among samples, making PCA well suited for compositional abundance data.
+
+### 11.2 In-Vignette Data Generation
+
+We simulate an estuarine zooplankton community survey evaluating counts of eight diagnostic taxa across three distinct salinity regimes (`Oligohaline`, `Mesohaline`, and `Polyhaline`):
+
+```{r pca_biplot_data_prep}
+set.seed(1111)
+n_samples <- 14
+salinity_regimes <- c("Oligohaline", "Mesohaline", "Polyhaline")
+
+zooplankton_data <- do.call(rbind, lapply(salinity_regimes, function(reg) {
+  # Diagnostic zooplankton abundance profiles across salinity regimes
+  means <- switch(reg,
+    "Oligohaline" = c(Rotifer_A = 48, Rotifer_B = 35, Cladocera_A = 26, Cladocera_B = 18, Cyclopoid = 12, Calanoid = 4, Mysid = 1, Cirripede = 0),
+    "Mesohaline"  = c(Rotifer_A = 12, Rotifer_B = 8,  Cladocera_A = 14, Cladocera_B = 22, Cyclopoid = 32, Calanoid = 28, Mysid = 9, Cirripede = 5),
+    "Polyhaline"  = c(Rotifer_A = 2,  Rotifer_B = 0,  Cladocera_A = 3,  Cladocera_B = 4,  Cyclopoid = 15, Calanoid = 42, Mysid = 24, Cirripede = 38)
+  )
+  
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_samples, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Salinity_Zone <- reg
+  df
+}))
+
+# Place metadata as first column
+zooplankton_data <- zooplankton_data[, c("Salinity_Zone", setdiff(names(zooplankton_data), "Salinity_Zone"))]
+
+head(zooplankton_data[, 1:6], 6)
+
+```
+
+### 11.3 Visualization Styles
+
+`pca_community_biplot()` plots site coordinates, adds 95% normal confidence ellipses around environmental groups, and displays directional species loading vectors.
+
+#### 11.3.1 Style A: Hellinger-Transformed PCA Community Biplot (Default)
+
+Applies Hellinger transformation to avoid double-zero distortions while visualizing all species loading vectors alongside salinity cluster groupings:
+
+```{r pca_biplot_default, fig.width = 7.5, fig.height = 5.5, fig.align = "center"}
+res_pca_biplot <- pca_community_biplot(
+  data             = zooplankton_data,
+  group_col        = "Salinity_Zone",
+  transform        = "hellinger",
+  scale            = FALSE,
+  color_palette    = "Dark2",
+  arrow_multiplier = 0.8
+)
+
+# Render community biplot
+res_pca_biplot$Plot
+
+```
+
+#### 11.3.2 Style B: Biplot with Top-Contributing Species Filtered
+
+In species-rich datasets, plotting all vectors can lead to visual clutter. Setting `top_n_species = 5` selectively displays only the taxa with the longest loadings in the ordination plane:
+
+```{r pca_biplot_top5, fig.width = 7.5, fig.height = 5.5, fig.align = "center"}
+res_pca_top5 <- pca_community_biplot(
+  data             = zooplankton_data,
+  group_col        = "Salinity_Zone",
+  transform        = "hellinger",
+  top_n_species    = 5,
+  color_palette    = "Set1",
+  arrow_multiplier = 0.85,
+  title            = "Zooplankton PCA Biplot (Top 5 Indicator Species)"
+)
+
+res_pca_top5$Plot
+
+```
+
+### 11.4 Model Inspection and Numerical Summaries
+
+The returned list provides the underlying `vegan::rda` model, coordinates of site scores with group labels, and species loading vector magnitudes:
+
+```{r pca_biplot_inspection}
+# 1. Inspect species vector coordinates and loading lengths
+head(res_pca_biplot$Species_Scores, 6)
+
+# 2. Site ordination coordinates (PC1 and PC2 scores)
+head(res_pca_biplot$Plot_Data, 6)
+
+# 3. Eigenvalues and total variance summary
+summary(res_pca_biplot$PCA_Object)$cont$importance[, 1:2]
+
+```
+
+```
+
+```
+
+## 12. PCA Correlation Circle for Environmental Parameters
+
+The `pca_correlation_circle()` function visualizes the relationship among multidimensional environmental, limnological, and hydrochemical variables using a PCA variables factor map (correlation circle)[cite: 15]. When analyzing water quality matrices (e.g., pH, dissolved oxygen, nutrients, heavy metal concentrations, conductivity), variables are measured on different physical scales and often exhibit collinearities[cite: 15].
+
+The function standardizes environmental variables to unit variance ($\mu = 0, \sigma = 1$), extracts variable correlations with the leading principal components, evaluates the quality of representation using the squared cosine ($\cos^2$) metric, and projects the variables within a unit correlation circle[cite: 15].
+
+### 12.1 Conceptual Framework and Mathematical Formulation
+
+Let $\mathbf{X}_{n \times p}$ denote an environmental dataset containing $n$ water sampling stations and $p$ physico-chemical parameters[cite: 15]. Standardizing columns to unit variance yields:
+
+$$z_{ij} = \frac{x_{ij} - \bar{x}_j}{s_j}$$
+
+PCA on the standardized matrix decomposes the Pearson correlation matrix $\mathbf{R} = \frac{1}{n-1} \mathbf{Z}^T \mathbf{Z}$[cite: 15]:
+
+$$\mathbf{R} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^T$$
+
+The coordinate of variable $j$ along principal component $k$ represents the Pearson correlation coefficient between that environmental variable and component axis $k$[cite: 15]:
+
+$$r(x_j, \text{PC}_k) = v_{jk} \sqrt{\lambda_k}$$
+
+where $v_{jk}$ is the eigenvector loading and $\lambda_k$ is the eigenvalue of the $k$-th principal component[cite: 15].
+
+#### 12.1.1 The Unit Circle and $\cos^2$ Metric
+
+Because the variables are normalized, the maximum theoretical length of any vector in the full $p$-dimensional space is $1.0$[cite: 15]. When projected onto the 2D plane defined by $\text{PC}_1$ and $\text{PC}_2$, the squared distance from the origin represents the **squared cosine** ($\cos^2$)[cite: 15]:
+
+$$\cos^2_j = r(x_j, \text{PC}_1)^2 + r(x_j, \text{PC}_2)^2$$
+
+Interpretation criteria:
+- **$\cos^2 \to 1.0$ (Vector touches the unit circle):** The variable is well represented in the selected 2D ordination plane; its position and angles accurately reflect relationships with other variables[cite: 15].
+- **$\cos^2 \to 0$ (Vector remains near the center):** The variable is poorly represented in this 2D projection; inferences about its dynamics should be confirmed using higher-order principal components[cite: 15].
+- **Angle Between Vectors:**
+  - $\theta \approx 0^\circ$ ($\cos \theta \to +1$): Strong positive correlation[cite: 15].
+  - $\theta \approx 90^\circ$ ($\cos \theta \to 0$): Orthogonal (uncorrelated) variables[cite: 15].
+  - $\theta \approx 180^\circ$ ($\cos \theta \to -1$): Strong inverse correlation[cite: 15].
+
+### 12.2 In-Vignette Data Generation
+
+We simulate a limnological survey measuring eight physico-chemical water quality parameters across 40 sampling stations along a river-to-reservoir transition:
+
+```{r pca_circle_data_prep}
+set.seed(1212)
+n_stations <- 40
+
+# Simulate correlated water quality gradients
+temperature <- rnorm(n_stations, mean = 24.5, sd = 3.0)
+do_mgl      <- 14.5 - (0.35 * temperature) + rnorm(n_stations, 0, 0.5)
+ph_val      <- 7.2 + (0.04 * temperature) + rnorm(n_stations, 0, 0.3)
+turbidity   <- runif(n_stations, 5, 45)
+secchi_cm   <- 120 - (2.1 * turbidity) + rnorm(n_stations, 0, 4)
+bod_mgl     <- 1.2 + (0.08 * turbidity) + rnorm(n_stations, 0, 0.4)
+nitrate_mgl <- rnorm(n_stations, mean = 2.4, sd = 0.6)
+phosphate   <- 0.15 + (0.05 * nitrate_mgl) + rnorm(n_stations, 0, 0.03)
+
+water_quality <- data.frame(
+  StationID   = paste0("ST_", sprintf("%02d", 1:n_stations)),
+  Temperature = temperature,
+  DO          = do_mgl,
+  pH          = ph_val,
+  Turbidity   = turbidity,
+  Secchi      = secchi_cm,
+  BOD         = bod_mgl,
+  Nitrate     = nitrate_mgl,
+  Phosphate   = phosphate
+)
+
+head(water_quality, 6)
+
+```
+
+### 12.3 Visualization Styles
+
+The `pca_correlation_circle()` function generates a unit circle with variables colored according to their representation quality ($\cos^2$).
+
+#### 12.3.1 Style A: Standard Correlation Circle with $\cos^2$ Gradient (PC1 vs PC2)
+
+Excludes the identifier column (`exclude_cols = "StationID"`), projects variables onto $\text{PC}_1$ and $\text{PC}_2$, and applies a color scale based on representation quality:
+
+```{r pca_circle_plot, fig.width = 6.8, fig.height = 6.2, fig.align = "center"}
+res_pca_circle <- pca_correlation_circle(
+  data         = water_quality,
+  exclude_cols = "StationID",
+  dim1         = 1,
+  dim2         = 2,
+  palette      = c("#2A9D8F", "#E9C46A", "#F4A261", "#E76F51"),
+  title        = "Water Quality Parameters Correlation Circle"
+)
+
+# Render correlation circle
+res_pca_circle$Plot
+
+```
+
+### 12.4 Model Inspection and Numerical Summaries
+
+The returned list provides the variable coordinate correlations, $\cos^2$ representation values, and the variance breakdown for each principal component:
+
+```{r pca_circle_inspection}
+# 1. Variable coordinates along PC1 and PC2 with cos2 representation quality
+res_pca_circle$Variable_Stats
+
+# 2. Percentage and cumulative variance explained per principal component
+res_pca_circle$Variance_Summary
+
+# 3. Individual station ordination scores (first 6 samples)
+head(res_pca_circle$Sample_Scores[, 1:4], 6)
+
+```
+
+```
+
+```
+
+## 13. Redundancy Analysis (RDA)
+
+The `rda_analysis()` function performs direct gradient analysis (constrained linear ordination) to model the variation in aquatic community composition directly explained by a set of continuous environmental variables[cite: 16]. While unconstrained methods (PCA, NMDS) ordinate community matrices independently of external drivers, Redundancy Analysis combines multivariate multiple linear regression with principal component analysis[cite: 16].
+
+The resulting ordination axes represent linear combinations of explanatory environmental predictors, ordered by the amount of community variance they explain[cite: 16]. The function coordinates data cleaning across both matrices, evaluates global and marginal variable significance through non-parametric Monte Carlo permutations, and renders a publication-ready ordination Triplot (simultaneously presenting sampling sites, species loadings, and environmental vectors)[cite: 16].
+
+### 13.1 Conceptual Framework and Mathematical Formulation
+
+Let $\mathbf{Y}_{n \times p}$ denote the community abundance matrix (Hellinger-transformed) across $n$ sampling stations and $p$ aquatic species, and let $\mathbf{X}_{n \times m}$ denote the standardized matrix of $m$ environmental predictors[cite: 16].
+
+RDA executes in two mathematical phases[cite: 16]:
+
+#### 13.1.1 Phase 1: Multivariate Multiple Linear Regression
+Each species column $\mathbf{y}_j$ is regressed onto the complete environmental matrix $\mathbf{X}$[cite: 16]:
+
+$$\hat{\mathbf{Y}} = \mathbf{X} (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{Y} = \mathbf{H} \mathbf{Y}$$
+
+where $\hat{\mathbf{Y}}$ contains the fitted values explained by the environmental variables, and $\mathbf{H}$ represents the projection "hat" matrix[cite: 16]. The residual matrix $\mathbf{Y}_{\text{res}} = \mathbf{Y} - \hat{\mathbf{Y}}$ captures unconstrained community variation[cite: 16].
+
+#### 13.1.2 Phase 2: Principal Component Analysis on Fitted Values
+PCA is conducted on the matrix of fitted values $\hat{\mathbf{Y}}$ via singular value decomposition[cite: 16]:
+
+$$\frac{1}{n-1} \hat{\mathbf{Y}}^T \hat{\mathbf{Y}} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^T$$
+
+The canonical eigenvalues $\lambda_k \in \boldsymbol{\Lambda}$ measure the variance explained by each constrained canonical axis ($\text{RDA}_k$)[cite: 16]. The constrained proportion of total community inertia is given by:
+
+$$R^2_{\text{biplot}} = \frac{\sum_{k=1}^m \lambda_k}{\text{Total Community Inertia}}$$
+
+#### 13.1.3 Permutation Hypothesis Testing
+Significance is determined via permutation testing (`permutations = 999`) using pseudo-$F$ statistics[cite: 16]:
+
+$$F = \frac{\text{SS}_{\text{constrained}} / m}{\text{SS}_{\text{residual}} / (n - m - 1)}$$
+
+Marginal permutation testing (`by = "margin"`) tests the unique partial contribution of each environmental variable while controlling for all other predictors in the model[cite: 16].
+
+### 13.2 In-Vignette Data Generation
+
+We simulate a riverine fish community monitoring study assessing the abundances of seven freshwater fish species across 36 sampling stations spanning three distinct River Zones (`Headwater`, `Mid-River`, `Lowland Floodplain`). The community matrix is matched with four continuous water quality parameters (Water Temperature, Dissolved Oxygen, Flow Velocity, and Conductivity)[cite: 16]:
+
+```{r rda_data_prep}
+set.seed(1313)
+n_sites <- 12
+zones <- c("Headwater", "Mid-River", "Lowland")
+
+# Simulated environmental matrix
+env_list <- lapply(zones, function(zn) {
+  switch(zn,
+    "Headwater" = data.frame(
+      Temp_C = rnorm(n_sites, 14.5, 0.8),
+      DO_mgL = rnorm(n_sites, 10.2, 0.4),
+      Flow_ms = rnorm(n_sites, 0.95, 0.1),
+      Cond_uS = rnorm(n_sites, 120, 15)
+    ),
+    "Mid-River" = data.frame(
+      Temp_C = rnorm(n_sites, 19.0, 0.7),
+      DO_mgL = rnorm(n_sites, 8.1, 0.5),
+      Flow_ms = rnorm(n_sites, 0.55, 0.08),
+      Cond_uS = rnorm(n_sites, 280, 25)
+    ),
+    "Lowland"   = data.frame(
+      Temp_C = rnorm(n_sites, 24.5, 1.0),
+      DO_mgL = rnorm(n_sites, 5.8, 0.6),
+      Flow_ms = rnorm(n_sites, 0.18, 0.05),
+      Cond_uS = rnorm(n_sites, 490, 35)
+    )
+  )
+})
+env_survey <- do.call(rbind, env_list)
+
+# Matched community counts (7 fish species)
+comm_list <- lapply(zones, function(zn) {
+  means <- switch(zn,
+    "Headwater" = c(Trout = 30, Sculpin = 22, Dace = 12, Minnow = 4, Barb = 1, Catfish = 0, Carp = 0),
+    "Mid-River" = c(Trout = 6,  Sculpin = 8,  Dace = 24, Minnow = 28, Barb = 14, Catfish = 4, Carp = 2),
+    "Lowland"   = c(Trout = 0,  Sculpin = 1,  Dace = 5,  Minnow = 12, Barb = 32, Catfish = 26, Carp = 38)
+  )
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_sites, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Zone <- zn
+  df
+})
+comm_survey <- do.call(rbind, comm_list)
+
+# Metadata as first column
+comm_survey <- comm_survey[, c("Zone", setdiff(names(comm_survey), "Zone"))]
+
+head(comm_survey[, 1:6], 4)
+head(env_survey, 4)
+
+```
+
+### 13.3 Visualization Styles
+
+The `rda_analysis()` function creates a triplot integrating site distributions, taxon vectors, and environmental directional arrows.
+
+#### 13.3.1 Style A: Constrained Hellinger RDA Triplot (Default)
+
+Applies Hellinger pre-transformation to the community matrix, standardizes environmental variables, projects 95% group confidence ellipses, and displays repelled labels for species and environmental drivers:
+
+```{r rda_plot_triplot, fig.width = 7.8, fig.height = 5.8, fig.align = "center"}
+res_rda <- rda_analysis(
+  comm_data          = comm_survey,
+  env_data           = env_survey,
+  group_col          = "Zone",
+  transform          = "hellinger",
+  color_palette      = "Dark2",
+  species_arrow_mult = 1.0,
+  env_arrow_mult     = 1.2
+)
+
+# Render publication triplot
+res_rda$Plot
+
+```
+
+### 13.4 Model Inspection and Numerical Summaries
+
+The returned list provides the underlying `vegan::rda` object, global model permutation significance, and marginal variable significance:
+
+```{r rda_inspection}
+# 1. Global RDA Model Permutation Test (adonis/anova)
+res_rda$Model_Significance
+
+# 2. Marginal Environmental Term Significance (unique partial effects)
+res_rda$Variable_Significance
+
+# 3. Constrained vs Unconstrained Inertia Breakdown
+summary(res_rda$RDA_Object)$tot.chi
+summary(res_rda$RDA_Object)$concont$importance[, 1:2]
+
+```
+
+```
+
+```
+
+## 14. Distance-based Redundancy Analysis (db-RDA)
+
+The `dbrda_analysis()` function performs constrained ordination using non-Euclidean ecological distance metrics via Distance-based Redundancy Analysis (`vegan::dbrda`). Classical Redundancy Analysis (RDA) relies on Euclidean distances, which can lead to distortion when analyzing zero-skewed ecological abundance matrices. 
+
+Distance-based RDA resolves this limitation by conducting Principal Coordinate Analysis (PCoA) on an arbitrary dissimilarity matrix (e.g., Bray-Curtis, Jaccard, or Kulczynski) and using the resulting metric coordinate axes as the response matrix in a standard RDA. This enables direct multivariate regression of semi-metric ecological dissimilarities against continuous environmental predictors while avoiding negative eigenvalue artifacts.
+
+### 14.1 Conceptual Framework and Mathematical Formulation
+
+Let $\mathbf{D} = [d_{ij}]_{n \times n}$ denote an ecological distance matrix among $n$ sampling sites. The matrix $\mathbf{D}$ is centered via Gower's centering transformation:
+
+$$\mathbf{G} = -\frac{1}{2} \left( \mathbf{I} - \frac{1}{n} \mathbf{11}^T \right) (\mathbf{D}^{(2)}) \left( \mathbf{I} - \frac{1}{n} \mathbf{11}^T \right)$$
+
+where $\mathbf{D}^{(2)} = [d_{ij}^2]$ is the matrix of squared dissimilarities.
+
+Spectral decomposition of $\mathbf{G}$ produces eigenvalues $\boldsymbol{\Lambda}$ and eigenvectors $\mathbf{V}$:
+
+$$\mathbf{G} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^T$$
+
+Principal coordinate vectors with positive eigenvalues $\mathbf{Z} = \mathbf{V}_+ \boldsymbol{\Lambda}_+^{1/2}$ represent the Euclidean embedding of the original dissimilarity matrix.
+
+#### 14.1.1 Constrained Regression and Model Permutation
+
+The coordinate matrix $\mathbf{Z}$ is regressed onto the standardized environmental predictor matrix $\mathbf{X}_{n \times m}$:
+
+$$\hat{\mathbf{Z}} = \mathbf{X} (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{Z}$$
+
+PCA is subsequently applied to $\hat{\mathbf{Z}}$ to construct the canonical axes ($\text{dbRDA}_1, \text{dbRDA}_2$). Overall model significance and the marginal contributions of individual environmental variables are evaluated through permutation testing (pseudo-$F$ tests with 999 Monte Carlo permutations):
+
+$$F = \frac{\text{tr}(\hat{\mathbf{Z}}^T \hat{\mathbf{Z}}) / m}{\text{tr}(\mathbf{E}^T \mathbf{E}) / (n - m - 1)}$$
+
+where $\mathbf{E} = \mathbf{Z} - \hat{\mathbf{Z}}$ represents the residual matrix of unconstrained variation.
+
+### 14.2 In-Vignette Data Generation
+
+We simulate an estuarine benthic macroinvertebrate community across 36 stations classified into three Hydrological Zones (`Upper Estuary`, `Middle Basin`, `Outer Marine`). The community dataset is paired with four continuous sediment and water column metrics (Salinity, Total Organic Carbon, Silt Fraction, and Water Depth):
+
+```{r dbrda_data_prep}
+set.seed(1414)
+n_stations <- 12
+zones <- c("Upper Estuary", "Middle Basin", "Outer Marine")
+
+# Simulated environmental predictors
+env_list <- lapply(zones, function(zn) {
+  switch(zn,
+    "Upper Estuary" = data.frame(
+      Salinity_PSU = rnorm(n_stations, 8.5, 1.2),
+      TOC_percent  = rnorm(n_stations, 4.2, 0.5),
+      Silt_percent = rnorm(n_stations, 68, 6),
+      Depth_m      = rnorm(n_stations, 3.5, 0.4)
+    ),
+    "Middle Basin"  = data.frame(
+      Salinity_PSU = rnorm(n_stations, 18.0, 1.5),
+      TOC_percent  = rnorm(n_stations, 2.6, 0.4),
+      Silt_percent = rnorm(n_stations, 42, 5),
+      Depth_m      = rnorm(n_stations, 8.2, 0.8)
+    ),
+    "Outer Marine"  = data.frame(
+      Salinity_PSU = rnorm(n_stations, 32.5, 0.9),
+      TOC_percent  = rnorm(n_stations, 1.1, 0.2),
+      Silt_percent = rnorm(n_stations, 15, 3),
+      Depth_m      = rnorm(n_stations, 18.5, 1.5)
+    )
+  )
+})
+env_estuary <- do.call(rbind, env_list)
+
+# Simulated benthic community matrix (6 diagnostic taxa)
+comm_list <- lapply(zones, function(zn) {
+  means <- switch(zn,
+    "Upper Estuary" = c(Oligochaeta = 42, Chironomidae = 35, Polychaeta_A = 6,  Bivalvia_A = 2,  Amphipoda_A = 4,  Decapoda_A = 0),
+    "Middle Basin"  = c(Oligochaeta = 14, Chironomidae = 18, Polychaeta_A = 28, Bivalvia_A = 22, Amphipoda_A = 16, Decapoda_A = 5),
+    "Outer Marine"  = c(Oligochaeta = 1,  Chironomidae = 0,  Polychaeta_A = 48, Bivalvia_A = 34, Amphipoda_A = 30, Decapoda_A = 18)
+  )
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_stations, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Estuary_Zone <- zn
+  df
+})
+comm_estuary <- do.call(rbind, comm_list)
+
+# Set grouping metadata as first column
+comm_estuary <- comm_estuary[, c("Estuary_Zone", setdiff(names(comm_estuary), "Estuary_Zone"))]
+
+head(comm_estuary[, 1:6], 4)
+head(env_estuary, 4)
+
+```
+
+### 14.3 Visualization Styles
+
+The `dbrda_analysis()` function displays the sample coordinates, 95% group confidence ellipses, species vectors, and environmental directional arrows on a single coordinate grid.
+
+#### 14.3.1 Style A: Bray-Curtis db-RDA Triplot (Default)
+
+Computes Bray-Curtis dissimilarity, applies environmental scaling, and produces the publication triplot:
+
+```{r dbrda_plot_triplot, fig.width = 7.8, fig.height = 5.8, fig.align = "center"}
+res_dbrda <- dbrda_analysis(
+  comm_data          = comm_estuary,
+  env_data           = env_estuary,
+  group_col          = "Estuary_Zone",
+  dist_method        = "bray",
+  transform          = "none",
+  color_palette      = "Dark2",
+  species_arrow_mult = 1.0,
+  env_arrow_mult     = 1.1
+)
+
+# Render publication triplot
+res_dbrda$Plot
+
+```
+
+### 14.4 Model Inspection and Numerical Summaries
+
+The returned list provides the underlying `vegan::dbrda` model object, the global permutation significance test, and marginal term significance:
+
+```{r dbrda_inspection}
+# 1. Global db-RDA Permutation Test (adonis/anova)
+res_dbrda$Model_Significance
+
+# 2. Marginal Environmental Predictor Significance (unique partial variance)
+res_dbrda$Variable_Significance
+
+# 3. Constrained vs Unconstrained Variance Breakdown
+summary(res_dbrda$dbRDA_Object)$tot.chi
+summary(res_dbrda$dbRDA_Object)$concont$importance[, 1:2]
+
+```
+
+```
+
+```
+
+## 15. Hierarchical Clustering Dendrogram
+
+The `cluster_dendrogram()` function performs agglomerative hierarchical cluster analysis (HCA) on ecological community abundance matrices or multi-parameter environmental datasets[cite: 18]. While ordination approaches (e.g., NMDS, PCA, RDA) display continuous gradients across reduced orthogonal dimensions[cite: 11, 14, 16], hierarchical clustering groups sampling units into discrete nested clusters based on pairwise resemblance[cite: 18].
+
+The function computes dissimilarity matrices using standard ecological distance metrics (e.g., Bray-Curtis, Jaccard, Euclidean)[cite: 18], applies optional community transformations[cite: 18], conducts agglomerative clustering across user-selected linkage criteria (UPGMA, Ward's minimum variance, Complete)[cite: 18], and generates a native `ggplot2` tree diagram complete with color-coded group leaves, an optional cut-off threshold line, and sample cluster assignments[cite: 18].
+
+### 15.1 Conceptual Framework and Mathematical Formulation
+
+Let $\mathbf{Y}_{n \times p}$ denote a community matrix of $n$ sampling stations and $p$ aquatic taxa[cite: 18]. Pairwise ecological dissimilarity $d_{ij}$ is computed using the Bray-Curtis metric:
+
+$$d_{ij} = \frac{\sum_{k=1}^p \vert{}y_{ik} - y_{jk}\vert{}}{\sum_{k=1}^p (y_{ik} + y_{jk})}$$
+
+Agglomerative hierarchical clustering begins with each sampling unit treated as a single-element cluster ($C_i = \{i\}$). At each sequential step, the two clusters with the minimum inter-cluster distance are merged until all samples are unified into a single root node[cite: 18].
+
+#### 15.1.1 Agglomerative Linkage Criteria
+
+The definition of distance between two composite clusters $A$ and $B$ depends on the chosen linkage method[cite: 18]:
+
+1. **Unweighted Pair-Group Method with Arithmetic Mean (UPGMA / `cluster_method = "average"`):**
+   Calculates the mean pairwise dissimilarity between all members of cluster $A$ and cluster $B$[cite: 18]:
+   $$D(A, B) = \frac{1}{\vert{}A\vert{} \cdot \vert{}B\vert{}} \sum_{i \in A} \sum_{j \in B} d_{ij}$$
+   Preserves cophenetic correlation with minimal spatial distortion.
+
+2. **Ward's Minimum Variance (`cluster_method = "ward.D2"`):**
+   Merges the cluster pair that minimizes the increase in total within-cluster error sum of squares (ESS)[cite: 18]:
+   $$\Delta \text{ESS}_{AB} = \frac{\vert{}A\vert{} \cdot \vert{}B\vert{}}{\vert{}A\vert{} + \vert{}B\vert{}} \Vert{}\bar{\mathbf{y}}_A - \bar{\mathbf{y}}_B\Vert{}^2$$
+   Tends to produce compact, spherical, and balanced cluster topologies.
+
+3. **Complete Linkage (`cluster_method = "complete"`):**
+   Defines distance as the maximum pairwise dissimilarity between clusters[cite: 18]:
+   $$D(A, B) = \max \{d_{ij} : i \in A, \, j \in B\}$$
+
+### 15.2 In-Vignette Data Generation
+
+We simulate a limnological biomonitoring survey assessing phytoplankton community counts across 24 sampling stations situated in three lake zones (`Littoral`, `Pelagic`, `Hypolimnetic Inlet`):
+
+```{r cluster_data_prep}
+set.seed(1515)
+n_per_zone <- 8
+lake_zones <- c("Littoral", "Pelagic", "Hypolimnetic")
+
+phyto_list <- lapply(lake_zones, function(zn) {
+  means <- switch(zn,
+    "Littoral"     = c(Diatom_A = 35, Diatom_B = 24, Cyanob_A = 4,  Cyanob_B = 1,  Green_A = 18, Green_B = 12),
+    "Pelagic"      = c(Diatom_A = 12, Diatom_B = 8,  Cyanob_A = 42, Cyanob_B = 30, Green_A = 25, Green_B = 18),
+    "Hypolimnetic" = c(Diatom_A = 4,  Diatom_B = 2,  Cyanob_A = 2,  Cyanob_B = 0,  Green_A = 6,  Green_B = 4)
+  )
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_per_zone, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Zone <- zn
+  df
+})
+
+phyto_survey <- do.call(rbind, phyto_list)
+rownames(phyto_survey) <- paste0("ST_", sprintf("%02d", seq_len(nrow(phyto_survey))))
+
+# Organize grouping metadata column
+phyto_survey <- phyto_survey[, c("Zone", setdiff(names(phyto_survey), "Zone"))]
+
+head(phyto_survey[, 1:5], 5)
+
+```
+
+### 15.3 Visualization Styles
+
+The `cluster_dendrogram()` function generates vertical and horizontal dendrogram views with group-coded leaf tips.
+
+#### 15.3.1 Style A: Vertical Tree Layout with Cluster Partitioning Line (Default)
+
+Applies Hellinger pre-transformation with Bray-Curtis dissimilarity and UPGMA (`average`) clustering, displaying a threshold line at $k = 3$:
+
+```{r cluster_dendro_vertical, fig.width = 7.5, fig.height = 5.2, fig.align = "center"}
+res_dendro <- cluster_dendrogram(
+  data           = phyto_survey,
+  group_col      = "Zone",
+  dist_method    = "bray",
+  transform      = "hellinger",
+  cluster_method = "average",
+  k              = 3,
+  palette        = "Dark2",
+  orientation    = "vertical"
+)
+
+# Render publication tree
+res_dendro$Plot
+
+```
+
+#### 15.3.2 Style B: Horizontal Tree Layout
+
+Using `orientation = "horizontal"` flips the coordinate axes, making station labels easier to read when sample sizes are larger:
+
+```{r cluster_dendro_horizontal, fig.width = 7.5, fig.height = 6.0, fig.align = "center"}
+res_dendro_horiz <- cluster_dendrogram(
+  data           = phyto_survey,
+  group_col      = "Zone",
+  dist_method    = "bray",
+  transform      = "hellinger",
+  cluster_method = "ward.D2",
+  k              = 3,
+  palette        = "Dark2",
+  orientation    = "horizontal",
+  title          = "Phytoplankton Assemblage Clusters (Ward.D2 Linkage)"
+)
+
+res_dendro_horiz$Plot
+
+```
+
+### 15.4 Model Inspection and Numerical Summaries
+
+The returned list provides the sample-to-cluster assignment table, dissimilarity matrix, and underlying `hclust` object:
+
+```{r cluster_inspection}
+# 1. Sample Cluster Membership Assignments
+head(res_dendro$Cluster_Assignments, 10)
+
+# 2. Inspect Agglomerative Cluster Merges
+res_dendro$HClust_Object$merge[1:6, ]
+
+# 3. Distance Matrix Preview (First 4 Samples)
+as.matrix(res_dendro$Distance_Matrix)[1:4, 1:4]
+
+```
+
+```
+
+```
+
+## 16. Correlation Heatmaps for Environmental & Morphometric Matrices
+
+The `correlation_heatmap()` function generates publication-ready correlation heatmaps for multidimensional environmental, limnological, and fisheries datasets[cite: 19]. In aquatic ecosystem monitoring, evaluating pairwise associations among water quality parameters (e.g., Temperature, Dissolved Oxygen, Nutrients, Turbidity) is an essential exploratory step before conducting constrained ordinations or regression modeling[cite: 15, 16, 19].
+
+The function computes correlation coefficients across Pearson, Spearman, or Kendall formulations, extracts pairwise significance $p$-values, supports directional matrix views (`lower`, `upper`, or `full`), provides alternative tile geometries (`square` or `circle`), and dynamically adjusts annotation font contrast across diverging color palettes[cite: 19].
+
+### 16.1 Conceptual Framework and Statistical Formulation
+
+For two continuous variables $X$ and $Y$ observed across $n$ sampling stations[cite: 19]:
+
+#### 16.1.1 Pearson Product-Moment Correlation
+Measures linear dependency between normally distributed continuous variables:
+
+$$r_{xy} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2 \sum_{i=1}^n (y_i - \bar{y})^2}}$$
+
+The statistical significance of $r_{xy}$ is evaluated using a two-tailed Student's $t$-distribution with $\nu = n - 2$ degrees of freedom[cite: 19]:
+
+$$t = r_{xy} \sqrt{\frac{n - 2}{1 - r_{xy}^2}}$$
+
+#### 16.1.2 Spearman Rank-Order Correlation
+Measures monotonic relationships between non-normally distributed or ordinal parameters by computing Pearson's coefficient on ranked values:
+
+$$\rho = 1 - \frac{6 \sum_{i=1}^n d_i^2}{n(n^2 - 1)}$$
+
+where $d_i = \text{rank}(x_i) - \text{rank}(y_i)$.
+
+Pairwise significance thresholds are mapped to standard compact asterisks:
+- $\text{ns}: p \ge 0.05$[cite: 19]
+- $*: p < 0.05$[cite: 19]
+- $**: p < 0.01$[cite: 19]
+- $***: p < 0.001$[cite: 19]
+
+### 16.2 In-Vignette Data Generation
+
+We simulate a multi-parameter aquatic environmental survey evaluating seven correlated physico-chemical variables recorded across 50 limnological stations[cite: 19]:
+
+```{r cor_data_prep}
+set.seed(1616)
+n_stations <- 50
+
+temp_c   <- rnorm(n_stations, mean = 23.5, sd = 2.8)
+do_mgl   <- 13.8 - (0.32 * temp_c) + rnorm(n_stations, 0, 0.4)
+ph_val   <- 7.1 + (0.05 * temp_c) + rnorm(n_stations, 0, 0.25)
+turb_ntu <- runif(n_stations, 4, 38)
+secchi_m <- 2.8 - (0.055 * turb_ntu) + rnorm(n_stations, 0, 0.2)
+tp_mgl   <- 0.04 + (0.006 * turb_ntu) + rnorm(n_stations, 0, 0.02)
+tn_mgl   <- 0.85 + (12.5 * tp_mgl) + rnorm(n_stations, 0, 0.15)
+
+limno_env <- data.frame(
+  Temperature = temp_c,
+  DO          = do_mgl,
+  pH          = ph_val,
+  Turbidity   = turb_ntu,
+  Secchi      = secchi_m,
+  Total_P     = tp_mgl,
+  Total_N     = tn_mgl
+)
+
+head(limno_env, 6)
+
+```
+
+### 16.3 Visualization Styles
+
+The `correlation_heatmap()` function provides tile-based and bubble-based visual styles.
+
+#### 16.3.1 Style A: Lower-Triangle Square Heatmap with Coefficients & Asterisks (Default)
+
+Displays the lower triangle with correlation values and significance stars, automatically adjusting text color for high-contrast visibility:
+
+```{r cor_plot_square, fig.width = 6.8, fig.height = 6.0, fig.align = "center"}
+res_cor_square <- correlation_heatmap(
+  data          = limno_env,
+  method        = "pearson",
+  shape         = "square",
+  view          = "lower",
+  diag          = FALSE,
+  label_type    = "both",
+  color_palette = "RdBu"
+)
+
+# Render lower-triangle heatmap
+res_cor_square$Plot
+
+```
+
+#### 16.3.2 Style B: Circle Bubble Heatmap with Significance Asterisks
+
+Uses circle markers where bubble diameter corresponds to the absolute correlation magnitude ($|r|$) and color corresponds to directional correlation sign:
+
+```{r cor_plot_circle, fig.width = 6.8, fig.height = 6.0, fig.align = "center"}
+res_cor_circle <- correlation_heatmap(
+  data          = limno_env,
+  method        = "spearman",
+  shape         = "circle",
+  view          = "lower",
+  diag          = FALSE,
+  label_type    = "stars",
+  color_palette = "RdYlBu",
+  title         = "Environmental Matrix Spearman Correlations"
+)
+
+res_cor_circle$Plot
+
+```
+
+### 16.4 Model Inspection and Numerical Summaries
+
+The returned list provides the symmetric correlation coefficient matrix, exact $p$-values, and a tidy summary data frame:
+
+```{r cor_inspection}
+# 1. Pearson Correlation Matrix Preview
+round(res_cor_square$Correlation_Matrix[1:4, 1:4], 3)
+
+# 2. Exact P-Value Matrix Preview
+signif(res_cor_square$P_Value_Matrix[1:4, 1:4], 3)
+
+# 3. Tidy Pairwise Summary Table
+head(res_cor_square$Summary_Table, 8)
+
+```
+
+```
+
+```
+
+## 17. Integrated Environmental Correlation and Mantel Network Analysis
+
+The `mantel_heatmap_analysis()` function models and visualizes the coupling between abiotic environmental gradients and biological community structures[cite: 20]. In aquatic ecology, researchers often analyze pairwise physico-chemical parameters alongside multivariate dissimilarity matrices across multiple trophic levels (e.g., Phytoplankton, Zooplankton, Benthos, Fish)[cite: 20].
+
+This function integrates these two workflows into a single display[cite: 20]:
+1. A pairwise environmental correlation matrix (Pearson or Spearman) rendered as a lower-triangular heatmap[cite: 20].
+2. Community-wide Mantel tests connecting biological community nodes to corresponding environmental parameters using curved or straight linkage vectors[cite: 20].
+
+Linkage attributes convey statistical properties: line thickness indicates the magnitude of the Mantel correlation coefficient ($r$), while color and line style denote permutation-derived significance thresholds ($p < 0.01$, $p < 0.05$, $p \ge 0.05$)[cite: 20].
+
+### 17.1 Conceptual Framework and Statistical Formulation
+
+The analytical framework combines pairwise variable correlation with matrix permutation testing[cite: 20].
+
+#### 17.1.1 Mantel Matrix Correlation
+Let $\mathbf{D}_M$ represent the ecological dissimilarity matrix (e.g., Bray-Curtis) among $n$ sampling stations for a biological community[cite: 20]:
+
+$$d_{ij}^{(M)} = \frac{\sum_{k=1}^p \vert{}y_{ik} - y_{jk}\vert{}}{\sum_{k=1}^p (y_{ik} + y_{jk})}$$
+
+Let $\mathbf{D}_E$ denote the standardized Euclidean distance matrix computed across one or more environmental variables between the same sampling stations[cite: 20]:
+
+$$d_{ij}^{(E)} = \sqrt{\sum_{m=1}^q (z_{im} - z_{jm})^2}$$
+
+The Mantel test computes the Pearson correlation coefficient between the lower triangular elements ($j < i$) of the two unfolded distance matrices[cite: 20]:
+
+$$r_M = \frac{\sum_{i > j} (d_{ij}^{(M)} - \bar{d}_M)(d_{ij}^{(E)} - \bar{d}_E)}{\sqrt{\sum_{i > j} (d_{ij}^{(M)} - \bar{d}_M)^2 \sum_{i > j} (d_{ij}^{(E)} - \bar{d}_E)^2}}$$
+
+where $r_M \in [-1, 1]$.
+
+#### 17.1.2 Permutation Significance Testing
+Because elements within a distance matrix are not mutually independent, standard parametric tests for correlation significance are invalid. Instead, significance is assessed through Monte Carlo permutation of the rows and columns of one distance matrix (e.g., $\mathbf{D}_M$) while holding the second ($\mathbf{D}_E$) fixed[cite: 20]:
+
+$$p = \frac{\sum_{\pi=1}^B \mathbb{I}(r_M^{(\pi)} \ge r_M^{\text{obs}}) + 1}{B + 1}$$
+
+where $B$ is the number of random permutations (default: 999)[cite: 20].
+
+### 17.2 In-Vignette Data Generation
+
+We simulate a limnological survey across 35 sampling stations containing six continuous environmental variables (Water Temperature, Dissolved Oxygen, pH, Turbidity, Total Phosphorus, Total Nitrogen) paired with two biological trophic communities: **Phytoplankton** (6 taxa) and **Zooplankton** (5 taxa)[cite: 20]:
+
+```{r mantel_data_prep}
+set.seed(1717)
+n_stations <- 35
+
+# 1. Environmental Gradients
+temp_c   <- rnorm(n_stations, mean = 24.0, sd = 2.5)
+do_mgl   <- 13.5 - (0.30 * temp_c) + rnorm(n_stations, 0, 0.4)
+ph_val   <- 7.2 + (0.04 * temp_c) + rnorm(n_stations, 0, 0.2)
+turb_ntu <- runif(n_stations, 5, 40)
+tp_mgl   <- 0.03 + (0.007 * turb_ntu) + rnorm(n_stations, 0, 0.015)
+tn_mgl   <- 0.70 + (14.0 * tp_mgl) + rnorm(n_stations, 0, 0.12)
+
+env_matrix <- data.frame(
+  Temp     = temp_c,
+  DO       = do_mgl,
+  pH       = ph_val,
+  Turb     = turb_ntu,
+  Total_P  = tp_mgl,
+  Total_N  = tn_mgl
+)
+
+# 2. Phytoplankton Community Counts (sensitive to nutrients and turbidity)
+phyto_mat <- data.frame(
+  Cyanob_1  = rpois(n_stations, lambda = pmax(1, round(5 + 80 * tp_mgl))),
+  Cyanob_2  = rpois(n_stations, lambda = pmax(1, round(3 + 60 * tp_mgl))),
+  Diatom_1  = rpois(n_stations, lambda = pmax(1, round(28 - 0.4 * turb_ntu))),
+  Diatom_2  = rpois(n_stations, lambda = pmax(1, round(20 - 0.3 * turb_ntu))),
+  Chloroph_1 = rpois(n_stations, lambda = pmax(1, round(12 + 2.5 * ph_val))),
+  Chloroph_2 = rpois(n_stations, lambda = pmax(1, round(10 + 1.8 * ph_val)))
+)
+
+# 3. Zooplankton Community Counts (sensitive to temperature and dissolved oxygen)
+zoo_mat <- data.frame(
+  Cladocera_1 = rpois(n_stations, lambda = pmax(1, round(2 + 2.2 * do_mgl))),
+  Cladocera_2 = rpois(n_stations, lambda = pmax(1, round(4 + 1.8 * do_mgl))),
+  Copepod_1   = rpois(n_stations, lambda = pmax(1, round(8 + 0.8 * temp_c))),
+  Copepod_2   = rpois(n_stations, lambda = pmax(1, round(6 + 0.6 * temp_c))),
+  Rotifer_1   = rpois(n_stations, lambda = pmax(1, round(15 + 0.3 * turb_ntu)))
+)
+
+# Bundle biological communities into a named list
+aquatic_trophic_comms <- list(
+  "Phytoplankton" = phyto_mat,
+  "Zooplankton"   = zoo_mat
+)
+
+head(env_matrix, 4)
+
+```
+
+### 17.3 Visualization Styles
+
+The `mantel_heatmap_analysis()` function provides both an integrated network linkage diagram and a side-by-side barplot comparison.
+
+#### 17.3.1 Style A: Curved Linkage Network Diagram (Default)
+
+Projects environmental correlations as lower-triangular tiles while connecting community nodes to environmental anchors with curved vectors:
+
+```{r mantel_plot_network, fig.width = 8.5, fig.height = 6.2, fig.align = "center"}
+res_mantel_net <- mantel_heatmap_analysis(
+  comm_data        = aquatic_trophic_comms,
+  env_data         = env_matrix,
+  plot_type        = "network",
+  line_style       = "curve",
+  method           = "pearson",
+  spec_dist        = "bray",
+  transform        = "hellinger",
+  only_significant = FALSE,
+  line_color_by    = "significance",
+  permutations     = 999,
+  seed             = 42,
+  show_cor_text    = TRUE,
+  color_palette    = "RdBu"
+)
+
+# Render publication network plot
+res_mantel_net$Plot
+
+```
+
+#### 17.3.2 Style B: Side-by-Side Correlation Heatmap and Mantel Bars
+
+Displays the full environmental correlation matrix alongside horizontal bars showing Mantel $r$ effect sizes faceted across trophic communities:
+
+```{r mantel_plot_bars, fig.width = 8.5, fig.height = 5.2, fig.align = "center"}
+res_mantel_bars <- mantel_heatmap_analysis(
+  comm_data     = aquatic_trophic_comms,
+  env_data      = env_matrix,
+  plot_type     = "bars",
+  method        = "pearson",
+  spec_dist     = "bray",
+  transform     = "hellinger",
+  permutations  = 999,
+  seed          = 42,
+  color_palette = "RdBu"
+)
+
+res_mantel_bars$Plot
+
+```
+
+### 17.4 Model Inspection and Numerical Summaries
+
+The returned list provides the pairwise environmental correlation matrix and a tidy data frame of community-specific Mantel statistics:
+
+```{r mantel_inspection}
+# 1. Environmental Correlation Matrix (First 4 Variables)
+round(res_mantel_net$Correlation_Matrix[1:4, 1:4], 3)
+
+# 2. Tidy Mantel Test Statistics and Permutation P-Values
+head(res_mantel_net$Mantel_Results, 8)
+
+```
+
+```
+
+```
+
+## 18. Ecological Alpha Diversity Indices & Comparative Testing
+
+The `calc_diversity()` and `plot_diversity()` functions provide an integrated quantitative suite for estimating, testing, and visualizing community alpha diversity patterns in fisheries and aquatic ecology. Understanding local species richness, compositional dominance, and structural evenness is foundational for assessing habitat degradation, monitoring marine protected areas (MPAs), and comparing stocking strategies across culture environments.
+
+The package calculates seven primary ecological metrics simultaneously:
+1. **Total Abundance ($N$):** Overall individual organism counts.
+2. **Species Richness ($S$):** Total count of unique taxa observed.
+3. **Shannon-Wiener Index ($H'$):** Information-theoretic entropy capturing both richness and proportional abundance.
+4. **Gini-Simpson Index ($1 - D$):** The probability that two randomly sampled individuals belong to different species.
+5. **Margalef's Richness ($d$):** Species richness normalized relative to the natural logarithm of sample size.
+6. **Menhinick's Index ($D_{mn}$):** Species richness adjusted relative to the square root of total abundance.
+7. **Pielou's Evenness ($J'$):** The ratio of observed Shannon diversity relative to maximum possible diversity.
+
+The visualization function `plot_diversity()` pairs these indices with parametric (One-Way / Two-Way Factorial ANOVA) or non-parametric (Kruskal-Wallis) omnibus tests, calculates 1,000-iteration bootstrap confidence intervals, and formats publication-ready boxplots with raw observation overlays.
+
+### 18.1 Conceptual Framework and Mathematical Formulation
+
+Let a community sample contain $S$ observed species and total organism abundance $N = \sum_{i=1}^S n_i$, where $n_i$ represents the count of the $i$-th taxon. The relative abundance (proportion) of species $i$ is $p_i = n_i / N$.
+
+#### 18.1.1 Shannon-Wiener Diversity Index ($H'$)
+Derived from communication theory, $H'$ measures the uncertainty in predicting the species identity of a randomly sampled individual:
+
+$$H' = -\sum_{i=1}^S p_i \ln(p_i)$$
+
+Values typically range between $1.5$ and $3.5$ in natural aquatic systems, with higher values reflecting richer and more equitable communities.
+
+#### 18.1.2 Gini-Simpson Index ($1 - D$)
+Simpson's index of dominance measures the probability that two randomly selected individuals belong to the same species: $D = \sum_{i=1}^S p_i^2$. The complementary Gini-Simpson diversity metric is:
+
+$$1 - D = 1 - \sum_{i=1}^S p_i^2$$
+
+This metric ranges from $0$ (monospecific culture) to $1.0$ (infinite community of equally abundant species).
+
+#### 18.1.3 Species Richness Normalizations
+Because raw observed richness ($S$) increases monotonically with sampling effort ($N$), Margalef ($d$) and Menhinick ($D_{mn}$) normalize richness across sample size discrepancies:
+
+$$d = \frac{S - 1}{\ln(N)} \quad (N > 1)$$
+
+$$D_{mn} = \frac{S}{\sqrt{N}} \quad (N > 0)$$
+
+#### 18.1.4 Pielou's Equitability Index ($J'$)
+Measures how close the observed distribution of abundances is to maximum theoretical evenness ($H'_{\max} = \ln(S)$):
+
+$$J' = \frac{H'}{\ln(S)} \quad (S > 1)$$
+
+where $J' \in [0, 1]$. Values approaching $1.0$ indicate equal abundances across taxa, whereas lower values denote heavy dominance by one or two species.
+
+### 18.2 In-Vignette Data Generation
+
+We simulate a riverine fish biomonitoring survey assessing the abundances of 10 freshwater species across 36 sampling reaches categorized by **River Zone** (`Headwater`, `Mid-River`, `Lowland`) and **Sampling Season** (`Dry Season`, `Wet Season`):
+
+```{r diversity_data_prep}
+set.seed(1818)
+n_reps <- 6
+
+zones <- c("Headwater", "Mid-River", "Lowland")
+seasons <- c("Dry Season", "Wet Season")
+
+design <- expand.grid(Zone = zones, Season = seasons)
+
+comm_runs <- lapply(seq_len(nrow(design)), function(idx) {
+  zn <- as.character(design$Zone[idx])
+  sn <- as.character(design$Season[idx])
+  
+  # Base abundance profiles
+  means <- switch(zn,
+    "Headwater" = c(Sp1 = 45, Sp2 = 38, Sp3 = 12, Sp4 = 2,  Sp5 = 0,  Sp6 = 0,  Sp7 = 0,  Sp8 = 0,  Sp9 = 0,  Sp10 = 0),
+    "Mid-River" = c(Sp1 = 18, Sp2 = 22, Sp3 = 25, Sp4 = 16, Sp5 = 14, Sp6 = 8,  Sp7 = 4,  Sp8 = 1,  Sp9 = 0,  Sp10 = 0),
+    "Lowland"   = c(Sp1 = 6,  Sp2 = 8,  Sp3 = 12, Sp4 = 24, Sp5 = 28, Sp6 = 32, Sp7 = 18, Sp8 = 15, Sp9 = 10, Sp10 = 6)
+  )
+  
+  if (sn == "Wet Season") {
+    means <- round(means * 1.35 + 2) # Seasonal flood pulse enhancement
+  }
+  
+  mat <- do.call(cbind, lapply(means, function(m) rpois(n_reps, lambda = m)))
+  df <- as.data.frame(mat)
+  df$Zone <- zn
+  df$Season <- sn
+  df
+})
+
+fish_comm_data <- do.call(rbind, comm_runs)
+# Organize grouping metadata columns at the front
+fish_comm_data <- fish_comm_data[, c("Zone", "Season", paste0("Sp", 1:10))]
+
+head(fish_comm_data[, 1:7], 6)
+
+```
+
+### 18.3 Index Calculation and Data Summary
+
+First, calculate the complete alpha diversity table across all sampling stations using `calc_diversity()`:
+
+```{r diversity_calc}
+alpha_table <- calc_diversity(
+  data      = fish_comm_data,
+  group_col = c("Zone", "Season")
+)
+
+# Display sample output with computed diversity indices
+head(alpha_table, 6)
+
+```
+
+### 18.4 Visualization Styles
+
+`plot_diversity()` generates single-factor and two-factor (factorial) comparative displays.
+
+#### 18.4.1 Style A: Single-Factor Diversity Comparison with Kruskal-Wallis Test (Default)
+
+Compares Shannon diversity across river zones, displaying raw sample jitter overlays and non-parametric test statistics:
+
+```{r diversity_plot_single, fig.width = 6.8, fig.height = 5.0, fig.align = "center"}
+res_div_single <- plot_diversity(
+  data          = fish_comm_data,
+  group_col     = "Zone",
+  index         = "shannon",
+  test          = "kruskal",
+  color_palette = "Dark2",
+  permutations  = 1000
+)
+
+# Render single-factor diversity plot
+res_div_single$Plot
+
+```
+
+#### 18.4.2 Style B: Two-Factor Factorial Interaction Boxplot with Two-Way ANOVA
+
+Evaluates how Pielou's Evenness ($J'$) responds across the interaction of **Zone** and **Season** using dodged boxplots and parametric Two-Way ANOVA:
+
+```{r diversity_plot_twofactor, fig.width = 7.5, fig.height = 5.2, fig.align = "center"}
+res_div_factorial <- plot_diversity(
+  data          = fish_comm_data,
+  group_col     = c("Zone", "Season"),
+  index         = "pielou",
+  test          = "anova",
+  color_palette = "Set2",
+  permutations  = 1000
+)
+
+# Render factorial diversity plot
+res_div_factorial$Plot
+
+```
+
+### 18.5 Model Inspection and Numerical Summaries
+
+The returned list provides the underlying tidy diversity dataframe, bootstrap 95% confidence intervals, and hypothesis test output:
+
+```{r diversity_inspection}
+# 1. Omnibus Hypothesis Test Result (Kruskal-Wallis / ANOVA)
+res_div_single$Test_Result
+
+# 2. Bootstrap Summary Statistics (Means, 95% Lower and Upper Confidence Limits)
+res_div_single$Group_Summary
+
+# 3. Two-Way ANOVA Factorial Summary Table
+res_div_factorial$Test_Result
+
+```
+
+```
+
+```
+
+## 19. Species Accumulation Curves & Sampling Effort Evaluation
+
+The `specaccum_plot()` function constructs and visualizes species accumulation curves (collector's curves) to evaluate inventory completeness, sampling sufficiency, and species richness scaling in aquatic biomonitoring and fisheries assessments[cite: 24]. When conducting community surveys (e.g., river electrofishing, benthic grab surveys, plankton trawls), raw observed species counts are constrained by sampling intensity[cite: 24]. 
+
+Species accumulation curves model the expected rate at which new species are recorded as additional sampling units or hauls are aggregated[cite: 24]. Asymptotic leveling of the curve signifies sampling saturation—demonstrating that the sampling protocol has captured the majority of common and rare taxa within the target habitat[cite: 24].
+
+The function computes curves using `vegan::specaccum`[cite: 24], accommodates multiple analytical accumulation methods (e.g., `exact` analytical solution, `coleman` rarefaction, or random permutations)[cite: 24], calculates 95% confidence intervals[cite: 24], and generates publication-grade visualizations for single pooled inventories or comparative multi-habitat groupings (`by_group = TRUE`)[cite: 24].
+
+### 19.1 Conceptual Framework and Mathematical Formulation
+
+Let a community dataset comprise $N$ total sampling units and $S_{\text{obs}}$ total observed species across the pooled inventory[cite: 24].
+
+#### 19.1.1 The Exact Analytical Expectation (Mao Tau Formulation)
+Rather than relying solely on empirical randomizations, `method = "exact"` calculates the expected species richness $\bar{S}_n$ for any sub-sample of $n$ sampling units ($1 \le n \le N$) using combinatorial probability[cite: 24]:
+
+$$\bar{S}_n = S_{\text{obs}} - \sum_{i=1}^{S_{\text{obs}}} \frac{\binom{N - f_i}{n}}{\binom{N}{n}}$$
+
+where $f_i$ denotes the incidence frequency (number of sampling units containing species $i$)[cite: 24]. The combinatorial term represents the hyper-geometric probability that species $i$ is absent from a random selection of $n$ samples[cite: 24].
+
+#### 19.1.2 Coleman Rarefaction Formulation
+Under `method = "coleman"`, the non-interactive expectation models individuals randomly distributed across samples independently of spatial aggregation[cite: 24]:
+
+$$S_n = S_{\text{obs}} - \sum_{i=1}^{S_{\text{obs}}} \left(1 - \frac{n}{N}\right)^{n_i}$$
+
+where $n_i$ represents the total organism abundance of the $i$-th species[cite: 24].
+
+#### 19.1.3 Analytical Variance and Confidence Bounds
+For methods with analytical variance derivations, the 95% confidence boundaries around expected richness $\bar{S}_n$ are computed as[cite: 24]:
+
+$$\text{CI}_{95\%} = \bar{S}_n \pm 1.96 \times \sigma(\bar{S}_n)$$
+
+where $\sigma(\bar{S}_n)$ represents the standard deviation of species richness at sample size $n$[cite: 24].
+
+### 19.2 In-Vignette Data Generation
+
+We simulate a riverine fish biodiversity survey comprising 45 electrofishing reaches divided across three distinct aquatic habitat zones: **Highland Headwater** (15 reaches), **Midland Reach** (15 reaches), and **Lowland Floodplain** (15 reaches). A total of 14 fish species with varying rarity and spatial distribution are surveyed:
+
+```{r specaccum_data_prep}
+set.seed(1919)
+n_samples_per_hab <- 15
+habitats <- c("Headwater", "Midland", "Lowland")
+
+sim_list <- lapply(habitats, function(hab) {
+  # Diagnostic baseline probabilities of encounter
+  lambdas <- switch(hab,
+    "Headwater" = c(Sp01 = 25, Sp02 = 18, Sp03 = 8,  Sp04 = 2,  Sp05 = 0,  Sp06 = 0,  Sp07 = 0,  Sp08 = 0,  Sp09 = 0,  Sp10 = 0,  Sp11 = 0,  Sp12 = 0,  Sp13 = 0,  Sp14 = 0),
+    "Midland"   = c(Sp01 = 8,  Sp02 = 12, Sp03 = 20, Sp04 = 15, Sp05 = 10, Sp06 = 6,  Sp07 = 3,  Sp08 = 1,  Sp09 = 0,  Sp10 = 0,  Sp11 = 0,  Sp12 = 0,  Sp13 = 0,  Sp14 = 0),
+    "Lowland"   = c(Sp01 = 1,  Sp02 = 2,  Sp03 = 6,  Sp04 = 14, Sp05 = 22, Sp06 = 28, Sp07 = 18, Sp08 = 12, Sp09 = 8,  Sp10 = 6,  Sp11 = 4,  Sp12 = 3,  Sp13 = 2,  Sp14 = 1)
+  )
+  
+  mat <- do.call(cbind, lapply(lambdas, function(l) rpois(n_samples_per_hab, lambda = l)))
+  df <- as.data.frame(mat)
+  df$Habitat <- hab
+  df
+})
+
+fish_inventory <- do.call(rbind, sim_list)
+# Place metadata at the front
+fish_inventory <- fish_inventory[, c("Habitat", setdiff(names(fish_inventory), "Habitat"))]
+
+head(fish_inventory[, 1:7], 6)
+
+```
+
+### 19.3 Visualization Styles
+
+The `specaccum_plot()` function supports both whole-ecosystem pooled curves and multi-habitat comparative curves.
+
+#### 19.3.1 Style A: Pooled Whole-Ecosystem Curve with 95% Confidence Band (Default)
+
+Evaluates overall survey completeness across all pooled sampling units using the analytical `exact` method:
+
+```{r specaccum_pooled, fig.width = 6.8, fig.height = 5.0, fig.align = "center"}
+res_acc_pooled <- specaccum_plot(
+  data       = fish_inventory,
+  group_col  = "Habitat",
+  by_group   = FALSE,
+  method     = "exact",
+  line_color = "#2A9D8F",
+  ci         = 1.96,
+  show_ci    = TRUE,
+  title      = "River Basin Fish Species Accumulation Curve"
+)
+
+# Render pooled curve
+res_acc_pooled$Plot
+
+```
+
+#### 19.3.2 Style B: Comparative Multi-Habitat Accumulation Curves
+
+By specifying `by_group = TRUE`, the function estimates accumulation curves separately for each habitat level, allowing direct visual comparison of species richness saturation rates across environmental strata:
+
+```{r specaccum_grouped, fig.width = 7.2, fig.height = 5.2, fig.align = "center"}
+res_acc_grouped <- specaccum_plot(
+  data       = fish_inventory,
+  group_col  = "Habitat",
+  by_group   = TRUE,
+  method     = "exact",
+  palette    = "Dark2",
+  show_ci    = TRUE,
+  title      = "Comparative Species Accumulation Across River Zones"
+)
+
+res_acc_grouped$Plot
+
+```
+
+### 19.4 Model Inspection and Numerical Summaries
+
+The returned list provides the underlying `vegan::specaccum` object and the tidy data frame containing exact site counts, expected richness, standard deviations, and confidence intervals:
+
+```{r specaccum_inspection}
+# 1. Inspect accumulation curve trajectory table (First 8 sample intervals)
+head(res_acc_pooled$Curve_Data, 8)
+
+# 2. Inspect grouped curve summary table preview
+head(res_acc_grouped$Curve_Data, 6)
+
+```
+
+```
+
+```
+
+## 20. Weighted Arithmetic Water Quality Index (WAWQI)
+
+The `calc_wqi()` and `plot_wqi()` functions calculate and visualize the Weighted Arithmetic Water Quality Index (WAWQI) across spatial monitoring stations and temporal sampling campaigns[cite: 25, 26]. In fisheries management and aquatic environmental impact assessments, raw multi-parameter water chemistry matrices (e.g., pH, Dissolved Oxygen, Biological Oxygen Demand, Total Dissolved Solids, Turbidity) can be difficult to interpret individually[cite: 26]. 
+
+The WAWQI methodology aggregates multiple physico-chemical metrics into a single score that quantifies overall ecosystem water quality[cite: 25, 26]. The functions compute parameter-specific unit weights, derive quality ratings, handle station replicates with Student's $t$-distribution 95% confidence intervals, assign ecological suitability tiers, and generate publication-ready bar and lollipop plots overlaid with regulatory benchmark bands[cite: 25, 26].
+
+### 20.1 Conceptual Framework and Mathematical Formulation
+
+Let $n$ denote the number of evaluated water quality parameters[cite: 26]. Each parameter is evaluated against recommended regulatory thresholds (e.g., WHO, BIS, or national environmental standards)[cite: 26].
+
+#### 20.1.1 Unit Weighting Factor ($W_i$)
+The unit weight $W_i$ for the $i$-th parameter is inversely proportional to its standard permissible limit ($S_i$), ensuring that toxic or sensitive parameters (such as low dissolved oxygen thresholds or high pesticide levels) carry greater weight in the final index[cite: 26]:
+
+$$W_i = \frac{K}{S_i} = \frac{1}{S_i \sum_{j=1}^n \frac{1}{S_j}}$$
+
+where $K = \frac{1}{\sum_{j=1}^n (1 / S_j)}$ is the proportionality normalization constant[cite: 26], ensuring that $\sum_{i=1}^n W_i = 1.0$[cite: 26].
+
+#### 20.1.2 Quality Rating Scale ($Q_i$)
+The sub-index rating $Q_i$ for parameter $i$ reflects the observed concentration ($V_i$) relative to its ideal standard value ($V_0$) and standard limit ($S_i$)[cite: 26]:
+
+$$Q_i = \frac{V_i - V_0}{S_i - V_0} \times 100$$
+
+For pollutants and nutrient parameters (e.g., BOD, TDS, Turbidity), the ideal zero-effect concentration is $V_0 = 0\text{ mg/L}$[cite: 26]. For physiological parameters with specific natural equilibria:
+- **pH:** $V_0 = 7.0$ (neutral baseline)[cite: 26]
+- **Dissolved Oxygen (DO):** $V_0 = 14.6\text{ mg/L}$ (theoretical saturation baseline at standard temperature and pressure)[cite: 26], formulated as:
+  $$Q_{\text{DO}} = \frac{14.6 - V_{\text{DO}}}{14.6 - S_{\text{DO}}} \times 100$$
+  Lower dissolved oxygen concentrations yield higher $Q_i$ penalty scores[cite: 26].
+
+#### 20.1.3 Overall Index Aggregation and Classification
+The aggregate WAWQI is computed as the weighted arithmetic mean of all sub-indices[cite: 26]:
+
+$$\text{WAWQI} = \frac{\sum_{i=1}^n Q_i W_i}{\sum_{i=1}^n W_i} = \sum_{i=1}^n Q_i W_i$$
+
+Ecological water quality ratings are classified according to established benchmark boundaries[cite: 25, 26]:
+- **$0 \le \text{WAWQI} \le 25$:** Excellent Water Quality (Pristine aquatic habitat)[cite: 25, 26]
+- **$26 \le \text{WAWQI} \le 50$:** Good Water Quality (Suitable for aquaculture and fisheries)[cite: 25, 26]
+- **$51 \le \text{WAWQI} \le 75$:** Poor Water Quality (Threatened aquatic biodiversity)[cite: 25, 26]
+- **$76 \le \text{WAWQI} \le 100$:** Very Poor Water Quality (Severe eutrophication and habitat degradation)[cite: 25, 26]
+- **$\text{WAWQI} > 100$:** Unsuitable for Aquatic Life (Acute toxicity / critical hypoxia)[cite: 25, 26]
+
+### 20.2 In-Vignette Data Generation
+
+We simulate a seasonal river biomonitoring dataset evaluating five standard water quality parameters (pH, DO, BOD, TDS, and Turbidity) across four monitoring stations (`Station_1` to `Station_4`), with 6 replicate water samples collected at each station[cite: 26]:
+
+```{r wqi_data_prep}
+set.seed(2026)
+n_reps <- 6
+
+stations <- c("Station_1 (Upstream)", "Station_2 (Agricultural)", "Station_3 (Urban Discharge)", "Station_4 (Estuarine Mouth)")
+
+wqi_survey <- do.call(rbind, lapply(stations, function(stn) {
+  # Parameter baseline values reflecting an anthropogenic pollution gradient
+  param_means <- switch(stn,
+    "Station_1 (Upstream)"        = c(pH = 7.4, DO = 8.8, BOD = 1.8, TDS = 140, Turbidity = 2.5),
+    "Station_2 (Agricultural)"    = c(pH = 7.8, DO = 6.8, BOD = 3.6, TDS = 320, Turbidity = 4.8),
+    "Station_3 (Urban Discharge)" = c(pH = 8.3, DO = 4.1, BOD = 8.5, TDS = 680, Turbidity = 9.4),
+    "Station_4 (Estuarine Mouth)" = c(pH = 7.9, DO = 5.4, BOD = 5.2, TDS = 510, Turbidity = 6.2)
+  )
+  
+  data.frame(
+    Station   = stn,
+    pH        = rnorm(n_reps, mean = param_means["pH"], sd = 0.2),
+    DO        = rnorm(n_reps, mean = param_means["DO"], sd = 0.35),
+    BOD       = rnorm(n_reps, mean = param_means["BOD"], sd = 0.4),
+    TDS       = rnorm(n_reps, mean = param_means["TDS"], sd = 25),
+    Turbidity = rnorm(n_reps, mean = param_means["Turbidity"], sd = 0.5)
+  )
+}))
+
+head(wqi_survey, 6)
+
+```
+
+### 20.3 Calculating Index Scores and Station Summaries
+
+Run `calc_wqi()` to derive individual replicate sub-indices and station-level summary statistics:
+
+```{r wqi_calc_run}
+res_wqi <- calc_wqi(
+  data      = wqi_survey,
+  id_col    = "Station",
+  standards = c(
+    pH        = 8.5,
+    DO        = 5.0,
+    BOD       = 5.0,
+    TDS       = 500,
+    Turbidity = 5.0
+  ),
+  ci        = 0.95
+)
+
+# Station-level summary table with 95% Confidence Intervals
+res_wqi$Summary_Data
+
+```
+
+### 20.4 Visualization Styles
+
+`plot_wqi()` provides both columnar bar charts and lollipop geometries with optional background benchmark classification shading.
+
+#### 20.4.1 Style A: Status-Filled Bar Chart with Benchmark Bands and 95% CI Whiskers (Default)
+
+Displays station scores against regulatory classification tiers, attaching 95% confidence intervals to convey measurement variability:
+
+```{r wqi_plot_bars, fig.width = 7.5, fig.height = 5.2, fig.align = "center"}
+p_wqi_bar <- plot_wqi(
+  data       = res_wqi,
+  id_col     = "Station",
+  type       = "bar",
+  show_ci    = TRUE,
+  show_bands = TRUE,
+  title      = "River Basin Water Quality Index (WAWQI) with 95% CI"
+)
+
+# Render publication plot
+p_wqi_bar
+
+```
+
+#### 20.4.2 Style B: Lollipop Display
+
+Provides an alternative lollipop format without background shading, focusing on discrete station comparisons:
+
+```{r wqi_plot_lollipop, fig.width = 7.5, fig.height = 5.0, fig.align = "center"}
+p_wqi_lollipop <- plot_wqi(
+  data       = res_wqi,
+  id_col     = "Station",
+  type       = "lollipop",
+  show_ci    = TRUE,
+  show_bands = FALSE,
+  title      = "Station-Level Water Quality Ratings"
+)
+
+p_wqi_lollipop
+
+```
+
+### 20.5 Model Inspection and Replicate Data
+
+Inspect individual replicate sub-indices ($Q_i$) and corresponding final sample scores:
+
+```{r wqi_inspection}
+# 1. Preview individual replicate evaluations (first 6 samples)
+head(res_wqi$Replicate_Data, 6)
+
+# 2. Inspect station-level summary statistics
+res_wqi$Summary_Data[, c("Station", "N", "WQI_Mean", "WQI_SE", "Status")]
+
+```
+
+```
+
+```
+
+## 21. Heavy Metal Pollution & Ecotoxicological Indices
+
+The `calc_metal_indices()` and `plot_metal_indices()` functions evaluate heavy metal pollution in aquatic ecosystems (water columns, riverbed sediments, and fish tissue matrices)[cite: 27, 28]. Aquatic toxicology and environmental impact assessments require multi-element risk indices to convert raw trace element concentrations into standardized toxicological risk scores[cite: 27, 28].
+
+The package computes five core international heavy metal contamination indices simultaneously[cite: 27, 28]:
+1. **Contamination Factor ($CF_i$):** Ratio of observed metal concentration to its regulatory permissible limit[cite: 28].
+2. **Heavy Metal Pollution Index (HPI):** Weighted arithmetic rating model balancing individual toxicities and guideline limits[cite: 28].
+3. **Heavy Metal Evaluation Index (HEI):** Additive sum of contamination factors evaluating collective toxicity[cite: 28].
+4. **Degree of Contamination ($C_d$):** Cumulative contamination degradation reflecting net excessive pollution above unity[cite: 28].
+5. **Pollution Load Index (PLI):** Geometric mean of contamination factors quantifying multi-metal bioaccumulation[cite: 28].
+6. **Comprehensive Nemerow Pollution Index ($P_N$):** Weighted combination highlighting peak extreme pollutant concentrations[cite: 28].
+
+The visualization function `plot_metal_indices()` renders column and lollipop graphics with 95% confidence intervals and dashed benchmark thresholds[cite: 27].
+
+### 21.1 Conceptual Framework and Mathematical Formulation
+
+Let $C_i$ denote the observed concentration of the $i$-th heavy metal, and let $S_i$ denote its corresponding national or international drinking/aquatic life permissible standard limit[cite: 28].
+
+#### 21.1.1 Contamination Factor ($CF_i$)
+The base metric for single-metal contamination is the ratio[cite: 28]:
+
+$$CF_i = \frac{C_i}{S_i}$$
+
+#### 21.1.2 Heavy Metal Evaluation Index (HEI) & Contamination Degree ($C_d$)
+HEI expresses the cumulative additive load across all $n$ analyzed trace metals[cite: 28]:
+
+$$\text{HEI} = \sum_{i=1}^n CF_i = \sum_{i=1}^n \frac{C_i}{S_i}$$
+
+Benchmark classification: $\text{HEI} < 10$ (Low); $10 \le \text{HEI} \le 20$ (Medium); $\text{HEI} > 20$ (High pollution)[cite: 27, 28].
+
+The Degree of Contamination ($C_d$) computes the net excess above the permissible threshold ($CF_i = 1$)[cite: 28]:
+
+$$C_d = \sum_{i=1}^n (CF_i - 1)$$
+
+Benchmark classification: $C_d < 6$ (Low); $6 \le C_d < 12$ (Moderate); $C_d \ge 12$ (High contamination)[cite: 27, 28].
+
+#### 21.1.3 Pollution Load Index (PLI)
+Originally formulated by Tomlinson et al., PLI calculates the geometric mean of contamination factors[cite: 28]:
+
+$$\text{PLI} = \left( \prod_{i=1}^n CF_i \right)^{\frac{1}{n}} = \sqrt[n]{CF_1 \times CF_2 \times \dots \times CF_n}$$
+
+Interpretation threshold: $\text{PLI} \le 1.0$ indicates baseline unpolluted conditions, whereas $\text{PLI} > 1.0$ indicates progressive heavy metal deterioration[cite: 27, 28].
+
+#### 21.1.4 Comprehensive Nemerow Pollution Index ($P_N$)
+Evaluates total quality while giving special weight to the worst single pollutant[cite: 28]:
+
+$$P_N = \sqrt{\frac{\overline{CF}^2 + CF_{\max}^2}{2}}$$
+
+where $\overline{CF} = \frac{1}{n} \sum CF_i$ is the average contamination factor and $CF_{\max}$ is the maximum observed single contamination factor[cite: 28].
+
+#### 21.1.5 Heavy Metal Pollution Index (HPI)
+Computes a weighted arithmetic aggregation[cite: 28]:
+
+$$\text{HPI} = \frac{\sum_{i=1}^n W_i Q_i}{\sum_{i=1}^n W_i}$$
+
+where unit weights are inversely proportional to guidelines ($W_i = 1 / S_i$), and sub-index ratings are $Q_i = (C_i / S_i) \times 100$[cite: 28]. The critical threshold is $\text{HPI} = 100$; values exceeding $100$ indicate critical metal pollution unsuitable for aquatic habitats[cite: 27, 28].
+
+### 21.2 In-Vignette Data Generation
+
+We simulate a river basin heavy metal survey measuring six trace elements ($\mu\text{g/L}$): Arsenic (`As`), Cadmium (`Cd`), Chromium (`Cr`), Copper (`Cu`), Lead (`Pb`), and Zinc (`Zn`) across five monitoring reaches with 5 sample replicates per reach[cite: 28]:
+
+```{r metal_data_prep}
+set.seed(2121)
+n_reps <- 5
+
+sites <- c("Site_1 (Forest)", "Site_2 (Mining)", "Site_3 (Smelting)", "Site_4 (Urban)", "Site_5 (Estuary)")
+
+metal_survey <- do.call(rbind, lapply(sites, function(stn) {
+  # Baseline metal concentrations (ug/L)
+  means <- switch(stn,
+    "Site_1 (Forest)"   = c(As = 1.2,  Cd = 0.2, Cr = 4.5,  Cu = 45,   Pb = 1.1,  Zn = 120),
+    "Site_2 (Mining)"   = c(As = 18.5, Cd = 5.8, Cr = 68.0, Cu = 1850, Pb = 24.5, Zn = 4200),
+    "Site_3 (Smelting)" = c(As = 26.0, Cd = 8.2, Cr = 95.0, Cu = 2600, Pb = 38.0, Zn = 5800),
+    "Site_4 (Urban)"    = c(As = 6.5,  Cd = 1.4, Cr = 28.0, Cu = 420,  Pb = 8.5,  Zn = 1450),
+    "Site_5 (Estuary)"  = c(As = 4.2,  Cd = 0.9, Cr = 16.5, Cu = 210,  Pb = 4.2,  Zn = 850)
+  )
+  
+  data.frame(
+    Station = stn,
+    As = pmax(0.1, rnorm(n_reps, mean = means["As"], sd = means["As"] * 0.12)),
+    Cd = pmax(0.05, rnorm(n_reps, mean = means["Cd"], sd = means["Cd"] * 0.15)),
+    Cr = pmax(0.5, rnorm(n_reps, mean = means["Cr"], sd = means["Cr"] * 0.10)),
+    Cu = pmax(2.0, rnorm(n_reps, mean = means["Cu"], sd = means["Cu"] * 0.12)),
+    Pb = pmax(0.1, rnorm(n_reps, mean = means["Pb"], sd = means["Pb"] * 0.14)),
+    Zn = pmax(5.0, rnorm(n_reps, mean = means["Zn"], sd = means["Zn"] * 0.10))
+  )
+}))
+
+head(metal_survey, 6)
+
+```
+
+### 21.3 Calculating Heavy Metal Indices
+
+Run `calc_metal_indices()` using standard international drinking and aquatic life guideline limits:
+
+```{r metal_calc_run}
+res_metals <- calc_metal_indices(
+  data      = metal_survey,
+  id_col    = "Station",
+  standards = c(
+    As = 10,
+    Cd = 3,
+    Cr = 50,
+    Cu = 2000,
+    Pb = 10,
+    Zn = 3000
+  ),
+  ci        = 0.95
+)
+
+# Station summary statistics table (Means, 95% CIs, and assigned status)
+head(res_metals$Summary_Data[, c("Station", "HPI_Mean", "HPI_Status", "PLI_Mean", "PLI_Status")], 5)
+
+```
+
+### 21.4 Visualization Styles
+
+`plot_metal_indices()` creates status-filled charts with 95% confidence intervals and dashed benchmark thresholds.
+
+#### 21.4.1 Style A: Heavy Metal Pollution Index (HPI) with Critical Threshold (Default)
+
+Displays mean HPI values with 95% confidence intervals against the critical threshold line ($\text{HPI} = 100$):
+
+```{r metal_plot_hpi, fig.width = 7.5, fig.height = 5.2, fig.align = "center"}
+p_hpi <- plot_metal_indices(
+  data           = res_metals,
+  metric         = "HPI",
+  id_col         = "Station",
+  type           = "bar",
+  show_ci        = TRUE,
+  show_threshold = TRUE,
+  palette        = "auto",
+  title          = "Heavy Metal Pollution Index (HPI) Across River Stations"
+)
+
+# Render HPI plot
+p_hpi
+
+```
+
+#### 21.4.2 Style B: Pollution Load Index (PLI) Lollipop Plot
+
+Visualizes the multi-metal Pollution Load Index (PLI) relative to the baseline threshold ($\text{PLI} = 1.0$):
+
+```{r metal_plot_pli, fig.width = 7.5, fig.height = 5.0, fig.align = "center"}
+p_pli <- plot_metal_indices(
+  data           = res_metals,
+  metric         = "PLI",
+  id_col         = "Station",
+  type           = "lollipop",
+  show_ci        = TRUE,
+  show_threshold = TRUE,
+  palette        = "auto",
+  title          = "Pollution Load Index (PLI) Across Sampling Reaches"
+)
+
+p_pli
+
+```
+
+#### 21.4.3 Style C: Degree of Contamination (Cd)
+
+Evaluates cumulative excess contamination ($C_d$) with contamination limits ($C_d = 6, 12$):
+
+```{r metal_plot_cd, fig.width = 7.5, fig.height = 5.0, fig.align = "center"}
+p_cd <- plot_metal_indices(
+  data           = res_metals,
+  metric         = "Cd",
+  id_col         = "Station",
+  type           = "bar",
+  show_ci        = TRUE,
+  show_threshold = TRUE,
+  palette        = "auto"
+)
+
+p_cd
+
+```
+
+### 21.5 Model Inspection and Replicate Contamination Factors
+
+Inspect sample-level contamination factors ($CF_i$) and overall indices:
+
+```{r metal_inspection}
+# 1. Preview replicate contamination factors and computed indices (first 4 samples)
+head(res_metals$Replicate_Data[, c("Station", "CF_As", "CF_Cd", "CF_Pb", "HPI", "PLI")], 4)
+
+# 2. Comprehensive Station Summary
+res_metals$Summary_Data[, c("Station", "HEI_Mean", "HEI_Status", "Nemerow_PN_Mean", "Nemerow_Status")]
+
+```
+
+```
+
+```
+
+## 22. Descriptive Statistics & Automated Table Summaries
+
+The `summarize_obs()` function generates comprehensive descriptive summaries for multi-parameter limnological, water quality, and fisheries biometric matrices. Before applying formal parametric or multivariate models, empirical researchers require rigorous tabular summaries detailing central tendency, variance, standard errors, and sample dispersion across spatial or experimental factor levels.
+
+The function computes both parametric metrics (Sample Size $N$, Arithmetic Mean $\bar{x}$, Standard Deviation $s$, Standard Error of the Mean $\text{SE}$) and non-parametric metrics (Median $\tilde{x}$, Minimum, Maximum), constructs ready-to-publish composite notation ($\bar{x} \pm s$), accommodates multi-factor grouping strata, and supports direct export to formatted Excel workbooks (`.xlsx`) or comma-separated tables (`.csv`).
+
+### 22.1 Conceptual Framework and Statistical Formulation
+
+Let $\{x_1, x_2, \dots, x_n\}$ denote a set of $n$ complete observations recorded for a continuous aquatic variable $X$ within a given sampling stratum.
+
+#### 22.1.1 Parametric Estimators of Central Tendency and Dispersion
+
+1. **Arithmetic Mean ($\bar{x}$):**
+   $$\bar{x} = \frac{1}{n} \sum_{i=1}^n x_i$$
+
+2. **Sample Standard Deviation ($s$):**
+   Measures sample dispersion around the mean using Bessel's correction for unbiased estimation:
+   $$s = \sqrt{\frac{1}{n - 1} \sum_{i=1}^n (x_i - \bar{x})^2} \quad (n > 1)$$
+
+3. **Standard Error of the Mean ($\text{SE}$):**
+   Quantifies the theoretical precision of the sample mean as an estimator of the true population parameter $\mu$:
+   $$\text{SE} = \frac{s}{\sqrt{n}}$$
+
+#### 22.1.2 Non-Parametric Order Statistics
+
+For non-normal, skewed, or zero-inflated aquatic measurements (e.g., bacterial coliform densities, chemical trace contaminants):
+
+1. **Sample Median ($\tilde{x}$):**
+   The 50th percentile order statistic, robust against extreme outlier observations:
+   $$\tilde{x} = \begin{cases} x_{\left(\frac{n+1}{2}\right)} & \text{if } n \text{ is odd} \\ \frac{1}{2}\left(x_{\left(\frac{n}{2}\right)} + x_{\left(\frac{n}{2} + 1\right)}\right) & \text{if } n \text{ is even} \end{cases}$$
+
+2. **Sample Extrema:**
+   $$\text{Min} = x_{(1)}, \quad \text{Max} = x_{(n)}$$
+
+### 22.2 In-Vignette Data Generation
+
+We simulate a river basin fisheries survey evaluating fish Total Length (cm), Total Weight (g), and Condition Factor ($K$) across 60 specimens sampled across three distinct River Systems (`Karnafuli`, `Halda`, `Sangu`) during two hydrologic periods (`Dry`, `Wet`):
+
+```{r summarize_data_prep}
+set.seed(2222)
+n_per_combo <- 10
+
+systems <- c("Karnafuli", "Halda", "Sangu")
+seasons <- c("Dry", "Wet")
+
+survey_grid <- expand.grid(River = systems, Season = seasons)
+
+survey_rows <- lapply(seq_len(nrow(survey_grid)), function(i) {
+  rv <- as.character(survey_grid$River[i])
+  sn <- as.character(survey_grid$Season[i])
+  
+  mean_len <- switch(rv, "Karnafuli" = 28.5, "Halda" = 34.0, "Sangu" = 22.0)
+  if (sn == "Wet") mean_len <- mean_len * 1.15
+  
+  len <- rnorm(n_per_combo, mean = mean_len, sd = 3.2)
+  # Allometric length-weight relationship: W = 0.012 * L^3.05
+  wt  <- 0.012 * (len^3.05) + rnorm(n_per_combo, mean = 0, sd = 15)
+  k   <- (wt / (len^3)) * 100
+  
+  data.frame(
+    River            = rv,
+    Season           = sn,
+    Total_Length_cm  = pmax(10, len),
+    Body_Weight_g    = pmax(20, wt),
+    Condition_Factor = k,
+    stringsAsFactors = FALSE
+  )
+})
+
+fish_morph_survey <- do.call(rbind, survey_rows)
+head(fish_morph_survey, 6)
+
+```
+
+### 22.3 Analytical Execution
+
+`summarize_obs()` supports global overall summaries as well as single-factor and multi-factor stratified analyses.
+
+#### 22.3.1 Style A: Single-Factor Grouped Summary (Across River Systems)
+
+Summarizes length, weight, and condition factor across river systems:
+
+```{r summarize_single_factor}
+res_summary_river <- summarize_obs(
+  data   = fish_morph_survey,
+  vars   = c("Total_Length_cm", "Body_Weight_g", "Condition_Factor"),
+  group  = "River",
+  digits = 2
+)
+
+# Display tabular summary
+res_summary_river[, c("River", "Variable", "N", "Mean_SD", "SE", "Median", "Min", "Max")]
+
+```
+
+#### 22.3.2 Style B: Two-Factor Stratified Summary (River x Season Interaction)
+
+Evaluates biometric traits across both River System and Season simultaneously:
+
+```{r summarize_two_factor}
+res_summary_factorial <- summarize_obs(
+  data   = fish_morph_survey,
+  vars   = c("Total_Length_cm", "Body_Weight_g"),
+  group  = c("River", "Season"),
+  digits = 2
+)
+
+head(res_summary_factorial[, c("River", "Season", "Variable", "Mean_SD", "SE", "Median")], 6)
+
+```
+
+### 22.4 Inspection and Formatted Output
+
+The returned data frame provides publication-ready string representations alongside raw numeric columns suitable for downstream reporting or plotting:
+
+```{r summarize_inspection}
+# 1. Structure of the exported summary table
+str(res_summary_river)
+
+# 2. Inspect Mean +/- SD column for direct manuscript inclusion
+res_summary_river[, c("River", "Variable", "Mean_SD")]
+
+```
+
+```
+
+```
+
+## 23. Distributional Histograms & Density Curves
+
+The `plot_histogram()` function generates publication-grade frequency distributions, empirical kernel density estimates (KDE), and theoretical normal curves for fisheries morphometrics and environmental water quality metrics[cite: 22]. Inspecting distributional skewness, modality (e.g., polymodal fish cohorts), and kurtosis is a prerequisite for evaluating parametric model assumptions (ANOVA, linear regression) and detecting recruitment pulses in length-frequency data.
+
+The function supports automatic dynamic scaling between raw counts and probability density space, overlays theoretical Gaussian profiles with empirical kernel fits, displays parametric mean (solid red line) and non-parametric median (dashed blue line) references, and supports multi-panel faceting across environmental strata[cite: 22].
+
+### 23.1 Conceptual Framework and Statistical Formulation
+
+Let $\{x_1, x_2, \dots, x_n\}$ denote $n$ independent observations of a continuous fisheries variable $X$ (e.g., fork length or body weight).
+
+#### 23.1.1 Empirical Kernel Density Estimation (KDE)
+To estimate the probability density function $f(x)$ continuously without discretization artifacts, kernel smoothing is defined as:
+
+$$\hat{f}_h(x) = \frac{1}{n h} \sum_{i=1}^n K\left(\frac{x - x_i}{h}\right)$$
+
+where $K(\cdot)$ is a standard Gaussian kernel function $K(u) = \frac{1}{\sqrt{2\pi}} e^{-\frac{1}{2}u^2}$ and $h > 0$ is the bandwidth smoothing parameter.
+
+#### 23.1.2 Theoretical Gaussian Overlay
+When `add_normal = TRUE` is enabled, the function projects the parameterized normal distribution curve evaluated at sample estimates $(\bar{x}, s)$[cite: 22]:
+
+$$f(x; \bar{x}, s) = \frac{1}{s \sqrt{2\pi}} \exp\left( -\frac{(x - \bar{x})^2}{2 s^2} \right)$$
+
+Discrepancies between the empirical kernel curve (red) and the theoretical Gaussian curve (green dashed) highlight skewness and kurtosis deviations from normality.
+
+#### 23.1.3 Central Tendency Reference Lines
+The function evaluates asymmetry using the divergence between:
+- **Sample Mean:** $\bar{x} = \frac{1}{n} \sum_{i=1}^n x_i$ (solid red line)[cite: 22]
+- **Sample Median:** $\tilde{x} = x_{(0.5)}$ (dashed blue line)[cite: 22]
+
+In right-skewed data (common in juvenile fish counts or pollutant spikes), $\bar{x} > \tilde{x}$, whereas left-skewed distributions exhibit $\bar{x} < \tilde{x}$.
+
+### 23.2 In-Vignette Data Generation
+
+We simulate a length-frequency fisheries survey measuring Total Length (cm) across 250 specimens of an estuarine fish population sampled across three estuarine habitats (`Mangrove Creek`, `Mudflat`, `Open Channel`):
+
+```{r histogram_data_prep}
+set.seed(2323)
+n_fish <- 250
+
+habitats <- sample(c("Mangrove Creek", "Mudflat", "Open Channel"), size = n_fish, replace = TRUE, prob = c(0.4, 0.35, 0.25))
+
+# Simulate bimodal cohort growth
+lengths <- vapply(habitats, function(hab) {
+  cohort <- rbinom(1, size = 1, prob = 0.65) # Age-0 vs Age-1 cohort
+  if (hab == "Mangrove Creek") {
+    if (cohort == 1) rnorm(1, 14.5, 1.8) else rnorm(1, 22.0, 2.1)
+  } else if (hab == "Mudflat") {
+    if (cohort == 1) rnorm(1, 18.2, 2.0) else rnorm(1, 26.5, 2.4)
+  } else {
+    if (cohort == 1) rnorm(1, 22.8, 2.2) else rnorm(1, 31.0, 2.8)
+  }
+}, numeric(1))
+
+estuary_fish <- data.frame(
+  Habitat      = factor(habitats),
+  Total_Length = pmax(8.0, lengths)
+)
+
+head(estuary_fish, 6)
+
+```
+
+### 23.3 Visualization Styles
+
+`plot_histogram()` provides single-distribution diagnostics with distribution curves and comparative multi-panel faceted views.
+
+#### 23.3.1 Style A: Overall Distribution with Density, Normal Fit & Reference Baselines
+
+Overlays the empirical kernel density curve, theoretical Gaussian curve, and mean/median reference lines:
+
+```{r hist_plot_single, fig.width = 7.0, fig.height = 4.8, fig.align = "center"}
+p_hist_single <- plot_histogram(
+  data        = estuary_fish,
+  x           = "Total_Length",
+  bins        = 25,
+  add_density = TRUE,
+  add_normal  = TRUE,
+  show_stats  = TRUE,
+  xlab        = "Total Length (cm)",
+  ylab        = "Density",
+  title       = "Fish Length-Frequency Distribution Diagnostics"
+)
+
+# Render distribution plot
+p_hist_single
+
+```
+
+#### 23.3.2 Style B: Faceted Distribution Across Habitats
+
+Using `facet = TRUE` separates the length-frequency distribution across habitats into separate panels:
+
+```{r hist_plot_faceted, fig.width = 7.5, fig.height = 4.5, fig.align = "center"}
+p_hist_faceted <- plot_histogram(
+  data        = estuary_fish,
+  x           = "Total_Length",
+  group       = "Habitat",
+  facet       = TRUE,
+  bins        = 20,
+  add_density = TRUE,
+  palette     = "Dark2",
+  xlab        = "Total Length (cm)",
+  title       = "Comparative Length Distributions Across Habitats"
+)
+
+p_hist_faceted
+
+```
+
+### 23.4 Inspection of Distributional Symmetry
+
+Examine the divergence between mean and median to evaluate skewness:
+
+```{r hist_inspection}
+# 1. Compare central tendency benchmarks
+mean_len <- mean(estuary_fish$Total_Length)
+median_len <- median(estuary_fish$Total_Length)
+sd_len <- sd(estuary_fish$Total_Length)
+
+data.frame(
+  Metric    = c("Mean (cm)", "Median (cm)", "Std. Deviation (cm)", "Skewness Offset"),
+  Value     = round(c(mean_len, median_len, sd_len, mean_len - median_len), 3)
+)
+
+```
+
+```
+
+```
+
+## 24. Publication Bar Plots & Grouped Comparisons
+
+The `plot_bar()` function renders standardized bar plots for categorical inventories, survey frequency counts, and metric aggregations across fisheries and aquatic ecology studies. Whether reporting catch frequencies across fishing gear types, species occurrence counts across sampling zones, or aggregated mean landings per river basin, bar charts provide direct comparative communication.
+
+The function provides three operating modes:
+1. **Frequency Tabulation (`y = NULL`):** Computes categorical occurrence counts automatically.
+2. **Metric Summary Aggregation (`stat = "mean"` or `"sum"`):** Aggregates continuous numeric responses across single or multi-factor grouping levels.
+3. **Identity Plotting (`stat = "identity"`):** Plots pre-computed values directly.
+
+It includes side-by-side grouped arrangements (`position = "dodge"`), cumulative stacking (`position = "stack"`), 100% proportional fills (`position = "fill"`), automated numeric value labelling, and horizontal axis flips for long taxonomic labels.
+
+### 24.1 Conceptual Framework and Aggregation Mechanics
+
+Let a survey dataset contain observations indexed by $i = 1, \dots, n$ across categorical predictor $X$ with $K$ unique levels.
+
+#### 24.1.1 Frequency Tabulation
+When no response metric $Y$ is supplied, the plotted height for factor level $k$ is the sample frequency:
+
+$$f_k = \sum_{i=1}^n \mathbb{I}(x_i = k)$$
+
+#### 24.1.2 Continuous Metric Aggregation
+When numeric variable $Y$ is specified:
+- **Mean Aggregation (`stat = "mean"`):**
+  $$\bar{y}_k = \frac{1}{n_k} \sum_{i: x_i = k} y_i$$
+- **Sum Aggregation (`stat = "sum"`):**
+  $$Y_k = \sum_{i: x_i = k} y_i$$
+
+#### 24.1.3 Proportional Stacking (`position = "fill"`)
+When examining proportional composition across a secondary grouping factor $G$ with $M$ categories:
+
+$$p_{km} = \frac{\sum_{i: x_i = k, g_i = m} y_i}{\sum_{m'=1}^M \sum_{i: x_i = k, g_i = m'} y_i}$$
+
+The height of each stack normalizes to $1.0$ (or 100%), allowing comparison of relative composition independently of differences in total sample size.
+
+### 24.2 In-Vignette Data Generation
+
+We simulate a marine small-scale fisheries monitoring survey evaluating fish landings (kg per trip) and catch values across 90 fishing trips distributed among three Gear Types (`Gillnet`, `Longline`, `Trap`) across three Coastal Sectors (`North Sector`, `Central Sector`, `South Sector`):
+
+```{r bar_data_prep}
+set.seed(2424)
+n_trips <- 90
+
+gears   <- sample(c("Gillnet", "Longline", "Trap"), size = n_trips, replace = TRUE, prob = c(0.45, 0.35, 0.20))
+sectors <- sample(c("North Sector", "Central Sector", "South Sector"), size = n_trips, replace = TRUE)
+
+# Landings vary by gear and sector
+landings_kg <- vapply(seq_len(n_trips), function(i) {
+  g <- gears[i]
+  base <- switch(g, "Gillnet" = 120, "Longline" = 210, "Trap" = 65)
+  round(pmax(15, rnorm(1, mean = base, sd = base * 0.22)), 1)
+}, numeric(1))
+
+fisheries_catch_survey <- data.frame(
+  Gear_Type   = factor(gears),
+  Sector      = factor(sectors),
+  Landings_kg = landings_kg
+)
+
+head(fisheries_catch_survey, 6)
+
+```
+
+### 24.3 Visualization Styles
+
+`plot_bar()` supports frequency counting, grouped metric comparisons, and proportional compositions.
+
+#### 24.3.1 Style A: Mean Aggregation with Grouped Dodge Layout and Value Labels (Default)
+
+Calculates mean landings per trip across Gear Types grouped by Coastal Sector, placing numeric value labels above each bar:
+
+```{r bar_plot_dodge, fig.width = 7.5, fig.height = 5.0, fig.align = "center"}
+p_bar_dodge <- plot_bar(
+  data         = fisheries_catch_survey,
+  x            = "Gear_Type",
+  y            = "Landings_kg",
+  group        = "Sector",
+  stat         = "mean",
+  position     = "dodge",
+  show_labels  = TRUE,
+  palette      = "Dark2",
+  title_prefix = "Small-Scale Fisheries"
+)
+
+# Render publication plot
+p_bar_dodge
+
+```
+
+#### 24.3.2 Style B: Proportional 100% Stacked Bar Chart (`position = "fill"`)
+
+Visualizes the relative proportion of fishing effort (trip count) per Gear Type across coastal sectors:
+
+```{r bar_plot_fill, fig.width = 7.0, fig.height = 4.8, fig.align = "center"}
+p_bar_fill <- plot_bar(
+  data         = fisheries_catch_survey,
+  x            = "Sector",
+  group        = "Gear_Type",
+  position     = "fill",
+  palette      = "Set2",
+  ylab         = "Proportion of Fishing Trips",
+  title_prefix = "Gear Composition"
+)
+
+p_bar_fill
+
+```
+
+#### 24.3.3 Style C: Horizontal Bar Chart for Species / Station Inventories
+
+When category names are long, `horizontal = TRUE` flips the coordinate axes to maintain legible labels:
+
+```{r bar_plot_horiz, fig.width = 7.0, fig.height = 4.5, fig.align = "center"}
+p_bar_horiz <- plot_bar(
+  data        = fisheries_catch_survey,
+  x           = "Gear_Type",
+  y           = "Landings_kg",
+  stat        = "sum",
+  horizontal  = TRUE,
+  show_labels = TRUE,
+  palette     = "Blues",
+  ylab        = "Total Catch Landings (kg)"
+)
+
+p_bar_horiz
+
+```
+
+### 24.4 Inspection of Aggregated Values
+
+Inspect the aggregated underlying metrics generated during bar chart construction:
+
+```{r bar_inspection}
+# 1. Summary table of Mean Landings per Gear and Sector
+aggregate(Landings_kg ~ Gear_Type + Sector, data = fisheries_catch_survey, FUN = function(x) round(mean(x), 2))
+
+```
+
+```
+
+```
+
+## 25. Compositional Graphics & Survey Perception Analysis
+
+In fisheries management, aquaculture surveys, and aquatic biomonitoring, reporting categorical proportions is standard practice. Whether portraying the percentage contribution of distinct species to total commercial landings, evaluating multi-tiered habitat classifications, or quantifying fisher community perceptions regarding marine protected areas (MPAs), standard plots often underperform in clarity or visual engagement.
+
+The `aquats` package provides four specialized compositional and perception graphics:
+1. **`plot_pie3d()`:** Native isometric 3D pie charts with perspective compression, extruded depth rims, and shadow rendering[cite: 24].
+2. **`plot_circular_bar()`:** Radial bar charts with concentric reference gridlines and dynamic label angles for many-category comparisons[cite: 25].
+3. **`plot_donut()`:** Single-, double-, or triple-tiered nested sunburst/donut charts representing hierarchical ecological structures[cite: 26].
+4. **`plot_likert()`:** Diverging and 100% stacked horizontal bar charts designed for socio-economic survey evaluation[cite: 27].
+
+---
+
+### 25.1 3D Depth Pie Charts (`plot_pie3d`)
+
+The `plot_pie3d()` function renders an isometric 3D pie chart directly in `ggplot2` by calculating geometric polygon coordinates for both the top circular face (compressed by perspective factor $\lambda \in [0.2, 0.8]$) and the extruded bottom rim[cite: 24]:
+
+$$x(\theta) = r \cos(\theta), \quad y(\theta) = r \sin(\theta) \times \lambda$$
+
+The front rim is extruded over the interval $\theta \in [\pi, 2\pi]$ (where $y \le 0$) with vertical depth $\delta$[cite: 24]:
+
+$$y_{\text{rim\_bottom}}(\theta) = y(\theta) - \delta$$
+
+We simulate commercial fisheries catch composition data across five key target species:
+
+```{r pie3d_demo, fig.width = 6.8, fig.height = 5.0, fig.align = "center"}
+catch_composition <- data.frame(
+  Species     = c("Hilsa Shad", "Rohu Carp", "Catla", "Prawn", "Catfish"),
+  Landings_MT = c(420, 210, 150, 95, 45)
+)
+
+p_pie <- plot_pie3d(
+  data         = catch_composition,
+  x            = "Species",
+  y            = "Landings_MT",
+  stat         = "identity",
+  tilt         = 0.52,
+  depth        = 0.22,
+  show_labels  = TRUE,
+  min_percent  = 5,
+  palette      = "Set2",
+  title        = "Annual Landings Composition by Target Taxa (MT)"
+)
+
+# Render 3D pie chart
+p_pie
+
+```
+
+---
+
+### 25.2 Circular Radial Bar Plots (`plot_circular_bar`)
+
+When a categorical variable contains eight or more levels (e.g., river stations, fishing gears, sub-districts), standard vertical bar charts require horizontal label rotation that impairs readability. `plot_circular_bar()` maps values along a polar coordinate axis (`coord_polar`), reserving a central void fraction ($\rho$) and rendering dashed concentric reference rings with scale labels:
+
+$$\theta_i = \frac{2\pi (i - 0.5)}{K}, \quad r_i = y_i$$
+
+We simulate gear-specific catch per unit effort (CPUE in kg/haul) across 10 artisanal gear types:
+
+```{r circular_bar_demo, fig.width = 6.5, fig.height = 6.5, fig.align = "center"}
+gear_cpue <- data.frame(
+  Gear = c("Current Net", "Set Bag Net", "Longline", "Cast Net", "Gillnet", 
+           "Push Net", "Drag Net", "Stake Net", "Traps", "Hook & Line"),
+  CPUE = c(42.5, 38.2, 29.0, 14.8, 24.5, 11.2, 18.6, 21.4, 8.5, 16.0)
+)
+
+p_circular <- plot_circular_bar(
+  data         = gear_cpue,
+  x            = "Gear",
+  y            = "CPUE",
+  stat         = "identity",
+  inner_radius = 0.35,
+  show_grid    = TRUE,
+  palette      = "Spectral",
+  title        = "Artisanal Gear Catch per Unit Effort (kg/haul)"
+)
+
+# Render circular bar plot
+p_circular
+
+```
+
+---
+
+### 25.3 Hierarchical Nested Donut Charts (`plot_donut`)
+
+The `plot_donut()` function displays hierarchical groupings (e.g., Habitat Zone $\to$ Feeding Guild $\to$ Target Species) across up to three concentric concentric rings. Each layer aligns angular boundaries ($\theta_{\min}, \theta_{\max}$) with parent categories while varying radial boundaries ($r_{\text{in}}, r_{\text{out}}$):
+
+$$\theta_{\text{start}}^{(k)} = \sum_{j=1}^{k-1} p_j \times 2\pi, \quad \theta_{\text{end}}^{(k)} = \sum_{j=1}^k p_j \times 2\pi$$
+
+We simulate an estuarine survey categorizing fish biomass across **Zone** (Inner vs Outer Estuary) and **Trophic Guild** (Carnivore, Herbivore, Planktivore):
+
+```{r donut_demo, fig.width = 7.0, fig.height = 5.2, fig.align = "center"}
+hierarchical_survey <- data.frame(
+  Zone    = c("Inner", "Inner", "Inner", "Outer", "Outer", "Outer"),
+  Guild   = c("Carnivore", "Herbivore", "Planktivore", "Carnivore", "Herbivore", "Planktivore"),
+  Biomass = c(120, 85, 145, 210, 60, 95)
+)
+
+p_donut <- plot_donut(
+  data        = hierarchical_survey,
+  levels      = c("Zone", "Guild"),
+  value       = "Biomass",
+  show_labels = TRUE,
+  min_percent = 5,
+  palette     = "Dark2",
+  title       = "Hierarchical Estuarine Biomass (Zone > Trophic Guild)"
+)
+
+# Render nested donut chart
+p_donut
+
+```
+
+---
+
+### 25.4 Survey Perception Likert Visualizations (`plot_likert`)
+
+Socio-economic evaluations in fisheries (e.g., fisher compliance, willingness to support seasonal bans, perception of catch declines) are recorded on ordinal Likert scales. `plot_likert()` aligns responses using either a **diverging layout** (centered on the neutral mid-point) or a **100% stacked layout**.
+
+For an odd number of categories $K$ with mid-point $M = \lceil K/2 \rceil$, the diverging coordinate offset is:
+
+$$x_{\text{start}} = -\left( \sum_{k=1}^{M-1} p_k + \frac{1}{2} p_M \right)$$
+
+This splits the neutral category symmetrically across the vertical $x = 0$ axis while anchoring negative responses (Disagree) to the left and positive responses (Agree) to the right.
+
+We simulate a community perception survey evaluating fisher responses across four socio-economic items:
+
+```{r likert_demo, fig.width = 8.5, fig.height = 4.8, fig.align = "center"}
+set.seed(2525)
+n_fishers <- 100
+
+likert_levels <- c("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree")
+
+survey_perceptions <- data.frame(
+  Sanctuary_Support    = sample(likert_levels, n_fishers, replace = TRUE, prob = c(0.10, 0.15, 0.10, 0.35, 0.30)),
+  Seasonal_Ban_Compliance = sample(likert_levels, n_fishers, replace = TRUE, prob = c(0.08, 0.12, 0.15, 0.40, 0.25)),
+  Catch_Decline_Observed  = sample(likert_levels, n_fishers, replace = TRUE, prob = c(0.05, 0.08, 0.12, 0.35, 0.40)),
+  Subsidy_Sufficiency   = sample(likert_levels, n_fishers, replace = TRUE, prob = c(0.35, 0.30, 0.15, 0.12, 0.08))
+)
+
+p_likert_diverging <- plot_likert(
+  data         = survey_perceptions,
+  items        = c("Sanctuary_Support", "Seasonal_Ban_Compliance", "Catch_Decline_Observed", "Subsidy_Sufficiency"),
+  levels       = likert_levels,
+  type         = "diverging",
+  palette      = "RdYlBu",
+  show_labels  = TRUE,
+  clean_labels = TRUE,
+  title        = "Fisher Community Conservation Perception Survey (Diverging %)"
+)
+
+# Render diverging Likert plot
+p_likert_diverging
+
+```
+
+```
+
+```
+
+## 29. Temporal Tracking & Multi-Factor Time-Series Analysis
+
+The `plot_timeseries()` function provides publication-grade line tracking and longitudinal time-series visualization for limnological water chemistry, estuarine hydrology, and fisheries stock surveys. In long-term aquatic studies, monitoring parameters across temporal gradients (e.g., daily tidal cycles, monthly flood pulses, annual recruitment oscillations) requires clear visualization of trends while accounting for within-season sampling error.
+
+The function handles:
+1. **Diverse Time-Step Ingestion:** Parses date formats (`Date`, `POSIXct`), continuous numeric steps (e.g., Year: 2018–2026), or ordered calendar factors (`"Jan"`, `"Feb"`, `"Mar"` or seasonal pulses: `"Pre-Monsoon"`, `"Monsoon"`, `"Post-Monsoon"`).
+2. **Multi-Factor Hierarchical Partitioning:**
+   - **Single-Factor:** Unstratified ecosystem temporal tracking.
+   - **Two-Factor:** Multi-station or inter-species trajectories differentiated by color (`color_var`).
+   - **Three-Factor (Factorial Interaction):** High-dimensional tracking combining color, line styles (`linetype_var`), and multi-panel faceting (`facet_var`).
+3. **Automated Replicate Aggregation:** Automatically averages replicate samples per time-step and constructs shaded uncertainty bands: 95% Confidence Intervals (`"ci"`), Standard Error (`"se"`), or Standard Deviation (`"sd"`).
+
+### 29.1 Conceptual Framework & Uncertainty Band Mechanics
+
+Let $y_{t, i}$ denote the $i$-th sample replicate ($i = 1, \dots, n_t$) observed at temporal interval $t$.
+
+#### 29.1.1 Replicate Arithmetic Mean
+$$\bar{y}_t = \frac{1}{n_t} \sum_{i=1}^{n_t} y_{t, i}$$
+
+#### 29.1.2 Standard Error of the Mean (SE Ribbon)
+Quantifies the precision of the estimated mean trajectory across repeated sampling visits:
+$$\text{SE}_t = \frac{s_t}{\sqrt{n_t}}, \quad \text{Ribbon}_{\text{SE}} = \bar{y}_t \pm \text{SE}_t$$
+
+#### 29.1.3 95% Student's $t$ Confidence Band (CI Ribbon)
+Constructs the confidence boundary containing the true population parameter $\mu_t$ at level $\alpha = 0.05$:
+$$\text{CI}_{95\%, \, t} = \bar{y}_t \pm t_{n_t - 1, \, 0.975} \times \frac{s_t}{\sqrt{n_t}}$$
+
+### 29.2 In-Vignette Data Generation
+
+We simulate a 12-month estuarine monitoring survey tracking Dissolved Oxygen (mg/L) across three River Stations (`Upper River`, `Middle Basin`, `Estuary Mouth`) at two distinct Water Depths (`Surface` vs. `Bottom`), collecting 4 replicate water column grabs per visit:
+
+```{r timeseries_data_prep}
+set.seed(2929)
+months_seq <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+stations   <- c("Upper River", "Middle Basin", "Estuary Mouth")
+depths     <- c("Surface", "Bottom")
+n_reps     <- 4
+
+ts_grid <- expand.grid(Month = months_seq, Station = stations, Depth = depths)
+
+ts_rows <- lapply(seq_len(nrow(ts_grid)), function(i) {
+  m <- as.character(ts_grid$Month[i])
+  st <- as.character(ts_grid$Station[i])
+  dp <- as.character(ts_grid$Depth[i])
+  
+  # Base seasonal oxygen curve (higher in winter, lower during summer stratification)
+  m_idx <- match(m, months_seq)
+  base_do <- 7.5 + 2.2 * cos((m_idx - 1) * (2 * pi / 12))
+  
+  # Spatial and depth adjustments
+  st_offset <- switch(st, "Upper River" = 0.8, "Middle Basin" = 0.0, "Estuary Mouth" = -0.6)
+  dp_offset <- if (dp == "Bottom") -1.4 else 0.0
+  
+  sim_do <- pmax(2.0, rnorm(n_reps, mean = base_do + st_offset + dp_offset, sd = 0.35))
+  
+  data.frame(
+    Month   = factor(m, levels = months_seq),
+    Station = st,
+    Depth   = dp,
+    DO_mgL  = round(sim_do, 2),
+    stringsAsFactors = FALSE
+  )
+})
+
+aquatic_timeseries <- do.call(rbind, ts_rows)
+head(aquatic_timeseries, 8)
+
+```
+
+### 29.3 Visualization Styles
+
+`plot_timeseries()` provides single-series trajectories, multi-line comparisons, and full three-factor factorial faceted layouts.
+
+#### 29.3.1 Style A: Single-Series Temporal Trajectory with 95% CI Ribbon (Default)
+
+Tracks overall monthly mean dissolved oxygen pooled across the watershed with 95% Confidence Interval whiskers:
+
+```{r ts_plot_single, fig.width = 7.2, fig.height = 4.8, fig.align = "center"}
+res_ts_single <- plot_timeseries(
+  data       = aquatic_timeseries,
+  time_var   = "Month",
+  y_var      = "DO_mgL",
+  ribbon     = "ci",
+  point_size = 2.8,
+  line_width = 1.1,
+  ylab       = "Dissolved Oxygen (mg/L)",
+  title      = "Seasonal Dissolved Oxygen Dynamics (Mean \u00b1 95% CI)"
+)
+
+# Render single-series plot
+res_ts_single$Plot
+
+```
+
+#### 29.3.2 Style B: Two-Factor Comparison with Color-Coded Stations & SE Ribbons
+
+Compares monthly trajectories across three river monitoring stations using color-coded lines and Standard Error ($\pm 1\text{ SE}$) ribbons:
+
+```{r ts_plot_twofactor, fig.width = 7.5, fig.height = 5.0, fig.align = "center"}
+res_ts_stations <- plot_timeseries(
+  data          = aquatic_timeseries,
+  time_var      = "Month",
+  y_var         = "DO_mgL",
+  color_var     = "Station",
+  ribbon        = "se",
+  color_palette = "Dark2",
+  point_size    = 2.4,
+  line_width    = 1.0,
+  ylab          = "Dissolved Oxygen (mg/L)",
+  title         = "Comparative Station Dissolved Oxygen Trends"
+)
+
+res_ts_stations$Plot
+
+```
+
+#### 29.3.3 Style C: Three-Factor Factorial Layout (Color + Linetype + Facet)
+
+Demonstrates a high-dimensional layout tracking Month $\times$ Station $\times$ Depth: Stations are color-coded, Water Depths are mapped to distinct line types (`Surface` solid vs. `Bottom` dashed), and stations are faceted into individual panels:
+
+```{r ts_plot_threefactor, fig.width = 8.5, fig.height = 4.5, fig.align = "center"}
+res_ts_factorial <- plot_timeseries(
+  data          = aquatic_timeseries,
+  time_var      = "Month",
+  y_var         = "DO_mgL",
+  color_var     = "Depth",
+  linetype_var  = "Depth",
+  facet_var     = "Station",
+  ribbon        = "ci",
+  color_palette = "Set1",
+  point_size    = 2.2,
+  ylab          = "Dissolved Oxygen (mg/L)",
+  title         = "Spatial and Bathymetric Dissolved Oxygen Profiles Across Seasons"
+)
+
+res_ts_factorial$Plot
+
+```
+
+### 29.4 Summary Table Inspection
+
+The returned list contains the aggregated statistical table, detailing replicate counts ($N$), Means, Standard Deviations, Standard Errors, and Confidence Limits for each discrete temporal coordinate:
+
+```{r ts_inspection}
+# 1. Preview aggregated summary statistics table (First 6 records)
+head(res_ts_factorial$Summary_Data, 6)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

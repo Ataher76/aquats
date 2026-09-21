@@ -10,6 +10,7 @@ ancova_analysis(
   factor_var,
   covariate_var,
   factor_levels = NULL,
+  facet = FALSE,
   color_palette = "Set1"
 )
 }
@@ -24,6 +25,8 @@ ancova_analysis(
 
 \item{factor_levels}{Optional character vector; custom order for the factor levels.}
 
+\item{facet}{Logical. If \code{TRUE}, panels are split by factor levels using \code{facet_wrap} (default: \code{FALSE}).}
+
 \item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
 }
 \value{
@@ -33,5 +36,5 @@ A list containing the ANCOVA model summary, EMMs, and the ggplot object.
 This function performs an Analysis of Covariance to test group differences in a
 continuous response variable while controlling for a continuous covariate. It extracts
 the ANCOVA table, estimated marginal means (EMMs), and generates a publication-ready
-regression scatter plot with parallel trend lines.
+regression scatter plot with parallel trend lines matching the additive model.
 }

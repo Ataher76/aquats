@@ -2,35 +2,61 @@
 % Please edit documentation in R/regression_analysis.R
 \name{regression_analysis}
 \alias{regression_analysis}
-\title{Flexible Regression Analysis with Shaded Confidence Intervals and Statistics}
+\title{Parametric and Non-Linear Regression Analysis with Fitted Equations}
 \usage{
 regression_analysis(
   data,
   x_var,
   y_var,
-  fit_type = "linear",
+  fit_type = c("linear", "power", "exponential", "logarithmic", "polynomial", "cubic"),
   group_var = NULL,
-  color_palette = "Set1"
+  facet = FALSE,
+  interval = c("confidence", "prediction", "none"),
+  show_equation = TRUE,
+  color_palette = "Set1",
+  point_size = 2.2,
+  point_alpha = 0.75,
+  title = NULL
 )
 }
 \arguments{
-\item{data}{A data frame containing the variables.}
+\item{data}{A \code{data.frame}, \code{matrix}, or tibble.}
 
-\item{x_var}{Character; the name of the independent variable (x-axis).}
+\item{x_var}{Character. Name of the independent predictor variable.}
 
-\item{y_var}{Character; the name of the dependent response variable (y-axis).}
+\item{y_var}{Character. Name of the dependent response variable.}
 
-\item{fit_type}{Character; type of model: "linear", "logarithmic", or "polynomial". Default is "linear".}
+\item{fit_type}{Character. Model type: \code{"linear"} (default), \code{"power"} (allometric),
+\code{"exponential"}, \code{"logarithmic"}, \code{"polynomial"} (quadratic), or \code{"cubic"}.}
 
-\item{group_var}{Optional character; the name of a categorical variable to group/color regressions by.}
+\item{group_var}{Optional character. Grouping factor for multi-category regression.}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
+\item{facet}{Logical. If \code{TRUE} and \code{group_var} is provided, facets by group. Default is \code{FALSE}.}
+
+\item{interval}{Character. Uncertainty band type: \code{"confidence"} (default),
+\code{"prediction"}, or \code{"none"}.}
+
+\item{show_equation}{Logical. If \code{TRUE} (default), prints the regression equation,
+\eqn{R^2}, and p-value on the canvas.}
+
+\item{color_palette}{Character. RColorBrewer palette name (default: \code{"Set1"}).}
+
+\item{point_size}{Numeric. Size of scatter points (default: 2.2).}
+
+\item{point_alpha}{Numeric. Opacity of scatter points (default: 0.75).}
+
+\item{title}{Optional character. Plot title.}
 }
 \value{
-A list containing model summaries, regression parameters, and the ggplot object.
+A list containing:
+  \item{Plot}{Publication-grade \code{ggplot} object.}
+  \item{Models}{Named list of fitted \code{lm} model objects per group.}
+  \item{Equation_Table}{Data frame of algebraic formulas, \eqn{R^2}, and p-values.}
+  \item{Predictions}{Data frame of calculated predictions with confidence/prediction limits.}
 }
 \description{
-This function fits linear, logarithmic, or polynomial regression models to data,
-calculates coefficients, R-squared, and p-values, and generates a publication-ready
-plot with confidence interval shading and equation annotations.
+Fits linear, allometric power, exponential, logarithmic, quadratic polynomial,
+or cubic regression models. Automatically formats algebraic mathematical formulas,
+R-squared values, and p-values, displays confidence or prediction intervals, and renders
+publication-ready ggplot2 graphics.
 }

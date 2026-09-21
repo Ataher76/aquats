@@ -2,34 +2,69 @@
 % Please edit documentation in R/mantel_heatmap_analysis.R
 \name{mantel_heatmap_analysis}
 \alias{mantel_heatmap_analysis}
-\title{Integrated Mantel Test and Correlation Heatmap}
+\title{Integrated Environmental Correlation and Multi-Community Mantel Network}
 \usage{
 mantel_heatmap_analysis(
   comm_data,
   env_data,
-  method = "pearson",
+  plot_type = c("network", "bars"),
+  line_style = c("curve", "straight"),
+  method = c("pearson", "spearman"),
   spec_dist = "bray",
   env_dist = "euclidean",
-  color_palette = "RdBu"
+  transform = c("none", "hellinger", "log", "pa", "sqrt"),
+  only_significant = FALSE,
+  line_color_by = c("significance", "community"),
+  permutations = 999,
+  seed = 42,
+  show_cor_text = TRUE,
+  color_palette = "RdBu",
+  title = NULL
 )
 }
 \arguments{
-\item{comm_data}{A data frame containing community or species abundance data.}
+\item{comm_data}{A \code{data.frame}, \code{matrix}, or a \code{named list} of
+data frames representing distinct biological communities.}
 
-\item{env_data}{A data frame containing numeric environmental variables.}
+\item{env_data}{A \code{data.frame} or \code{matrix} of numeric environmental variables.}
 
-\item{method}{Character; correlation method: "pearson" or "spearman". Default is "pearson".}
+\item{plot_type}{Character. Visualization layout: \code{"network"} (default curved/straight diagram)
+or \code{"bars"} (synchronized side-by-side barplot).}
 
-\item{spec_dist}{Character; distance metric for community data (e.g., "bray", "euclidean"). Default is "bray".}
+\item{line_style}{Character. Linkage geometry: \code{"curve"} (default) or \code{"straight"}.}
 
-\item{env_dist}{Character; distance metric for environmental data. Default is "euclidean".}
+\item{method}{Character. Correlation method: \code{"pearson"} (default) or \code{"spearman"}.}
 
-\item{color_palette}{Character; color palette for heatmap. Default is "RdBu".}
+\item{spec_dist}{Character. Dissimilarity metric for community data (default: \code{"bray"}).}
+
+\item{env_dist}{Character. Distance metric for environmental parameters (default: \code{"euclidean"}).}
+
+\item{transform}{Character. Transformation applied to community counts via \code{vegan::decostand}:
+\code{"none"} (default), \code{"hellinger"} (recommended for abundance), \code{"log"}, \code{"pa"}, or \code{"sqrt"}.}
+
+\item{only_significant}{Logical. If \code{TRUE}, displays only significant Mantel linkages (p < 0.05).}
+
+\item{line_color_by}{Character. Color linkage lines by \code{"significance"} (default) or \code{"community"}.}
+
+\item{permutations}{Integer. Number of Monte Carlo permutations for Mantel tests (default: 999).}
+
+\item{seed}{Optional integer. Random seed for reproducible permutations (default: 42).}
+
+\item{show_cor_text}{Logical. If \code{TRUE}, displays correlation values inside tiles (default: \code{TRUE}).}
+
+\item{color_palette}{Character. Diverging palette name for the correlation heatmap (default: \code{"RdBu"}).}
+
+\item{title}{Optional character. Master figure title.}
 }
 \value{
-A list containing the correlation matrix, Mantel test results, and the ggplot object.
+A list containing:
+  \item{Plot}{The primary publication-ready \code{ggplot} object.}
+  \item{Correlation_Matrix}{Symmetric matrix of environmental correlation coefficients.}
+  \item{Mantel_Results}{Tidy data frame containing community-specific Mantel r, p-values, and significance.}
 }
 \description{
-Computes internal correlations among environmental variables and performs Mantel tests
-linking community composition to environmental parameters using base vegan and ggplot2.
+Computes pairwise environmental correlations while performing Mantel tests
+across single or multiple biological communities (e.g., Phytoplankton,
+Zooplankton, Benthos, Fish). Generates publication-ready network diagrams
+with customizable straight or curved linkages and anchor pins.
 }

@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen.svg)]()
 [![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)]()
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22885025.svg)](https://doi.org/10.5281/zenodo.22885025)
 
 **aquats** provides a streamlined, publication-grade analytical and visualization framework tailored for aquatic ecology, fisheries science, and environmental monitoring workflows.
 
@@ -21,7 +22,7 @@
 
 ## Installation
 
-You can install the development version of `aquats` directly from GitHub:
+You can install the released version of `aquats` from GitHub using `remotes`:
 
 ```r
 # install.packages("remotes")
@@ -56,6 +57,8 @@ print(res$Plot)
 ### 2. Community Alpha Diversity Profiling
 
 ```r
+library(aquats)
+
 # Calculate alpha diversity indices using bundled community data
 div_res <- calc_diversity(
   data = community_master
@@ -65,13 +68,45 @@ head(div_res)
 
 ```
 
+---
+
+## Citation
+
+If you use `aquats` in your research or publications, please cite it as:
+
+> Ali, A. (2026). *aquats: Robust Ecological and Fisheries Data Analysis and Visualization* (v1.2.0). Zenodo. https://doi.org/10.5281/zenodo.22885026
+
+You can also generate the BibTeX entry directly in R:
+
+```r
+citation("aquats")
+
+```
+
+```bibtex
+@Manual{,
+  title  = {aquats: Robust Ecological and Fisheries Data Analysis and Visualization},
+  author = {Ataher Ali},
+  year   = {2026},
+  note   = {R package version 1.2.0},
+  doi    = {10.5281/zenodo.22885026},
+  url    = {[https://github.com/Ataher76/aquats](https://github.com/Ataher76/aquats)}
+}
+
+```
+
+---
+
 ## Author & Maintainer
 
 * **Ataher Ali** – Maintainer & Author
-* ORCID: [0009-0008-8780-0903](https://orcid.org/0009-0008-8780-0903)
+* ORCID: [0009-0008-8780-0903](https://orcid.org/0009-0008-8780-0903?utm_source=gemini)
 * Email: `ataher.cu.ms@gmail.com`
+
+---
 
 ## License
 
 This package is licensed under the **MIT License**.
+
 

@@ -8,24 +8,26 @@ Authors@R: person(
     email = "ataher.cu.ms@gmail.com",
     role = c("aut", "cre"),
     comment = c(ORCID = "0009-0008-8780-0903")
-      )
-Description: A comprehensive statistical and visualization toolkit tailored 
-    for fisheries science, stock assessment workflows, and aquatic ecology. 
-    It provides streamlined wrappers for univariate and factorial ANOVA, 
-    ANCOVA, MANOVA, generalized linear models, non-linear morphometric 
-    regressions with embedded algebraic equations, ordination techniques 
-    (NMDS, PCA, RDA, db-RDA, hierarchical clustering), correlation heatmaps, 
-    integrated Mantel test network linkages, alpha diversity indices, 
-    species accumulation curves, water quality indices (WAWQI), heavy metal 
-    ecotoxicological contamination indices, and multi-factor longitudinal 
+  )
+Description: A comprehensive statistical and visualization toolkit tailored
+    for fisheries science, stock assessment workflows, and aquatic ecology.
+    It provides streamlined wrappers for univariate and factorial ANOVA,
+    ANCOVA, MANOVA, generalized linear models, non-linear morphometric
+    regressions with embedded algebraic equations, ordination techniques
+    (NMDS, PCA, RDA, db-RDA, hierarchical clustering), correlation heatmaps,
+    integrated Mantel test network linkages, alpha diversity indices,
+    species accumulation curves, water quality indices (WAWQI), heavy metal
+    ecotoxicological contamination indices, and multi-factor longitudinal
     time-series tracking with uncertainty ribbons.
 License: MIT + file LICENSE
+URL: https://github.com/Ataher76/aquats, https://doi.org/10.5281/zenodo.22885025
+BugReports: https://github.com/Ataher76/aquats/issues
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
-Depends: 
+Depends:
     R (>= 3.5.0)
-Imports: 
+Imports:
     dplyr,
     emmeans,
     ggplot2,
@@ -37,7 +39,7 @@ Imports:
     rlang,
     tidyr,
     vegan
-Suggests: 
+Suggests:
     cowplot,
     knitr,
     multcompView,

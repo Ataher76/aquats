@@ -2,10 +2,13 @@ Package: aquats
 Type: Package
 Title: Robust Ecological and Fisheries Data Analysis and Visualization
 Version: 1.2.0
-Authors@R: person(given = "Ataher",
-                  family = "Ali",
-                  role = c("aut", "cre"),
-                  email = "ataher.cu.ms@gmail.com")
+Authors@R: person(
+    given = "Ataher",
+    family = "Ali",
+    email = "ataher.cu.ms@gmail.com",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0009-0008-8780-0903")
+      )
 Description: A comprehensive statistical and visualization toolkit tailored 
     for fisheries science, stock assessment workflows, and aquatic ecology. 
     It provides streamlined wrappers for univariate and factorial ANOVA, 

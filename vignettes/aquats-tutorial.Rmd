@@ -5,7 +5,8 @@ date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     toc: true
-    toc_depth: 3
+    toc_depth: 2
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Comprehensive Ecological and Fisheries Data Analysis with aquats}
   %\VignetteEngine{knitr::rmarkdown}

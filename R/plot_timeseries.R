@@ -5,28 +5,28 @@
 #' two-factor comparisons, and three-factor nested layouts with automated
 #' replicate aggregation (Mean \eqn{\pm} SE, SD, or 95% CI ribbons) and faceting.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.
-#' @param time_var Character. Column name representing time steps (Date, POSIXct, numeric year, or factor).
-#' @param y_var Character. Column name of the continuous response variable.
-#' @param color_var Optional character. Categorical variable mapped to line/point colors (2nd factor).
-#' @param linetype_var Optional character. Categorical variable mapped to line types (3rd factor).
-#' @param facet_var Optional character. Categorical variable used to facet plots into panels.
-#' @param ribbon Character. Uncertainty band style when replicates exist per time point:
+#' @param data A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file containing the time-series data.
+#' @param time_var Character string; column name in \code{data} representing time steps (Date, POSIXct, numeric year, or calendar factor).
+#' @param y_var Character string; column name in \code{data} representing the continuous numeric response variable.
+#' @param color_var Optional character string; column name in \code{data} mapped to line and point colors (secondary factor). Default is \code{NULL}.
+#' @param linetype_var Optional character string; column name in \code{data} mapped to line styles (tertiary factor). Default is \code{NULL}.
+#' @param facet_var Optional character string; column name in \code{data} used to facet plots into sub-panels. Default is \code{NULL}.
+#' @param ribbon Character string; uncertainty band style when replicates exist per time point:
 #'   \code{"ci"} (95% Confidence Interval, default), \code{"se"} (\eqn{\pm 1} Standard Error),
-#'   \code{"sd"} (\eqn{\pm 1} Standard Deviation), or \code{"none"}.
-#' @param show_points Logical. If \code{TRUE} (default), renders points at each observation/mean time point.
-#' @param point_size Numeric. Size of data points (default: 2.5).
-#' @param line_width Numeric. Thickness of the trajectory lines (default: 1.0).
-#' @param ribbon_alpha Numeric. Opacity of uncertainty ribbons (default: 0.20).
-#' @param smooth Logical. If \code{TRUE}, adds a LOESS or spline smoothing trendline (default: \code{FALSE}).
-#' @param color_palette Character. RColorBrewer palette name (default: \code{"Dark2"}).
-#' @param xlab Optional character. Custom x-axis label.
-#' @param ylab Optional character. Custom y-axis label.
-#' @param title Optional character. Plot title.
+#'   \code{"sd"} (\eqn{\pm 1} Standard Deviation), or \code{"none"}. Default is \code{"ci"}.
+#' @param show_points Logical; if \code{TRUE} (default), renders points at each observation or aggregated mean time step.
+#' @param point_size Numeric; size of data points. Default is \code{2.5}.
+#' @param line_width Numeric; thickness of trajectory lines. Default is \code{1.0}.
+#' @param ribbon_alpha Numeric; opacity of uncertainty ribbons (0 to 1). Default is \code{0.20}.
+#' @param smooth Logical; if \code{TRUE}, adds a smoothing trendline. Default is \code{FALSE}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.
+#' @param xlab Optional character string; custom x-axis label. Default is \code{NULL}.
+#' @param ylab Optional character string; custom y-axis label. Default is \code{NULL}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
 #' @return A list containing:
-#'   \item{Plot}{The publication-ready \code{ggplot} object.}
-#'   \item{Summary_Data}{A tidy data frame of aggregated Means, SD, SE, and Confidence Intervals.}
+#'   \item{Plot}{The publication-ready \code{ggplot2} object.}
+#'   \item{Summary_Data}{A tidy data frame of aggregated Means, SDs, SEs, and Confidence Intervals.}
 #' @export
 #'
 #' @import ggplot2

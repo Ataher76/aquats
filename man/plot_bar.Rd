@@ -2,63 +2,78 @@
 % Please edit documentation in R/plot_bar.R
 \name{plot_bar}
 \alias{plot_bar}
-\title{Flexible and Batch Publication-Ready Bar Plots}
+\alias{plot_lollipop}
+\title{Flexible and Batch Publication-Ready Bar and Lollipop Plots}
 \usage{
 plot_bar(
   data,
   x,
   y = NULL,
   group = NULL,
+  type = c("bar", "lollipop"),
   stat = c("mean", "sum", "identity"),
   position = c("dodge", "stack", "fill"),
   show_labels = FALSE,
   horizontal = FALSE,
   palette = "Set2",
   bar_width = 0.7,
+  point_size = 3.5,
+  line_size = 0.8,
   xlab = NULL,
   ylab = NULL,
   title_prefix = ""
 )
+
+plot_lollipop(..., point_size = 3.5, line_size = 0.8)
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or a character string path to a \code{.csv},
-\code{.xlsx}, or \code{.xls} file.}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv}, \code{.xlsx}, or \code{.xls} file containing the survey data.}
 
-\item{x}{Character vector. Name(s) of the categorical grouping variable(s).
-If multiple variables are passed without \code{y}, a list of frequency plots is returned.}
+\item{x}{Character vector; column name(s) in \code{data} representing the primary categorical
+grouping variable(s). If multiple variables are passed without \code{y}, a list of plots is returned.}
 
-\item{y}{Optional character vector. Numeric variable(s) to aggregate or plot directly.
-If multiple variables are passed, a list of plots is returned.}
+\item{y}{Optional character vector; column name(s) in \code{data} representing numeric response
+variable(s) to aggregate or plot directly. If multiple variables are passed, a list of plots is returned. Default is \code{NULL}.}
 
-\item{group}{Optional character. Secondary categorical variable for grouped/stacked bars.}
+\item{group}{Optional character string; column name in \code{data} representing a secondary
+categorical factor for grouped or stacked layouts. Default is \code{NULL}.}
 
-\item{stat}{Character. Aggregation statistic when \code{y} is provided:
-\code{"mean"} (default), \code{"sum"}, or \code{"identity"} (values plotted as-is).}
+\item{type}{Character string; visual geometry style: \code{"bar"} (default) or \code{"lollipop"}. Default is \code{"bar"}.}
 
-\item{position}{Character. Bar positioning: \code{"dodge"} (default for comparisons),
-\code{"stack"}, or \code{"fill"} (proportional 100\% stacked).}
+\item{stat}{Character string; aggregation statistic when \code{y} is provided:
+\code{"mean"} (default), \code{"sum"}, or \code{"identity"} (values plotted as-is). Default is \code{"mean"}.}
 
-\item{show_labels}{Logical. If \code{TRUE}, adds value labels on or above the bars.}
+\item{position}{Character string; arrangement geometry: \code{"dodge"} (default for comparisons),
+\code{"stack"}, or \code{"fill"} (proportional 100\% stacked). For lollipop plots, \code{"dodge"} is always used. Default is \code{"dodge"}.}
 
-\item{horizontal}{Logical. If \code{TRUE}, flips axes for long taxonomic or station names.}
+\item{show_labels}{Logical; if \code{TRUE}, displays numeric value labels on or above the geometries. Default is \code{FALSE}.}
 
-\item{palette}{Character. An RColorBrewer palette name (e.g., \code{"Set2"}, \code{"Dark2"}, \code{"Blues"}).}
+\item{horizontal}{Logical; if \code{TRUE}, flips Cartesian coordinates horizontally for legible category labels. Default is \code{FALSE}.}
 
-\item{bar_width}{Numeric. Width of bars (default: 0.7).}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name (e.g., \code{"Set2"}, \code{"Dark2"}). Default is \code{"Set2"}.}
 
-\item{xlab}{Optional character string for x-axis title.}
+\item{bar_width}{Numeric; relative width of bars or spacing factor for dodging. Default is \code{0.7}.}
 
-\item{ylab}{Optional character string for y-axis title.}
+\item{point_size}{Numeric; size of the marker heads when \code{type = "lollipop"}. Default is \code{3.5}.}
 
-\item{title_prefix}{Optional character string prefixed to the plot title.}
+\item{line_size}{Numeric; width of the stem lines when \code{type = "lollipop"}. Default is \code{0.8}.}
+
+\item{xlab}{Optional character string; custom x-axis title. Default is \code{NULL}.}
+
+\item{ylab}{Optional character string; custom y-axis title. Default is \code{NULL}.}
+
+\item{title_prefix}{Optional character string; text prefix prepended to the plot title. Default is \code{""}.}
+
+\item{...}{Additional arguments passed to \code{plot_bar()} when calling \code{plot_lollipop()}.}
 }
 \value{
-A single \code{ggplot} object, or a named list of \code{ggplot} objects
+A single \code{ggplot2} object, or a named list of \code{ggplot2} objects
   if batch plotting across multiple columns.
 }
 \description{
-Generates publication-ready bar plots from a data frame, CSV, or Excel file.
-Supports frequency counting, summary metric aggregation (mean, sum, identity),
-grouped/stacked arrangements, automated data labelling, axis flipping, and
-multi-column batch plotting.
+Generates publication-ready bar and lollipop plots from a data frame, CSV,
+or Excel file. Supports frequency counting, summary metric aggregation (mean,
+sum, identity), grouped/stacked arrangements, automated data labelling,
+coordinate flipping, and multi-column batch plotting.
 }

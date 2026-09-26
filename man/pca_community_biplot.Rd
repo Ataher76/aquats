@@ -16,32 +16,35 @@ pca_community_biplot(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or \code{list} where grouping
-metadata is at the start, followed by numeric species counts.}
+\item{data}{A \code{data.frame} or \code{matrix} containing grouping metadata
+and numeric species abundance counts.}
 
-\item{group_col}{Character or integer specifying the grouping metadata column (default: 1).}
+\item{group_col}{Character string or integer; column name or index in \code{data}
+specifying the categorical grouping factor. Default is \code{1}.}
 
-\item{scale}{Logical. Should species data be scaled to unit variance (default: \code{FALSE})?
-(\code{TRUE} is recommended when species counts span orders of magnitude).}
+\item{scale}{Logical; whether to standardize species variables to unit variance.
+Setting to \code{TRUE} is recommended when variables span different units or orders
+of magnitude. Default is \code{FALSE}.}
 
-\item{transform}{Character. Optional pre-transformation via \code{vegan::decostand}:
-\code{"none"} (default), \code{"hellinger"}, \code{"log"}, \code{"pa"}, or \code{"wisconsin"}.}
+\item{transform}{Character string; pre-transformation applied to community counts via
+\code{vegan::decostand}: \code{"none"} (default), \code{"hellinger"} (recommended for abundance data),
+\code{"log"}, \code{"pa"} (presence/absence), or \code{"wisconsin"}. Default is \code{"none"}.}
 
-\item{top_n_species}{Integer or NULL. If specified (e.g., 5), labels only the top \sQuote{n}
-species with the highest vector lengths (loadings) to prevent text overlap.}
+\item{top_n_species}{Optional integer; number of top species to display based on vector loading length
+to reduce text clutter. If \code{NULL}, all species arrows are plotted. Default is \code{NULL}.}
 
-\item{color_palette}{Character. RColorBrewer palette name for site groups (default: \code{"Dark2"}).}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name for site groups. Default is \code{"Dark2"}.}
 
-\item{arrow_multiplier}{Numeric. Scaling factor for species arrow lengths (default: 1).}
+\item{arrow_multiplier}{Numeric; scaling multiplier for species loading arrows. Default is \code{1}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Plot}{A publication-ready \code{ggplot} biplot object.}
+  \item{Plot}{A publication-ready \code{ggplot2} biplot object.}
   \item{Plot_Data}{Tidy data frame of site PC scores and grouping metadata.}
   \item{Species_Scores}{Tidy data frame of species loadings and vector coordinates.}
-  \item{PCA_Object}{The underlying \code{rda} ordination object.}
+  \item{PCA_Object}{The underlying \code{rda} ordination object from \code{vegan}.}
 }
 \description{
 Performs Principal Component Analysis (PCA / RDA) on aquatic community data.

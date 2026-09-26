@@ -14,25 +14,32 @@ permanova_analysis(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or \code{list} containing grouping
-metadata columns and numeric species counts.}
+\item{data}{A \code{data.frame} or \code{matrix} containing grouping metadata
+and numeric species abundance counts.}
 
-\item{group_col}{Character or integer specifying the grouping metadata column (default: 1).}
+\item{group_col}{Character string or integer; column name or index in \code{data}
+specifying the categorical grouping factor. Default is \code{1}.}
 
-\item{dist_method}{Character. Distance metric passed to \code{vegan::vegdist} (default: \code{"bray"}).}
+\item{dist_method}{Character string; dissimilarity or distance metric passed to
+\code{vegan::vegdist} (e.g., \code{"bray"}, \code{"jaccard"}, \code{"euclidean"}).
+Default is \code{"bray"}.}
 
-\item{transform}{Character. Community data transformation via \code{vegan::decostand}:
-\code{"none"} (default), \code{"hellinger"} (recommended), \code{"log"}, \code{"pa"}, or \code{"wisconsin"}.}
+\item{transform}{Character string; pre-transformation applied to community counts via
+\code{vegan::decostand}: \code{"none"} (default), \code{"hellinger"} (recommended for
+abundance data), \code{"log"}, \code{"pa"} (presence/absence), or \code{"wisconsin"}.
+Default is \code{"none"}.}
 
-\item{permutations}{Integer. Number of Monte Carlo permutations for the test (default: 999).}
+\item{permutations}{Numeric integer; number of Monte Carlo permutations for significance
+testing. Default is \code{999}.}
 
-\item{seed}{Optional integer. Random seed for reproducible permutation results (default: 42).}
+\item{seed}{Optional integer; random seed for reproducible permutation testing.
+Default is \code{42}.}
 }
 \value{
 A list containing:
-  \item{PERMANOVA_Table}{The ANOVA-style results table from \code{vegan::adonis2}.}
-  \item{Cleaned_Data}{Data frame combining the cleaned grouping factor and community matrix.}
-  \item{Distance_Method}{The dissimilarity metric used.}
+  \item{PERMANOVA_Table}{The ANOVA-style permutation results table (\code{anova.cca}) from \code{vegan::adonis2}.}
+  \item{Cleaned_Data}{A data frame combining the filtered grouping factor and community matrix.}
+  \item{Distance_Method}{Character string indicating the dissimilarity metric applied.}
 }
 \description{
 Performs PERMANOVA (using \code{vegan::adonis2}) to test for statistical differences

@@ -1,30 +1,35 @@
-#' Flexible and Batch Publication-Ready Bar Plots
+#' Flexible and Batch Publication-Ready Bar and Lollipop Plots
 #'
-#' Generates publication-ready bar plots from a data frame, CSV, or Excel file.
-#' Supports frequency counting, summary metric aggregation (mean, sum, identity),
-#' grouped/stacked arrangements, automated data labelling, axis flipping, and
-#' multi-column batch plotting.
+#' Generates publication-ready bar and lollipop plots from a data frame, CSV,
+#' or Excel file. Supports frequency counting, summary metric aggregation (mean,
+#' sum, identity), grouped/stacked arrangements, automated data labelling,
+#' coordinate flipping, and multi-column batch plotting.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or a character string path to a \code{.csv},
-#'   \code{.xlsx}, or \code{.xls} file.
-#' @param x Character vector. Name(s) of the categorical grouping variable(s).
-#'   If multiple variables are passed without \code{y}, a list of frequency plots is returned.
-#' @param y Optional character vector. Numeric variable(s) to aggregate or plot directly.
-#'   If multiple variables are passed, a list of plots is returned.
-#' @param group Optional character. Secondary categorical variable for grouped/stacked bars.
-#' @param stat Character. Aggregation statistic when \code{y} is provided:
-#'   \code{"mean"} (default), \code{"sum"}, or \code{"identity"} (values plotted as-is).
-#' @param position Character. Bar positioning: \code{"dodge"} (default for comparisons),
-#'   \code{"stack"}, or \code{"fill"} (proportional 100\% stacked).
-#' @param show_labels Logical. If \code{TRUE}, adds value labels on or above the bars.
-#' @param horizontal Logical. If \code{TRUE}, flips axes for long taxonomic or station names.
-#' @param palette Character. An RColorBrewer palette name (e.g., \code{"Set2"}, \code{"Dark2"}, \code{"Blues"}).
-#' @param bar_width Numeric. Width of bars (default: 0.7).
-#' @param xlab Optional character string for x-axis title.
-#' @param ylab Optional character string for y-axis title.
-#' @param title_prefix Optional character string prefixed to the plot title.
+#' @param data A \code{data.frame}, \code{matrix}, or character string file path
+#'   to a \code{.csv}, \code{.xlsx}, or \code{.xls} file containing the survey data.
+#' @param x Character vector; column name(s) in \code{data} representing the primary categorical
+#'   grouping variable(s). If multiple variables are passed without \code{y}, a list of plots is returned.
+#' @param y Optional character vector; column name(s) in \code{data} representing numeric response
+#'   variable(s) to aggregate or plot directly. If multiple variables are passed, a list of plots is returned. Default is \code{NULL}.
+#' @param group Optional character string; column name in \code{data} representing a secondary
+#'   categorical factor for grouped or stacked layouts. Default is \code{NULL}.
+#' @param type Character string; visual geometry style: \code{"bar"} (default) or \code{"lollipop"}. Default is \code{"bar"}.
+#' @param stat Character string; aggregation statistic when \code{y} is provided:
+#'   \code{"mean"} (default), \code{"sum"}, or \code{"identity"} (values plotted as-is). Default is \code{"mean"}.
+#' @param position Character string; arrangement geometry: \code{"dodge"} (default for comparisons),
+#'   \code{"stack"}, or \code{"fill"} (proportional 100\% stacked). For lollipop plots, \code{"dodge"} is always used. Default is \code{"dodge"}.
+#' @param show_labels Logical; if \code{TRUE}, displays numeric value labels on or above the geometries. Default is \code{FALSE}.
+#' @param horizontal Logical; if \code{TRUE}, flips Cartesian coordinates horizontally for legible category labels. Default is \code{FALSE}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name (e.g., \code{"Set2"}, \code{"Dark2"}). Default is \code{"Set2"}.
+#' @param bar_width Numeric; relative width of bars or spacing factor for dodging. Default is \code{0.7}.
+#' @param point_size Numeric; size of the marker heads when \code{type = "lollipop"}. Default is \code{3.5}.
+#' @param line_size Numeric; width of the stem lines when \code{type = "lollipop"}. Default is \code{0.8}.
+#' @param xlab Optional character string; custom x-axis title. Default is \code{NULL}.
+#' @param ylab Optional character string; custom y-axis title. Default is \code{NULL}.
+#' @param title_prefix Optional character string; text prefix prepended to the plot title. Default is \code{""}.
+#' @param ... Additional arguments passed to \code{plot_bar()} when calling \code{plot_lollipop()}.
 #'
-#' @return A single \code{ggplot} object, or a named list of \code{ggplot} objects
+#' @return A single \code{ggplot2} object, or a named list of \code{ggplot2} objects
 #'   if batch plotting across multiple columns.
 #' @export
 #'
@@ -37,18 +42,28 @@ plot_bar <- function(data,
                      x,
                      y = NULL,
                      group = NULL,
+                     type = c("bar", "lollipop"),
                      stat = c("mean", "sum", "identity"),
                      position = c("dodge", "stack", "fill"),
                      show_labels = FALSE,
                      horizontal = FALSE,
                      palette = "Set2",
                      bar_width = 0.7,
+                     point_size = 3.5,
+                     line_size = 0.8,
                      xlab = NULL,
                      ylab = NULL,
                      title_prefix = "") {
 
+  type <- match.arg(type)
   stat <- match.arg(stat)
   position <- match.arg(position)
+
+  # Enforce dodge geometry for lollipop plots
+  if (type == "lollipop" && position %in% c("stack", "fill")) {
+    warning("Stacked and fill positions are not applicable to lollipop plots. Defaulting to 'dodge'.", call. = FALSE)
+    position <- "dodge"
+  }
 
   # 1. Ingest Data: data.frame, matrix, CSV, or Excel
   if (is.character(data) && length(data) == 1) {
@@ -64,7 +79,7 @@ plot_bar <- function(data,
     } else {
       stop("Unsupported file type. Please provide a data frame, matrix, a .csv file, or an .xlsx/.xls file.")
     }
-  } else if (is.matrix(data)) {
+  } else if (is.matrix(data) || inherits(data, "tbl_df") || inherits(data, "tbl")) {
     df <- as.data.frame(data)
   } else if (is.data.frame(data)) {
     df <- as.data.frame(data)
@@ -78,10 +93,10 @@ plot_bar <- function(data,
     names(plot_list) <- y
     for (y_col in y) {
       plot_list[[y_col]] <- plot_bar(
-        data = df, x = x[1], y = y_col, group = group, stat = stat,
+        data = df, x = x[1], y = y_col, group = group, type = type, stat = stat,
         position = position, show_labels = show_labels, horizontal = horizontal,
-        palette = palette, bar_width = bar_width, xlab = xlab, ylab = ylab,
-        title_prefix = title_prefix
+        palette = palette, bar_width = bar_width, point_size = point_size,
+        line_size = line_size, xlab = xlab, ylab = ylab, title_prefix = title_prefix
       )
     }
     return(plot_list)
@@ -92,10 +107,10 @@ plot_bar <- function(data,
     names(plot_list) <- x
     for (x_col in x) {
       plot_list[[x_col]] <- plot_bar(
-        data = df, x = x_col, y = NULL, group = group, stat = stat,
+        data = df, x = x_col, y = NULL, group = group, type = type, stat = stat,
         position = position, show_labels = show_labels, horizontal = horizontal,
-        palette = palette, bar_width = bar_width, xlab = xlab, ylab = ylab,
-        title_prefix = title_prefix
+        palette = palette, bar_width = bar_width, point_size = point_size,
+        line_size = line_size, xlab = xlab, ylab = ylab, title_prefix = title_prefix
       )
     }
     return(plot_list)
@@ -116,7 +131,6 @@ plot_bar <- function(data,
 
   # 4. Aggregate or Compute Frequencies
   if (is.null(target_y)) {
-    # Frequency/Count workflow
     if (is.null(group)) {
       calc_tbl <- as.data.frame(table(clean_df[[target_x]]))
       colnames(calc_tbl) <- c(target_x, "Metric_Val")
@@ -128,7 +142,6 @@ plot_bar <- function(data,
     }
     display_y <- "Frequency (Count)"
   } else {
-    # Continuous variable workflow
     if (!is.numeric(clean_df[[target_y]])) stop(sprintf("Column '%s' must be numeric.", target_y))
 
     if (stat == "identity") {
@@ -146,8 +159,8 @@ plot_bar <- function(data,
     display_y <- if (stat == "identity") target_y else paste(tools::toTitleCase(stat), "of", target_y)
   }
 
-  # 5. Build ggplot Object
-  dodge_pos <- ggplot2::position_dodge(width = bar_width + 0.05)
+  # 5. Build ggplot Object & Geometries
+  dodge_pos <- ggplot2::position_dodge(width = bar_width)
   effective_pos <- if (position == "dodge") dodge_pos else if (position == "fill") "fill" else "stack"
 
   p <- ggplot2::ggplot(
@@ -155,40 +168,89 @@ plot_bar <- function(data,
     ggplot2::aes(x = .data[[target_x]], y = .data[["Metric_Val"]], fill = .data[[fill_var]])
   )
 
-  if (is.null(group)) {
-    p <- p + ggplot2::geom_col(width = bar_width, color = "black", linewidth = 0.5, show.legend = FALSE)
+  if (type == "bar") {
+    if (is.null(group)) {
+      p <- p + ggplot2::geom_col(width = bar_width, color = "black", linewidth = 0.5, show.legend = FALSE)
+    } else {
+      p <- p + ggplot2::geom_col(position = effective_pos, width = bar_width, color = "black", linewidth = 0.5)
+    }
   } else {
-    p <- p + ggplot2::geom_col(position = effective_pos, width = bar_width, color = "black", linewidth = 0.5)
+    # Lollipop geometry: uses geom_linerange for robust dodge alignment
+    if (is.null(group)) {
+      p <- p +
+        ggplot2::geom_linerange(
+          ggplot2::aes(ymin = 0, ymax = .data[["Metric_Val"]]),
+          linewidth = line_size,
+          color = "grey40"
+        ) +
+        ggplot2::geom_point(
+          size = point_size,
+          shape = 21,
+          color = "black",
+          stroke = 0.7,
+          show.legend = FALSE
+        )
+    } else {
+      p <- p +
+        ggplot2::geom_linerange(
+          ggplot2::aes(ymin = 0, ymax = .data[["Metric_Val"]], group = .data[[group]]),
+          position = dodge_pos,
+          linewidth = line_size,
+          color = "grey40"
+        ) +
+        ggplot2::geom_point(
+          ggplot2::aes(group = .data[[group]]),
+          position = dodge_pos,
+          size = point_size,
+          shape = 21,
+          color = "black",
+          stroke = 0.7
+        )
+    }
   }
 
-  # Optional Numeric Labels
+  # 6. Optional Numeric Labels
   if (show_labels && position != "fill") {
-    if (position == "dodge" || is.null(group)) {
-      v_offset <- if (horizontal) 0.5 else -0.4
-      h_offset <- if (horizontal) -0.2 else 0.5
+    if (type == "bar") {
+      if (position == "dodge" || is.null(group)) {
+        v_offset <- if (horizontal) 0.5 else -0.4
+        h_offset <- if (horizontal) -0.2 else 0.5
+        p <- p + ggplot2::geom_text(
+          ggplot2::aes(label = .data[["Metric_Val"]]),
+          position = if (is.null(group)) ggplot2::position_identity() else dodge_pos,
+          vjust = v_offset,
+          hjust = h_offset,
+          size = 3.3,
+          fontface = "bold"
+        )
+      } else if (position == "stack") {
+        p <- p + ggplot2::geom_text(
+          ggplot2::aes(label = .data[["Metric_Val"]]),
+          position = ggplot2::position_stack(vjust = 0.5),
+          size = 3.1,
+          color = "white",
+          fontface = "bold"
+        )
+      }
+    } else {
+      # Lollipop labels positioned just beyond the marker head
+      v_offset <- if (horizontal) 0.5 else -0.8
+      h_offset <- if (horizontal) -0.4 else 0.5
       p <- p + ggplot2::geom_text(
-        ggplot2::aes(label = .data[["Metric_Val"]]),
+        ggplot2::aes(label = .data[["Metric_Val"]], group = if (!is.null(group)) .data[[group]] else NULL),
         position = if (is.null(group)) ggplot2::position_identity() else dodge_pos,
         vjust = v_offset,
         hjust = h_offset,
-        size = 3.3,
-        fontface = "bold"
-      )
-    } else if (position == "stack") {
-      p <- p + ggplot2::geom_text(
-        ggplot2::aes(label = .data[["Metric_Val"]]),
-        position = ggplot2::position_stack(vjust = 0.5),
-        size = 3.1,
-        color = "white",
+        size = 3.2,
         fontface = "bold"
       )
     }
   }
 
-  # 6. Aesthetics and Layout
+  # 7. Aesthetics and Layout
   p <- p +
     ggplot2::scale_fill_brewer(palette = palette) +
-    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.12))) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, if (show_labels) 0.15 else 0.08))) +
     ggplot2::labs(
       x = if (is.null(xlab)) target_x else xlab,
       y = if (is.null(ylab)) display_y else ylab,
@@ -209,4 +271,10 @@ plot_bar <- function(data,
   }
 
   return(p)
+}
+
+#' @rdname plot_bar
+#' @export
+plot_lollipop <- function(..., point_size = 3.5, line_size = 0.8) {
+  plot_bar(..., type = "lollipop", point_size = point_size, line_size = line_size)
 }

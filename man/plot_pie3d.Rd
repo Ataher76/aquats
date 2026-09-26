@@ -18,30 +18,34 @@ plot_pie3d(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing the category data.}
 
-\item{x}{Character. Categorical variable for the pie slices.}
+\item{x}{Character string; column name in \code{data} representing the categorical
+factor for slice partitioning.}
 
-\item{y}{Optional character. Numeric variable to aggregate. If \code{NULL}, calculates counts.}
+\item{y}{Optional character string; column name in \code{data} representing the numeric
+variable to aggregate. If \code{NULL}, observation frequencies (counts) are plotted. Default is \code{NULL}.}
 
-\item{stat}{Character. Aggregation method: \code{"sum"} (default), \code{"mean"}, or \code{"identity"}.}
+\item{stat}{Character string; aggregation statistic when \code{y} is provided:
+\code{"sum"} (default), \code{"mean"}, or \code{"identity"} (values plotted as-is). Default is \code{"sum"}.}
 
-\item{tilt}{Numeric. Perspective vertical compression factor between 0.2 and 0.8 (default: 0.5).}
+\item{tilt}{Numeric; perspective vertical compression factor between 0.2 and 0.8. Default is \code{0.5}.}
 
-\item{depth}{Numeric. Extrusion thickness of the 3D rim (default: 0.25).}
+\item{depth}{Numeric; extrusion depth thickness for the 3D base rim. Default is \code{0.25}.}
 
-\item{show_labels}{Logical. If \code{TRUE}, displays percentage labels on slices.}
+\item{show_labels}{Logical; if \code{TRUE}, displays percentage labels directly on the slices. Default is \code{TRUE}.}
 
-\item{min_percent}{Numeric. Minimum percentage required to display slice text (default: 4).}
+\item{min_percent}{Numeric; minimum threshold percentage required to display slice label text. Default is \code{4}.}
 
-\item{palette}{Character. RColorBrewer palette name (default: \code{"Set2"}).}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set2"}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
-A \code{ggplot} object.
+A publication-ready \code{ggplot2} object.
 }
 \description{
 Generates an isometric 3D pie chart with perspective tilt, extruded
-depth ribbons, and realistic shading natively in ggplot2.
+depth ribbons, and realistic shading natively in \code{ggplot2}.
 }

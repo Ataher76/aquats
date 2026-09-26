@@ -21,34 +21,39 @@ one_way_anova(
 )
 }
 \arguments{
-\item{data}{A data frame in long format.}
+\item{data}{A data frame containing the variables for analysis.}
 
-\item{factor_var}{Character; the name of the primary categorical independent variable.}
+\item{factor_var}{Character string; column name in \code{data} representing the primary categorical grouping factor (x-axis).}
 
-\item{numeric_var}{Character; the name of the continuous response variable.}
+\item{numeric_var}{Character string; column name in \code{data} representing the continuous numeric response variable.}
 
-\item{facet_var}{Optional character; the name of a secondary categorical variable to facet the plot by (default: \code{NULL}).}
+\item{facet_var}{Optional character string; column name in \code{data} representing a secondary categorical factor to facet panels by. Default is \code{NULL}.}
 
-\item{factor_levels}{Optional character vector; specifies the exact order of the categorical levels on the x-axis.}
+\item{factor_levels}{Optional character vector; custom level ordering for \code{factor_var}. Default is \code{NULL}.}
 
-\item{plot_type}{Character; type of plot: "boxplot", "barplot", or "pointrange". Default is "boxplot".}
+\item{plot_type}{Character string; display geometry: \code{"boxplot"}, \code{"barplot"}, or \code{"pointrange"}. Default is \code{"boxplot"}.}
 
-\item{error_type}{Character; error bar type for bar/pointrange plots: "se" (Standard Error) or "sd" (Standard Deviation).}
+\item{error_type}{Character string; error bar dispersion metric for bar and point-range plots: \code{"se"} (Standard Error) or \code{"sd"} (Standard Deviation). Default is \code{"se"}.}
 
-\item{sig_display}{Character; display significance via "letters" (compact letter display) or "stars" (p-value brackets).}
+\item{sig_display}{Character string; method to annotate statistical significance: \code{"letters"} (compact letter display from Tukey's HSD) or \code{"stars"} (pairwise significance brackets). Default is \code{"letters"}.}
 
-\item{y_limits}{Optional numeric vector of length 2; explicitly sets the Y-axis limits.}
+\item{y_limits}{Optional numeric vector of length 2; lower and upper limits for the y-axis (e.g., \code{c(0, 100)}). Default is \code{NULL}.}
 
-\item{add_jitter}{Logical; if TRUE, adds jittered points to the boxplot.}
+\item{add_jitter}{Logical; if \code{TRUE}, overlays jittered raw observation points on boxplots. Default is \code{TRUE}.}
 
-\item{show_mean}{Logical; if TRUE, displays a mean point inside the boxplot.}
+\item{show_mean}{Logical; if \code{TRUE}, displays group mean indicator diamonds inside boxplots. Default is \code{TRUE}.}
 
-\item{mean_color}{Character; color for the mean point in the boxplot.}
+\item{mean_color}{Character string; hex code or color name for group mean indicators. Default is \code{"darkred"}.}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer.}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.}
 }
 \value{
-A list containing the ANOVA summary, Tukey HSD results, EMMs, summary table, and ggplot object.
+A list containing:
+\item{ANOVA_Summary}{Global ANOVA summary table (F-statistic and p-value).}
+\item{TukeyHSD}{Tukey HSD post-hoc pairwise comparisons.}
+\item{EMMs}{Estimated Marginal Means object from \code{emmeans}.}
+\item{Summary_Table}{Aggregated sample sizes, means, SDs, SEs, and confidence limits.}
+\item{Plot}{The publication-ready \code{ggplot2} object.}
 }
 \description{
 This function performs a one-way ANOVA, calculates Tukey's HSD post-hoc test,

@@ -4,21 +4,24 @@
 #' and environmental variables. Supports optional kernel density curves,
 #' theoretical normal distribution overlays, and mean/median reference lines.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.
-#' @param x Character. Name of the continuous numeric variable to plot.
-#' @param group Optional character. Categorical grouping variable for faceting or fill coloring.
-#' @param bins Integer. Number of bins (default: 30).
-#' @param binwidth Optional numeric. Explicit bin width (overrides \code{bins}).
-#' @param add_density Logical. If \code{TRUE}, overlays an empirical kernel density curve.
-#' @param add_normal Logical. If \code{TRUE}, overlays a theoretical normal distribution curve.
-#' @param show_stats Logical. If \code{TRUE}, adds dashed reference lines for the mean and median.
-#' @param facet Logical. If \code{TRUE} and \code{group} is provided, facets the plot by group.
-#' @param palette Character. RColorBrewer palette name (default: \code{"Blues"}).
-#' @param xlab Optional character. Custom x-axis label.
-#' @param ylab Optional character. Custom y-axis label (default: \code{"Frequency"}).
-#' @param title Optional character. Custom plot title.
+#' @param data A \code{data.frame}, \code{matrix}, or character string file path
+#'   to a \code{.csv} or \code{.xlsx} file containing the observations.
+#' @param x Character string; column name in \code{data} representing the continuous
+#'   numeric variable to plot.
+#' @param group Optional character string; column name in \code{data} representing
+#'   a categorical grouping factor for faceting or fill coloring. Default is \code{NULL}.
+#' @param bins Numeric integer; number of histogram bins. Default is \code{30}.
+#' @param binwidth Optional numeric; explicit width of the histogram bins (overrides \code{bins}). Default is \code{NULL}.
+#' @param add_density Logical; if \code{TRUE}, overlays an empirical kernel density curve. Default is \code{FALSE}.
+#' @param add_normal Logical; if \code{TRUE}, overlays a theoretical normal distribution curve. Default is \code{FALSE}.
+#' @param show_stats Logical; if \code{TRUE}, adds dashed reference lines indicating the mean and median. Default is \code{FALSE}.
+#' @param facet Logical; if \code{TRUE} and \code{group} is provided, facets panels by group. Default is \code{FALSE}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Blues"}.
+#' @param xlab Optional character string; custom x-axis label. Default is \code{NULL}.
+#' @param ylab Optional character string; custom y-axis label. Default is \code{"Frequency"}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
-#' @return A \code{ggplot} object.
+#' @return A publication-ready \code{ggplot2} object.
 #' @export
 #'
 #' @import ggplot2

@@ -5,25 +5,24 @@
 #' handles methods without standard deviations defensively, and formats
 #' outputs with publication-ready styling.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or \code{list} containing
-#'   community abundance counts with optional grouping metadata column(s).
-#' @param group_col Optional character or integer vector specifying the grouping
-#'   column(s) to exclude from the community matrix or to group by. Default is 1.
-#' @param by_group Logical. If \code{TRUE}, generates comparative accumulation
-#'   curves for each level of the first grouping column (default: \code{FALSE}).
-#' @param method Character. Accumulation method passed to \code{vegan::specaccum}
-#'   (default: \code{"exact"}).
-#' @param palette Character. RColorBrewer palette name for grouped curves (default: \code{"Set2"}).
-#' @param line_color Character. Hex code or color name for single curves (default: \code{"#2A9D8F"}).
-#' @param ci Numeric. Multiplier for confidence intervals (default: 1.96).
-#' @param show_ci Logical. If \code{TRUE}, displays confidence ribbons when standard
-#'   deviations are available (default: \code{TRUE}).
-#' @param title Optional character. Plot title.
+#' @param data A \code{data.frame} or \code{matrix} containing community abundance counts
+#'   with optional grouping metadata column(s).
+#' @param group_col Character string or integer vector; column name(s) or index/indices in \code{data}
+#'   specifying grouping metadata. Default is \code{1}.
+#' @param by_group Logical; if \code{TRUE}, generates comparative accumulation curves
+#'   for each level of the grouping factor. Default is \code{FALSE}.
+#' @param method Character string; accumulation method passed to \code{vegan::specaccum}
+#'   (e.g., \code{"exact"}, \code{"random"}, \code{"collector"}). Default is \code{"exact"}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name for grouped curves. Default is \code{"Set2"}.
+#' @param line_color Character string; hex code or color name for single pooled curves. Default is \code{"#2A9D8F"}.
+#' @param ci Numeric; multiplier for confidence intervals (e.g., \code{1.96} for 95\% confidence intervals). Default is \code{1.96}.
+#' @param show_ci Logical; if \code{TRUE}, displays confidence ribbons when standard deviations are available. Default is \code{TRUE}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
 #' @return A list containing:
-#'   \item{Specaccum_Object}{The raw \code{specaccum} object (or list of objects if grouped).}
-#'   \item{Curve_Data}{A data frame with site counts, richness, and bounds.}
-#'   \item{Plot}{A publication-ready \code{ggplot} object.}
+#'   \item{Specaccum_Object}{The raw \code{specaccum} object (or list of objects if grouped) from \code{vegan}.}
+#'   \item{Curve_Data}{A tidy data frame with sampling effort, estimated species richness, and confidence bounds.}
+#'   \item{Plot}{The publication-ready \code{ggplot2} object.}
 #' @export
 #'
 #' @import ggplot2

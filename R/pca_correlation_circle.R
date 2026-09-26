@@ -4,22 +4,23 @@
 #' using base stats and ggplot2. Colors environmental parameters by their
 #' representation quality (\eqn{\cos^2}) on the selected principal components.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or \code{list} containing
+#' @param data A \code{data.frame} or \code{matrix} containing
 #'   metadata columns and numeric environmental variables.
-#' @param exclude_cols Character vector or integer specifying metadata columns
-#'   to exclude from PCA (default: \code{1}). If \code{NULL}, all columns are analyzed.
-#' @param dim1 Integer. The first principal component to plot (default: 1).
-#' @param dim2 Integer. The second principal component to plot (default: 2).
-#' @param palette Character vector of colors for the \code{cos2} gradient
-#'   (default: \code{c("#2A9D8F", "#E9C46A", "#F4A261", "#E76F51")}).
-#' @param title Optional character. Plot title.
+#' @param exclude_cols Optional character or integer vector; column names or indices in \code{data}
+#'   to exclude from PCA (e.g., non-numeric metadata columns). Default is \code{1}. If \code{NULL},
+#'   all columns are analyzed.
+#' @param dim1 Numeric integer; index of the first principal component to plot on the x-axis. Default is \code{1}.
+#' @param dim2 Numeric integer; index of the second principal component to plot on the y-axis. Default is \code{2}.
+#' @param palette Character vector; hex color codes defining the color gradient for
+#'   representation quality (\eqn{\cos^2}). Default is \code{c("#2A9D8F", "#E9C46A", "#F4A261", "#E76F51")}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
 #' @return A list containing:
-#'   \item{Plot}{A publication-ready \code{ggplot} correlation circle object.}
+#'   \item{Plot}{A publication-ready \code{ggplot2} correlation circle object.}
 #'   \item{Variable_Stats}{Data frame of variable coordinates, correlations, and \eqn{\cos^2} values.}
 #'   \item{Variance_Summary}{Data frame detailing eigenvalues and percentage variance explained per PC.}
 #'   \item{Sample_Scores}{Data frame of sample/station scores along the principal components.}
-#'   \item{PCA_Object}{The underlying \code{prcomp} object.}
+#'   \item{PCA_Object}{The underlying \code{prcomp} object from \code{stats}.}
 #' @export
 #'
 #' @import ggplot2

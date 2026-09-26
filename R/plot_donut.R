@@ -4,18 +4,19 @@
 #' donut charts. Supports up to three concentric hierarchical tiers
 #' with automatic alignment and percentage threshold labelling.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.
-#' @param levels Character vector of 1 to 3 categorical variable names
-#'   ordered from innermost ring to outermost ring.
-#' @param value Optional character. Numeric variable to aggregate (sum).
-#'   If \code{NULL}, counts frequencies.
-#' @param show_labels Logical. If \code{TRUE}, adds percentage labels to segments.
-#' @param min_percent Numeric. Minimum percentage (0 to 100) required to display
-#'   a text label on a segment (prevents visual clutter; default: 4).
-#' @param palette Character. RColorBrewer palette name (default: \code{"Set2"}).
-#' @param title Optional character string for plot title.
+#' @param data A \code{data.frame}, \code{matrix}, or character string file path
+#'   to a \code{.csv} or \code{.xlsx} file containing categorical composition data.
+#' @param levels Character vector; column names in \code{data} representing 1 to 3
+#'   categorical grouping variables, ordered from the innermost ring to the outermost ring.
+#' @param value Optional character string; column name in \code{data} representing a numeric
+#'   variable to aggregate (sum). If \code{NULL}, observation frequencies (counts) are plotted. Default is \code{NULL}.
+#' @param show_labels Logical; if \code{TRUE}, displays percentage labels directly on segments. Default is \code{TRUE}.
+#' @param min_percent Numeric; minimum percentage (0 to 100) required to display a text label
+#'   on a segment to prevent visual clutter. Default is \code{4}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set2"}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
-#' @return A \code{ggplot} object.
+#' @return A publication-ready \code{ggplot2} object.
 #' @export
 #'
 #' @import ggplot2

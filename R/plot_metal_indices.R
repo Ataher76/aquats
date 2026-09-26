@@ -4,19 +4,21 @@
 #' (HPI, HEI, Cd, PLI, or Nemerow PN) across monitoring stations, featuring
 #' 95\% confidence interval whiskers, regulatory benchmark lines, and intuitive status fills.
 #'
-#' @param data Output list from \code{calc_metal_indices()} or a raw \code{data.frame}.
-#' @param metric Character. Index to plot: \code{"HPI"} (default), \code{"HEI"},
-#'   \code{"Cd"}, \code{"PLI"}, or \code{"Nemerow_PN"}.
-#' @param id_col Character. Station identification column (default: \code{"Station"}).
-#' @param type Character. Style: \code{"bar"} (default) or \code{"lollipop"}.
-#' @param show_ci Logical. If \code{TRUE}, displays 95\% CI whiskers when replicates exist.
-#' @param show_threshold Logical. If \code{TRUE}, draws dashed regulatory thresholds.
-#' @param palette Character. Status color theme: \code{"auto"} for standard ecological colors
-#'   (green = suitable/clean, red = polluted), or an RColorBrewer palette name.
-#' @param title Optional character. Custom plot title.
-#' @param ... Additional arguments passed to \code{calc_metal_indices()}.
+#' @param data A \code{list} returned by \code{calc_metal_indices()} or a raw \code{data.frame}
+#'   containing water quality or sediment heavy metal concentrations.
+#' @param metric Character string; index to visualize: \code{"HPI"} (Heavy Metal Pollution Index, default),
+#'   \code{"HEI"} (Heavy Metal Evaluation Index), \code{"Cd"} (Degree of Contamination),
+#'   \code{"PLI"} (Pollution Load Index), or \code{"Nemerow_PN"} (Nemerow Pollution Index). Default is \code{"HPI"}.
+#' @param id_col Character string; column name in \code{data} identifying sampling stations or monitoring sites. Default is \code{"Station"}.
+#' @param type Character string; plot display geometry: \code{"bar"} (default) or \code{"lollipop"}. Default is \code{"bar"}.
+#' @param show_ci Logical; if \code{TRUE}, displays 95\% confidence interval whiskers when replicate observations exist per station. Default is \code{TRUE}.
+#' @param show_threshold Logical; if \code{TRUE}, overlays horizontal dashed reference lines representing regulatory benchmark thresholds. Default is \code{TRUE}.
+#' @param palette Character string; status color theme: \code{"auto"} for standard ecological condition grading
+#'   (green = clean, red = polluted) or a valid \code{RColorBrewer} palette name. Default is \code{"auto"}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
+#' @param ... Additional arguments passed to \code{calc_metal_indices()} when raw data is provided.
 #'
-#' @return A \code{ggplot} object.
+#' @return A publication-ready \code{ggplot2} object.
 #' @export
 #'
 #' @import ggplot2

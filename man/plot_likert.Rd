@@ -16,26 +16,29 @@ plot_likert(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path to a .csv or .xlsx file.}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing survey responses.}
 
-\item{items}{Character vector. Column names of Likert question items.}
+\item{items}{Character vector; column names in \code{data} representing Likert question items.}
 
-\item{levels}{Optional character vector of ordered response levels.}
+\item{levels}{Optional character vector; custom ordered levels of the Likert response scale
+(e.g., from strongly disagree to strongly agree). Default is \code{NULL}.}
 
-\item{type}{Character. Plot style: "diverging" (default) or "stacked".}
+\item{type}{Character string; plot display style: \code{"diverging"} (default) or
+\code{"stacked"} (100\% stacked). Default is \code{"diverging"}.}
 
-\item{palette}{Character. RColorBrewer palette name (default: "RdYlBu").}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"RdYlBu"}.}
 
-\item{show_labels}{Logical. If TRUE, displays percentage numbers on segments.}
+\item{show_labels}{Logical; if \code{TRUE}, displays percentage labels on segments. Default is \code{TRUE}.}
 
-\item{clean_labels}{Logical. If TRUE, replaces underscores with spaces in item names.}
+\item{clean_labels}{Logical; if \code{TRUE}, replaces underscores with spaces in item label names. Default is \code{TRUE}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
-A ggplot object.
+A publication-ready \code{ggplot2} object.
 }
 \description{
-Generates modern diverging or 100% stacked horizontal bar charts
+Generates modern diverging or 100\% stacked horizontal bar charts
 for survey items and perception data.
 }

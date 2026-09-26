@@ -15,22 +15,27 @@ plot_wqi(
 )
 }
 \arguments{
-\item{data}{Output list from \code{calc_wqi()} or a raw \code{data.frame}.}
+\item{data}{A \code{list} returned by \code{calc_wqi()} or a raw \code{data.frame}
+containing physicochemical water quality observations.}
 
-\item{id_col}{Character. Column identifying stations (default: \code{"Station"}).}
+\item{id_col}{Character string; column name in \code{data} identifying sampling stations
+or monitoring sites. Default is \code{"Station"}.}
 
-\item{type}{Character. Plot style: \code{"bar"} (default) or \code{"lollipop"}.}
+\item{type}{Character string; plot display geometry: \code{"bar"} (default) or \code{"lollipop"}.
+Default is \code{"bar"}.}
 
-\item{show_ci}{Logical. If \code{TRUE}, displays 95\% CI whiskers when replicates exist.}
+\item{show_ci}{Logical; if \code{TRUE}, displays 95\% confidence interval whiskers when replicate
+observations exist per station. Default is \code{TRUE}.}
 
-\item{show_bands}{Logical. If \code{TRUE}, adds shaded background benchmark tiers.}
+\item{show_bands}{Logical; if \code{TRUE}, overlays shaded horizontal background bands
+representing WAWQI rating classification tiers (e.g., Excellent, Good, Poor). Default is \code{TRUE}.}
 
-\item{title}{Optional character. Custom plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 
-\item{...}{Additional arguments passed to \code{calc_wqi()}.}
+\item{...}{Additional arguments passed to \code{calc_wqi()} when raw data is provided.}
 }
 \value{
-A \code{ggplot} object.
+A publication-ready \code{ggplot2} object.
 }
 \description{
 Generates publication-ready WQI plots across monitoring stations with

@@ -1,13 +1,28 @@
 #' Calculate Comprehensive Alpha Diversity Indices
 #'
-#' Computes Richness, Abundance, Shannon, Simpson, Margalef, Menhinick,
-#' and Pielou's Evenness indices simultaneously from community abundance data.
-#' Automatically isolates metadata columns to prevent non-numeric errors.
+#' Computes species richness, total abundance, Shannon-Wiener (\eqn{H'}),
+#' Gini-Simpson (\eqn{1 - D}), Margalef (\eqn{d}), Menhinick (\eqn{R}),
+#' and Pielou's evenness (\eqn{J'}) indices simultaneously from community
+#' abundance matrices. Automatically isolates non-numeric metadata columns,
+#' guards against mathematical domain errors (e.g., division by zero), and
+#' removes empty sample observations.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or \code{list} of community counts.
-#' @param group_col Optional integer or character vector. Explicit metadata column(s) to retain.
+#' @param data A \code{data.frame}, \code{matrix}, or single-element \code{list}
+#'   containing community abundance counts and optional metadata columns.
+#' @param group_col Optional character or integer vector; column name(s) or index/indices
+#'   in \code{data} specifying metadata variables to retain alongside calculated diversity
+#'   indices. Default is \code{NULL}.
 #'
-#' @return A tidy \code{data.frame} containing metadata and computed diversity indices.
+#' @return A tidy \code{data.frame} containing sample identifiers, retained metadata
+#'   columns, and the following computed diversity metrics:
+#'   \item{Sample}{Sample row names or integer index identifiers.}
+#'   \item{Abundance}{Total observed individual count/abundance per sample (\eqn{N}).}
+#'   \item{Richness}{Observed species richness count (\eqn{S}).}
+#'   \item{Shannon}{Shannon-Wiener diversity index (\eqn{H'}, natural log base \eqn{e}).}
+#'   \item{Simpson}{Gini-Simpson diversity index (\eqn{1 - D}).}
+#'   \item{Margalef}{Margalef richness index (\eqn{d = (S - 1) / \ln(N)}).}
+#'   \item{Menhinick}{Menhinick richness index (\eqn{R = S / \sqrt{N}}).}
+#'   \item{Pielou}{Pielou's evenness index (\eqn{J' = H' / \ln(S)}).}
 #' @export
 #'
 #' @importFrom vegan diversity specnumber
@@ -19,20 +34,30 @@ calc_diversity <- function(
   # 1. Standard Defensive Ingestion Guard
   if (is.list(data) && !is.data.frame(data)) {
     data <- as.data.frame(data[[1]])
-  } else if (is.matrix(data)) {
+  } else if (is.matrix(data) || inherits(data, "tbl_df") || inherits(data, "tbl")) {
     data <- as.data.frame(data)
   } else if (!is.data.frame(data)) {
     stop("Input 'data' must be a data.frame, tibble, or matrix.")
   }
 
+  # Ensure base data.frame behavior (prevents tibble 1D drop anomalies)
+  data <- as.data.frame(data)
+
   # 2. Extract Metadata vs Community Matrix
-  # Detect all non-numeric columns automatically
   non_num_cols <- names(data)[!vapply(data, is.numeric, logical(1))]
 
   if (!is.null(group_col)) {
     if (is.numeric(group_col)) {
+      invalid_idx <- group_col < 1 | group_col > ncol(data)
+      if (any(invalid_idx)) {
+        stop("One or more column indices in 'group_col' are out of bounds.")
+      }
       grp_names <- names(data)[as.integer(group_col)]
     } else {
+      missing_cols <- setdiff(group_col, names(data))
+      if (length(missing_cols) > 0) {
+        stop(sprintf("Column(s) not found in 'data': %s", paste(missing_cols, collapse = ", ")))
+      }
       grp_names <- group_col
     }
     all_meta_cols <- unique(c(grp_names, non_num_cols))
@@ -50,11 +75,11 @@ calc_diversity <- function(
 
   # 3. Numeric Validation
   if (ncol(comm_mat) < 2) {
-    stop("Species abundance data must contain at least 2 species columns.")
+    stop("Species abundance data must contain at least 2 numeric species columns.")
   }
 
-  if (any(is.na(comm_mat))) {
-    stop("NA values detected. Replace missing values with 0 before calculating.")
+  if (anyNA(comm_mat)) {
+    stop("NA values detected in community counts. Replace missing values with 0 before calculating.")
   }
 
   # 4. Filter Empty Samples
@@ -62,9 +87,15 @@ calc_diversity <- function(
   valid_rows <- tot_abundance > 0
 
   if (!all(valid_rows)) {
+    n_dropped <- sum(!valid_rows)
+    warning(sprintf("Removed %d empty sample(s) with zero total abundance.", n_dropped), call. = FALSE)
     comm_mat <- comm_mat[valid_rows, , drop = FALSE]
     if (!is.null(meta_df)) meta_df <- meta_df[valid_rows, , drop = FALSE]
     tot_abundance <- rowSums(comm_mat)
+  }
+
+  if (nrow(comm_mat) == 0) {
+    stop("No valid samples remaining after filtering zero-abundance rows.")
   }
 
   # 5. Compute Alpha Diversity Indices
@@ -77,13 +108,17 @@ calc_diversity <- function(
   j_piel  <- ifelse(s_rich > 1, h_shan / log(s_rich), 0)
 
   # 6. Assemble Output
-  out_df <- data.frame(
-    Sample = if (!is.null(rownames(comm_mat))) rownames(comm_mat) else seq_len(nrow(comm_mat)),
-    stringsAsFactors = FALSE
-  )
+  # Avoid duplicate 'Sample' column if already supplied in metadata
+  has_sample_col <- !is.null(meta_df) && ("Sample" %in% names(meta_df))
 
-  if (!is.null(meta_df)) {
-    out_df <- cbind(out_df, meta_df)
+  if (!has_sample_col) {
+    sample_ids <- if (!is.null(rownames(comm_mat))) rownames(comm_mat) else seq_len(nrow(comm_mat))
+    out_df <- data.frame(Sample = sample_ids, stringsAsFactors = FALSE)
+    if (!is.null(meta_df)) {
+      out_df <- cbind(out_df, meta_df)
+    }
+  } else {
+    out_df <- meta_df
   }
 
   indices_df <- data.frame(

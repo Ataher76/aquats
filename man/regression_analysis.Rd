@@ -20,36 +20,34 @@ regression_analysis(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or tibble.}
+\item{data}{A \code{data.frame}, \code{matrix}, or tibble containing the variables for analysis.}
 
-\item{x_var}{Character. Name of the independent predictor variable.}
+\item{x_var}{Character string; column name in \code{data} representing the independent numeric predictor variable.}
 
-\item{y_var}{Character. Name of the dependent response variable.}
+\item{y_var}{Character string; column name in \code{data} representing the dependent numeric response variable.}
 
-\item{fit_type}{Character. Model type: \code{"linear"} (default), \code{"power"} (allometric),
+\item{fit_type}{Character string; regression model functional form: \code{"linear"} (default), \code{"power"} (allometric),
 \code{"exponential"}, \code{"logarithmic"}, \code{"polynomial"} (quadratic), or \code{"cubic"}.}
 
-\item{group_var}{Optional character. Grouping factor for multi-category regression.}
+\item{group_var}{Optional character string; column name in \code{data} representing a categorical grouping factor for stratified analysis. Default is \code{NULL}.}
 
-\item{facet}{Logical. If \code{TRUE} and \code{group_var} is provided, facets by group. Default is \code{FALSE}.}
+\item{facet}{Logical; if \code{TRUE} and \code{group_var} is provided, facets panels by group. Default is \code{FALSE}.}
 
-\item{interval}{Character. Uncertainty band type: \code{"confidence"} (default),
-\code{"prediction"}, or \code{"none"}.}
+\item{interval}{Character string; uncertainty band type: \code{"confidence"} (default), \code{"prediction"}, or \code{"none"}.}
 
-\item{show_equation}{Logical. If \code{TRUE} (default), prints the regression equation,
-\eqn{R^2}, and p-value on the canvas.}
+\item{show_equation}{Logical; if \code{TRUE} (default), prints the fitted algebraic formula, \eqn{R^2}, and p-value on the canvas.}
 
-\item{color_palette}{Character. RColorBrewer palette name (default: \code{"Set1"}).}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.}
 
-\item{point_size}{Numeric. Size of scatter points (default: 2.2).}
+\item{point_size}{Numeric; size of scatter plot points. Default is \code{2.2}.}
 
-\item{point_alpha}{Numeric. Opacity of scatter points (default: 0.75).}
+\item{point_alpha}{Numeric; opacity of scatter plot points (0 to 1). Default is \code{0.75}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Plot}{Publication-grade \code{ggplot} object.}
+  \item{Plot}{Publication-ready \code{ggplot2} object.}
   \item{Models}{Named list of fitted \code{lm} model objects per group.}
   \item{Equation_Table}{Data frame of algebraic formulas, \eqn{R^2}, and p-values.}
   \item{Predictions}{Data frame of calculated predictions with confidence/prediction limits.}

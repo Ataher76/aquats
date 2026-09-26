@@ -4,19 +4,26 @@
 #' single or two-factor environmental groupings. Provides optional parametric
 #' (ANOVA) or non-parametric (Kruskal-Wallis) hypothesis testing, with optional faceting.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or \code{list}.
-#' @param group_col Character or integer vector specifying 1 or 2 grouping variables.
-#' @param facet_var Optional character specifying a column to facet by.
-#' @param index Character. Metric to plot: \code{"shannon"} (default), \code{"simpson"},
-#'   \code{"richness"}, \code{"abundance"}, \code{"margalef"}, \code{"menhinick"}, or \code{"pielou"}.
-#' @param test Character. Hypothesis test to perform: \code{"anova"} (default),
-#'   \code{"kruskal"}, or \code{"none"}.
-#' @param color_palette Character. RColorBrewer palette name (default: \code{"Dark2"}).
-#' @param permutations Integer. Bootstrap iterations for confidence intervals (default: 1000).
-#' @param file Optional character. Export path for summary tables (\code{.xlsx} or \code{.csv}).
+#' @param data A \code{data.frame} or \code{matrix} containing community abundance
+#'   counts and grouping metadata columns.
+#' @param group_col Character string or integer vector; column name(s) or index/indices in \code{data}
+#'   specifying one or two categorical grouping factors.
+#' @param facet_var Optional character string; column name in \code{data} to facet panels by.
+#'   Default is \code{NULL}.
+#' @param index Character string; alpha diversity metric to compute and plot:
+#'   \code{"shannon"} (default), \code{"simpson"}, \code{"richness"}, \code{"abundance"},
+#'   \code{"margalef"}, \code{"menhinick"}, or \code{"pielou"}. Default is \code{"shannon"}.
+#' @param test Character string; statistical hypothesis test to perform across groups:
+#'   \code{"anova"} (default), \code{"kruskal"}, or \code{"none"}. Default is \code{"anova"}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.
+#' @param permutations Numeric integer; number of bootstrap iterations for confidence intervals. Default is \code{1000}.
+#' @param file Optional character string; export file path for summary tables (\code{.xlsx} or \code{.csv}). Default is \code{NULL}.
 #'
-#' @return A list with elements \code{Diversity_Data}, \code{Group_Summary},
-#'   \code{Test_Result}, and \code{Plot}.
+#' @return A list containing:
+#'   \item{Diversity_Data}{Data frame of individual sample diversity metric values.}
+#'   \item{Group_Summary}{Data frame of aggregated group-level summary statistics.}
+#'   \item{Test_Result}{Statistical test summary object (\code{aov} or \code{kruskal.test}).}
+#'   \item{Plot}{A publication-ready \code{ggplot2} boxplot object.}
 #' @export
 #'
 #' @import ggplot2

@@ -17,28 +17,30 @@ plot_metal_indices(
 )
 }
 \arguments{
-\item{data}{Output list from \code{calc_metal_indices()} or a raw \code{data.frame}.}
+\item{data}{A \code{list} returned by \code{calc_metal_indices()} or a raw \code{data.frame}
+containing water quality or sediment heavy metal concentrations.}
 
-\item{metric}{Character. Index to plot: \code{"HPI"} (default), \code{"HEI"},
-\code{"Cd"}, \code{"PLI"}, or \code{"Nemerow_PN"}.}
+\item{metric}{Character string; index to visualize: \code{"HPI"} (Heavy Metal Pollution Index, default),
+\code{"HEI"} (Heavy Metal Evaluation Index), \code{"Cd"} (Degree of Contamination),
+\code{"PLI"} (Pollution Load Index), or \code{"Nemerow_PN"} (Nemerow Pollution Index). Default is \code{"HPI"}.}
 
-\item{id_col}{Character. Station identification column (default: \code{"Station"}).}
+\item{id_col}{Character string; column name in \code{data} identifying sampling stations or monitoring sites. Default is \code{"Station"}.}
 
-\item{type}{Character. Style: \code{"bar"} (default) or \code{"lollipop"}.}
+\item{type}{Character string; plot display geometry: \code{"bar"} (default) or \code{"lollipop"}. Default is \code{"bar"}.}
 
-\item{show_ci}{Logical. If \code{TRUE}, displays 95\% CI whiskers when replicates exist.}
+\item{show_ci}{Logical; if \code{TRUE}, displays 95\% confidence interval whiskers when replicate observations exist per station. Default is \code{TRUE}.}
 
-\item{show_threshold}{Logical. If \code{TRUE}, draws dashed regulatory thresholds.}
+\item{show_threshold}{Logical; if \code{TRUE}, overlays horizontal dashed reference lines representing regulatory benchmark thresholds. Default is \code{TRUE}.}
 
-\item{palette}{Character. Status color theme: \code{"auto"} for standard ecological colors
-(green = suitable/clean, red = polluted), or an RColorBrewer palette name.}
+\item{palette}{Character string; status color theme: \code{"auto"} for standard ecological condition grading
+(green = clean, red = polluted) or a valid \code{RColorBrewer} palette name. Default is \code{"auto"}.}
 
-\item{title}{Optional character. Custom plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 
-\item{...}{Additional arguments passed to \code{calc_metal_indices()}.}
+\item{...}{Additional arguments passed to \code{calc_metal_indices()} when raw data is provided.}
 }
 \value{
-A \code{ggplot} object.
+A publication-ready \code{ggplot2} object.
 }
 \description{
 Generates publication-ready plots for heavy metal pollution metrics

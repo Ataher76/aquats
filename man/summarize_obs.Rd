@@ -7,17 +7,22 @@
 summarize_obs(data, vars = NULL, group = NULL, digits = 2, file = NULL)
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing the observations.}
 
-\item{vars}{Character vector. Names of numeric continuous variables to summarize.
-If \code{NULL}, all numeric variables in the dataset are evaluated.}
+\item{vars}{Optional character vector; column names in \code{data} representing
+continuous numeric variables to summarize. If \code{NULL}, all numeric columns
+are automatically evaluated. Default is \code{NULL}.}
 
-\item{group}{Optional character vector. Grouping variable(s) (e.g., \code{"Habitat"} or \code{c("Habitat", "Season")}).}
+\item{group}{Optional character vector; column name(s) in \code{data} representing
+categorical grouping factor(s) (e.g., \code{"Habitat"} or \code{c("Habitat", "Season")}).
+Default is \code{NULL}.}
 
-\item{digits}{Integer. Number of decimal places for rounding (default: 2).}
+\item{digits}{Numeric integer; number of decimal places for rounding reported statistics.
+Default is \code{2}.}
 
-\item{file}{Optional character. File path to export the resulting summary table
-(must end in \code{.xlsx} or \code{.csv}).}
+\item{file}{Optional character string; export file path for the resulting summary table
+(must end in \code{.xlsx} or \code{.csv}). Default is \code{NULL}.}
 }
 \value{
 A tidy \code{data.frame} containing computed descriptive metrics.

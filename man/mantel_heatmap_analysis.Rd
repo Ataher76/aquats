@@ -28,39 +28,39 @@ data frames representing distinct biological communities.}
 
 \item{env_data}{A \code{data.frame} or \code{matrix} of numeric environmental variables.}
 
-\item{plot_type}{Character. Visualization layout: \code{"network"} (default curved/straight diagram)
-or \code{"bars"} (synchronized side-by-side barplot).}
+\item{plot_type}{Character string; visualization layout: \code{"network"} (default curved/straight diagram)
+or \code{"bars"} (synchronized side-by-side barplot). Default is \code{"network"}.}
 
-\item{line_style}{Character. Linkage geometry: \code{"curve"} (default) or \code{"straight"}.}
+\item{line_style}{Character string; linkage geometry: \code{"curve"} (default) or \code{"straight"}. Default is \code{"curve"}.}
 
-\item{method}{Character. Correlation method: \code{"pearson"} (default) or \code{"spearman"}.}
+\item{method}{Character string; correlation method: \code{"pearson"} (default) or \code{"spearman"}. Default is \code{"pearson"}.}
 
-\item{spec_dist}{Character. Dissimilarity metric for community data (default: \code{"bray"}).}
+\item{spec_dist}{Character string; dissimilarity metric for community abundance data (e.g., \code{"bray"}, \code{"jaccard"}). Default is \code{"bray"}.}
 
-\item{env_dist}{Character. Distance metric for environmental parameters (default: \code{"euclidean"}).}
+\item{env_dist}{Character string; distance metric for environmental parameters. Default is \code{"euclidean"}.}
 
-\item{transform}{Character. Transformation applied to community counts via \code{vegan::decostand}:
-\code{"none"} (default), \code{"hellinger"} (recommended for abundance), \code{"log"}, \code{"pa"}, or \code{"sqrt"}.}
+\item{transform}{Character string; transformation applied to community counts via \code{vegan::decostand}:
+\code{"none"} (default), \code{"hellinger"} (recommended for abundance), \code{"log"}, \code{"pa"}, or \code{"sqrt"}. Default is \code{"none"}.}
 
-\item{only_significant}{Logical. If \code{TRUE}, displays only significant Mantel linkages (p < 0.05).}
+\item{only_significant}{Logical; if \code{TRUE}, displays only statistically significant Mantel linkages (\eqn{p < 0.05}). Default is \code{FALSE}.}
 
-\item{line_color_by}{Character. Color linkage lines by \code{"significance"} (default) or \code{"community"}.}
+\item{line_color_by}{Character string; variable mapping for linkage line colors: \code{"significance"} (default) or \code{"community"}. Default is \code{"significance"}.}
 
-\item{permutations}{Integer. Number of Monte Carlo permutations for Mantel tests (default: 999).}
+\item{permutations}{Numeric integer; number of Monte Carlo permutations for Mantel significance testing. Default is \code{999}.}
 
-\item{seed}{Optional integer. Random seed for reproducible permutations (default: 42).}
+\item{seed}{Optional integer; random seed for reproducible permutations. Default is \code{42}.}
 
-\item{show_cor_text}{Logical. If \code{TRUE}, displays correlation values inside tiles (default: \code{TRUE}).}
+\item{show_cor_text}{Logical; if \code{TRUE}, displays correlation coefficients inside tiles. Default is \code{TRUE}.}
 
-\item{color_palette}{Character. Diverging palette name for the correlation heatmap (default: \code{"RdBu"}).}
+\item{color_palette}{Character string; a valid diverging \code{RColorBrewer} palette name for the correlation heatmap. Default is \code{"RdBu"}.}
 
-\item{title}{Optional character. Master figure title.}
+\item{title}{Optional character string; master figure title. Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Plot}{The primary publication-ready \code{ggplot} object.}
+  \item{Plot}{The primary publication-ready \code{ggplot2} object.}
   \item{Correlation_Matrix}{Symmetric matrix of environmental correlation coefficients.}
-  \item{Mantel_Results}{Tidy data frame containing community-specific Mantel r, p-values, and significance.}
+  \item{Mantel_Results}{Tidy data frame containing community-specific Mantel \eqn{r} values, \eqn{p}-values, and significance tiers.}
 }
 \description{
 Computes pairwise environmental correlations while performing Mantel tests

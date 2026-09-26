@@ -4,27 +4,27 @@
 #' Tukey's HSD post-hoc tests, extracts Estimated Marginal Means (EMMs), and
 #' generates publication-ready interaction plots with optional facetting.
 #'
-#' @param data A data frame or matrix in long format.
-#' @param factor1_var Character; the primary independent variable (x-axis).
-#' @param factor2_var Character; the secondary independent variable (fill/color/groups).
-#' @param numeric_var Character; the continuous response variable.
-#' @param facet_var Optional character; variable to facet by (e.g., \code{factor2_var}). Default is \code{NULL}.
-#' @param factor1_levels Optional character vector; custom level ordering for factor 1.
-#' @param factor2_levels Optional character vector; custom level ordering for factor 2.
-#' @param plot_type Character; "boxplot", "barplot", or "pointrange". Default is "boxplot".
-#' @param error_type Character; error bar type: "se" (Standard Error) or "sd" (Standard Deviation).
-#' @param y_limits Optional numeric vector of length 2; explicitly sets Y-axis limits.
-#' @param add_jitter Logical; if TRUE, adds jittered points to boxplots. Default is TRUE.
-#' @param show_mean Logical; if TRUE, displays mean points inside boxplots. Default is TRUE.
-#' @param mean_color Character; color for mean markers. Default is "darkred".
-#' @param color_palette Character; valid RColorBrewer palette name. Default is "Set1".
+#' @param data A data frame containing the variables for analysis.
+#' @param factor1_var Character string; column name in \code{data} representing the primary categorical factor (x-axis).
+#' @param factor2_var Character string; column name in \code{data} representing the secondary categorical factor (fill/color/groups).
+#' @param numeric_var Character string; column name in \code{data} representing the continuous numeric response variable.
+#' @param facet_var Optional character string; column name in \code{data} to facet panels by (e.g., \code{factor2_var}). Default is \code{NULL}.
+#' @param factor1_levels Optional character vector; custom level ordering for factor 1. Default is \code{NULL}.
+#' @param factor2_levels Optional character vector; custom level ordering for factor 2. Default is \code{NULL}.
+#' @param plot_type Character string; display geometry: \code{"boxplot"}, \code{"barplot"}, or \code{"pointrange"}. Default is \code{"boxplot"}.
+#' @param error_type Character string; error bar dispersion metric: \code{"se"} (Standard Error) or \code{"sd"} (Standard Deviation). Default is \code{"se"}.
+#' @param y_limits Optional numeric vector of length 2; lower and upper limits for the y-axis (e.g., \code{c(0, 100)}). Default is \code{NULL}.
+#' @param add_jitter Logical; if \code{TRUE}, overlays jittered raw observation points. Default is \code{TRUE}.
+#' @param show_mean Logical; if \code{TRUE}, displays group mean indicator diamonds. Default is \code{TRUE}.
+#' @param mean_color Character string; hex code or color name for group mean indicators. Default is \code{"darkred"}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.
 #'
 #' @return A list containing:
-#'   \item{ANOVA_Summary}{Global ANOVA summary table with interaction terms.}
-#'   \item{TukeyHSD}{Tukey HSD pairwise comparison results.}
-#'   \item{EMMs}{Estimated Marginal Means object.}
-#'   \item{Summary_Table}{Aggregated means, SDs, SEs, and confidence limits.}
-#'   \item{Plot}{The publication-ready ggplot object.}
+#' \item{ANOVA_Summary}{Global ANOVA summary table with interaction terms.}
+#' \item{TukeyHSD}{Tukey HSD pairwise comparison results across interaction levels.}
+#' \item{EMMs}{Estimated Marginal Means object from \code{emmeans}.}
+#' \item{Summary_Table}{Aggregated sample sizes, means, SDs, SEs, and confidence limits.}
+#' \item{Plot}{The publication-ready \code{ggplot2} object.}
 #' @export
 #'
 #' @import ggplot2 emmeans multcomp RColorBrewer

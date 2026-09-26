@@ -14,26 +14,33 @@ calc_wqi(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path (.csv, .xlsx).}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing physicochemical water quality parameters.}
 
-\item{id_col}{Character. Station identification column (default: \code{"Station"}).}
+\item{id_col}{Character string; column name in \code{data} identifying sampling stations
+or monitoring sites. Default is \code{"Station"}.}
 
-\item{standards}{Named numeric vector of standard limits (Si) (default: WHO/BIS limits).}
+\item{standards}{Optional named numeric vector of standard regulatory limits (\eqn{S_i})
+in matching concentration units. If \code{NULL}, default benchmark guidelines (e.g., WHO/BIS)
+are applied. Default is \code{NULL}.}
 
-\item{ideal_values}{Optional named numeric vector of ideal zero-effect values (V0).}
+\item{ideal_values}{Optional named numeric vector of ideal zero-effect reference values (\eqn{V_0})
+(e.g., 7.0 for pH, 14.6 mg/L for dissolved oxygen). Default is \code{NULL}.}
 
-\item{ci}{Numeric. Confidence level for interval estimation (default: 0.95).}
+\item{ci}{Numeric; confidence level for interval estimation (e.g., \code{0.95} for 95\% confidence intervals).
+Default is \code{0.95}.}
 
-\item{file}{Optional character. File path to export (.xlsx or .csv).}
+\item{file}{Optional character string; export file path for tabular results
+(\code{.xlsx} or \code{.csv}). Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Replicate_Data}{Computed sub-indices and overall WQI for every individual sample.}
-  \item{Summary_Data}{Station-level summary statistics (Mean, SD, SE, 95\% CI, Status).}
+  \item{Replicate_Data}{Data frame containing computed sub-indices, relative weights, and overall WAWQI for each individual sample observation.}
+  \item{Summary_Data}{Data frame of station-level aggregated statistics (Mean, SD, SE, 95\% CI, and water quality classification rating).}
 }
 \description{
 Computes the Weighted Arithmetic Water Quality Index (WAWQI) per observation
 or replicate. When replicated station sampling is detected, it calculates
-station-level summary statistics including Mean, SD, SE, 95% Confidence Intervals,
+station-level summary statistics including Mean, SD, SE, 95\% confidence intervals,
 and overall ecological water quality rating.
 }

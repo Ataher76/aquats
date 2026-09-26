@@ -4,15 +4,20 @@
 #' 95\% confidence interval whiskers, status fills, and background
 #' benchmark bands for WAWQI classification tiers.
 #'
-#' @param data Output list from \code{calc_wqi()} or a raw \code{data.frame}.
-#' @param id_col Character. Column identifying stations (default: \code{"Station"}).
-#' @param type Character. Plot style: \code{"bar"} (default) or \code{"lollipop"}.
-#' @param show_ci Logical. If \code{TRUE}, displays 95\% CI whiskers when replicates exist.
-#' @param show_bands Logical. If \code{TRUE}, adds shaded background benchmark tiers.
-#' @param title Optional character. Custom plot title.
-#' @param ... Additional arguments passed to \code{calc_wqi()}.
+#' @param data A \code{list} returned by \code{calc_wqi()} or a raw \code{data.frame}
+#'   containing physicochemical water quality observations.
+#' @param id_col Character string; column name in \code{data} identifying sampling stations
+#'   or monitoring sites. Default is \code{"Station"}.
+#' @param type Character string; plot display geometry: \code{"bar"} (default) or \code{"lollipop"}.
+#'   Default is \code{"bar"}.
+#' @param show_ci Logical; if \code{TRUE}, displays 95\% confidence interval whiskers when replicate
+#'   observations exist per station. Default is \code{TRUE}.
+#' @param show_bands Logical; if \code{TRUE}, overlays shaded horizontal background bands
+#'   representing WAWQI rating classification tiers (e.g., Excellent, Good, Poor). Default is \code{TRUE}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
+#' @param ... Additional arguments passed to \code{calc_wqi()} when raw data is provided.
 #'
-#' @return A \code{ggplot} object.
+#' @return A publication-ready \code{ggplot2} object.
 #' @export
 #'
 #' @import ggplot2

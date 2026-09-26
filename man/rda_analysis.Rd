@@ -15,29 +15,31 @@ rda_analysis(
 )
 }
 \arguments{
-\item{comm_data}{A data frame or matrix where grouping metadata is at the start,
-followed by numeric species counts.}
+\item{comm_data}{A \code{data.frame} or \code{matrix} where grouping metadata is at the start,
+followed by numeric species abundance counts.}
 
-\item{env_data}{A data frame or matrix containing environmental variables.
+\item{env_data}{A \code{data.frame} or \code{matrix} containing environmental predictor variables.
 Must have the exact same number of rows as \code{comm_data}.}
 
-\item{group_col}{Integer or character specifying the grouping column in \code{comm_data}. Default is 1.}
+\item{group_col}{Character string or integer; column name or index in \code{comm_data}
+specifying the categorical grouping factor. Default is \code{1}.}
 
-\item{transform}{Character. Optional pre-transformation: \code{"none"} (default),
-\code{"hellinger"}, \code{"log"}, \code{"pa"}, or \code{"wisconsin"}.}
+\item{transform}{Character string; pre-transformation applied to community counts via
+\code{vegan::decostand}: \code{"none"} (default), \code{"hellinger"}, \code{"log"},
+\code{"pa"} (presence/absence), or \code{"wisconsin"}. Default is \code{"none"}.}
 
-\item{color_palette}{Character; a valid RColorBrewer palette name (default: "Dark2").}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.}
 
-\item{species_arrow_mult}{Numeric; scaling factor for species arrows (default: 1).}
+\item{species_arrow_mult}{Numeric; scaling multiplier for species vector arrows. Default is \code{1}.}
 
-\item{env_arrow_mult}{Numeric; scaling factor for environmental arrows (default: 1).}
+\item{env_arrow_mult}{Numeric; scaling multiplier for environmental vector arrows. Default is \code{1}.}
 }
 \value{
 A list containing:
-  \item{RDA_Object}{The underlying \code{rda} ordination object.}
+  \item{RDA_Object}{The underlying \code{rda} ordination object from \code{vegan}.}
   \item{Model_Significance}{Permutation ANOVA test for overall model significance.}
   \item{Variable_Significance}{Permutation ANOVA test for marginal term significance.}
-  \item{Plot}{The publication-ready ggplot2 triplot.}
+  \item{Plot}{The publication-ready \code{ggplot2} triplot.}
 }
 \description{
 Performs constrained Redundancy Analysis (RDA) combining community and environmental data.

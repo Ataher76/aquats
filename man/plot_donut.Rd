@@ -15,25 +15,26 @@ plot_donut(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing categorical composition data.}
 
-\item{levels}{Character vector of 1 to 3 categorical variable names
-ordered from innermost ring to outermost ring.}
+\item{levels}{Character vector; column names in \code{data} representing 1 to 3
+categorical grouping variables, ordered from the innermost ring to the outermost ring.}
 
-\item{value}{Optional character. Numeric variable to aggregate (sum).
-If \code{NULL}, counts frequencies.}
+\item{value}{Optional character string; column name in \code{data} representing a numeric
+variable to aggregate (sum). If \code{NULL}, observation frequencies (counts) are plotted. Default is \code{NULL}.}
 
-\item{show_labels}{Logical. If \code{TRUE}, adds percentage labels to segments.}
+\item{show_labels}{Logical; if \code{TRUE}, displays percentage labels directly on segments. Default is \code{TRUE}.}
 
-\item{min_percent}{Numeric. Minimum percentage (0 to 100) required to display
-a text label on a segment (prevents visual clutter; default: 4).}
+\item{min_percent}{Numeric; minimum percentage (0 to 100) required to display a text label
+on a segment to prevent visual clutter. Default is \code{4}.}
 
-\item{palette}{Character. RColorBrewer palette name (default: \code{"Set2"}).}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set2"}.}
 
-\item{title}{Optional character string for plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
-A \code{ggplot} object.
+A publication-ready \code{ggplot2} object.
 }
 \description{
 Generates publication-ready single or nested multi-layered (sunburst)

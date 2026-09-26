@@ -1,8 +1,8 @@
 # aquats: Robust Ecological and Fisheries Data Analysis and Visualization
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen.svg)]()
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)]()
+[![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen.svg)](https://github.com/Ataher76/aquats/actions)
+[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](https://github.com/Ataher76/aquats/releases)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22885025.svg)](https://doi.org/10.5281/zenodo.22885025)
 
 **aquats** provides a streamlined, publication-grade analytical and visualization framework tailored for aquatic ecology, fisheries science, and environmental monitoring workflows.
@@ -27,7 +27,6 @@ You can install the released version of `aquats` from GitHub using `remotes`:
 ```r
 # install.packages("remotes")
 remotes::install_github("Ataher76/aquats")
-
 ```
 
 ---
@@ -51,7 +50,6 @@ res <- regression_analysis(
 
 # Display publication-ready plot
 print(res$Plot)
-
 ```
 
 ### 2. Community Alpha Diversity Profiling
@@ -65,7 +63,6 @@ div_res <- calc_diversity(
 )
 
 head(div_res)
-
 ```
 
 ---
@@ -74,39 +71,39 @@ head(div_res)
 
 If you use `aquats` in your research or publications, please cite it as:
 
-> Ali, A. (2026). *aquats: Robust Ecological and Fisheries Data Analysis and Visualization* (v1.2.0). Zenodo. https://doi.org/10.5281/zenodo.22885026
+> Ali, A., & Alam, M. S. (2026). *aquats: Robust Ecological and Fisheries Data Analysis and Visualization* (v1.2.1). Zenodo. https://doi.org/10.5281/zenodo.22885025
 
 You can also generate the BibTeX entry directly in R:
 
 ```r
 citation("aquats")
-
 ```
 
 ```bibtex
 @Manual{,
   title  = {aquats: Robust Ecological and Fisheries Data Analysis and Visualization},
-  author = {Ataher Ali},
+  author = {Ataher Ali and Mohammed Shahidul Alam},
   year   = {2026},
-  note   = {R package version 1.2.0},
-  doi    = {10.5281/zenodo.22885026},
+  note   = {R package version 1.2.1},
+  doi    = {10.5281/zenodo.22885025},
   url    = {[https://github.com/Ataher76/aquats](https://github.com/Ataher76/aquats)}
 }
-
 ```
 
 ---
 
-## Author & Maintainer
+## Authors & Maintainer
 
-* **Ataher Ali** – Maintainer & Author
-* ORCID: [0009-0008-8780-0903](https://orcid.org/0009-0008-8780-0903?utm_source=gemini)
-* Email: `ataher.cu.ms@gmail.com`
+* **Ataher Ali** – Author & Maintainer
+  * ORCID: [0009-0008-8780-0903](https://orcid.org/0009-0008-8780-0903)
+  * Email: `ataher.cu.ms@gmail.com`
+
+* **Mohammed Shahidul Alam** – Author & Supervisor
+  * ORCID: [0000-0003-2740-5908](https://orcid.org/0000-0003-2740-5908)
+  * Email: `alamms@cu.ac.bd`
 
 ---
 
 ## License
 
 This package is licensed under the **MIT License**.
-
-

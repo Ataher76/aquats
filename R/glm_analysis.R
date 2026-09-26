@@ -1,24 +1,26 @@
-#' Generalized Linear Modeling (GLM) for Aquatic & Ecological Data
+#' Generalized Linear Modeling (GLM) for Aquatic and Ecological Data
 #'
 #' Fits generalized linear models (GLM) across Gaussian, Poisson, Binomial,
 #' and Gamma families with publication-ready diagnostic and prediction graphics.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or tibble.
-#' @param response_var Character. Name of the dependent response variable.
-#' @param predictor_vars Character vector. Name(s) of continuous or categorical predictor variables.
-#' @param family_type Character. Distribution family: \code{"gaussian"}, \code{"poisson"},
-#'   \code{"binomial"}, or \code{"gamma"}.
-#' @param color_palette Character. RColorBrewer palette name (default: \code{"Dark2"}).
+#' @param data A \code{data.frame} or \code{matrix} containing the variables for modeling.
+#' @param response_var Character string; column name in \code{data} representing the continuous
+#'   or discrete dependent response variable.
+#' @param predictor_vars Character vector; column name(s) in \code{data} representing
+#'   continuous or categorical predictor variables.
+#' @param family_type Character string; error distribution family: \code{"gaussian"} (default),
+#'   \code{"poisson"}, \code{"binomial"}, or \code{"gamma"}. Default is \code{"gaussian"}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.
 #'
 #' @return A list containing:
-#'   \item{Model}{The fitted \code{glm} object.}
-#'   \item{Summary}{The model summary object.}
-#'   \item{Anova_Table}{Analysis of deviance table.}
-#'   \item{Plot}{A publication-ready \code{ggplot} object.}
+#'   \item{Model}{The fitted \code{glm} model object from \code{stats}.}
+#'   \item{Summary}{Summary specification of the fitted model (\code{summary.glm}).}
+#'   \item{Anova_Table}{Analysis of deviance table (\code{anova.glm}).}
+#'   \item{Plot}{A publication-ready \code{ggplot2} diagnostic or prediction object.}
 #' @export
 #'
 #' @import ggplot2
-#' @importFrom stats glm as.formula predict poisson binomial Gamma gaussian
+#' @importFrom stats glm as.formula predict poisson binomial Gamma gaussian anova
 #' @importFrom rlang .data
 glm_analysis <- function(data,
                          response_var,

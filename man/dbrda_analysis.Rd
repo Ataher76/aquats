@@ -19,28 +19,31 @@ dbrda_analysis(
 \item{comm_data}{A data frame or matrix where grouping columns are at the start,
 followed by numeric species counts.}
 
-\item{env_data}{A data frame or matrix containing environmental variables.
+\item{env_data}{A data frame or matrix containing environmental predictor variables.
 Must have the exact same number of rows as \code{comm_data}.}
 
-\item{group_col}{Integer or character specifying the grouping column in comm_data (default: 1).}
+\item{group_col}{Character string or integer; column name or index in \code{comm_data}
+specifying the categorical grouping factor. Default is \code{1}.}
 
-\item{dist_method}{Character; distance metric for community data (default: "bray").}
+\item{dist_method}{Character string; dissimilarity metric for community abundance data
+(e.g., \code{"bray"}, \code{"jaccard"}, \code{"euclidean"}). Default is \code{"bray"}.}
 
-\item{transform}{Character. Optional pre-transformation: \code{"none"} (default),
-\code{"hellinger"}, \code{"log"}, \code{"pa"}, or \code{"wisconsin"}.}
+\item{transform}{Character string; pre-transformation applied to community abundance data
+via \code{vegan::decostand}: \code{"none"} (default), \code{"hellinger"}, \code{"log"},
+\code{"pa"} (presence/absence), or \code{"wisconsin"}. Default is \code{"none"}.}
 
-\item{color_palette}{Character; valid RColorBrewer palette name (default: "Dark2").}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.}
 
-\item{species_arrow_mult}{Numeric; scaling factor for species vectors (default: 1).}
+\item{species_arrow_mult}{Numeric; scaling multiplier for species vector arrows. Default is \code{1}.}
 
-\item{env_arrow_mult}{Numeric; scaling factor for environmental vectors (default: 1).}
+\item{env_arrow_mult}{Numeric; scaling multiplier for environmental vector arrows. Default is \code{1}.}
 }
 \value{
 A list containing:
-  \item{dbRDA_Object}{The underlying \code{dbrda} ordination object.}
+  \item{dbRDA_Object}{The underlying \code{dbrda} ordination object from \code{vegan}.}
   \item{Model_Significance}{Permutation ANOVA test for overall model significance.}
   \item{Variable_Significance}{Permutation ANOVA test for marginal term significance.}
-  \item{Plot}{The publication-ready ggplot2 triplot.}
+  \item{Plot}{The publication-ready \code{ggplot2} triplot.}
 }
 \description{
 Performs constrained Distance-based Redundancy Analysis (db-RDA) using ecological

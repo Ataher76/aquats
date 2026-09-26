@@ -2,7 +2,7 @@
 % Please edit documentation in R/glm_analysis.R
 \name{glm_analysis}
 \alias{glm_analysis}
-\title{Generalized Linear Modeling (GLM) for Aquatic & Ecological Data}
+\title{Generalized Linear Modeling (GLM) for Aquatic and Ecological Data}
 \usage{
 glm_analysis(
   data,
@@ -13,23 +13,25 @@ glm_analysis(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or tibble.}
+\item{data}{A \code{data.frame} or \code{matrix} containing the variables for modeling.}
 
-\item{response_var}{Character. Name of the dependent response variable.}
+\item{response_var}{Character string; column name in \code{data} representing the continuous
+or discrete dependent response variable.}
 
-\item{predictor_vars}{Character vector. Name(s) of continuous or categorical predictor variables.}
+\item{predictor_vars}{Character vector; column name(s) in \code{data} representing
+continuous or categorical predictor variables.}
 
-\item{family_type}{Character. Distribution family: \code{"gaussian"}, \code{"poisson"},
-\code{"binomial"}, or \code{"gamma"}.}
+\item{family_type}{Character string; error distribution family: \code{"gaussian"} (default),
+\code{"poisson"}, \code{"binomial"}, or \code{"gamma"}. Default is \code{"gaussian"}.}
 
-\item{color_palette}{Character. RColorBrewer palette name (default: \code{"Dark2"}).}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.}
 }
 \value{
 A list containing:
-  \item{Model}{The fitted \code{glm} object.}
-  \item{Summary}{The model summary object.}
-  \item{Anova_Table}{Analysis of deviance table.}
-  \item{Plot}{A publication-ready \code{ggplot} object.}
+  \item{Model}{The fitted \code{glm} model object from \code{stats}.}
+  \item{Summary}{Summary specification of the fitted model (\code{summary.glm}).}
+  \item{Anova_Table}{Analysis of deviance table (\code{anova.glm}).}
+  \item{Plot}{A publication-ready \code{ggplot2} diagnostic or prediction object.}
 }
 \description{
 Fits generalized linear models (GLM) across Gaussian, Poisson, Binomial,

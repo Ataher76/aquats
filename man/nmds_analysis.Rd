@@ -17,34 +17,35 @@ nmds_analysis(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or \code{list} containing community counts.}
+\item{data}{A \code{data.frame} or \code{matrix} containing community abundance counts and grouping metadata.}
 
-\item{group_col}{Character or integer specifying the grouping metadata column (default: 1).}
+\item{group_col}{Character string or integer; column name or index in \code{data} specifying the categorical grouping factor. Default is \code{1}.}
 
 \item{env_data}{Optional \code{data.frame} or \code{matrix} of numeric environmental variables
-to fit onto the ordination space via \code{vegan::envfit}.}
+to fit onto the ordination space via \code{vegan::envfit}. Default is \code{NULL}.}
 
-\item{dist_method}{Character. Dissimilarity metric passed to \code{vegan::vegdist}
-(default: \code{"bray"}).}
+\item{dist_method}{Character string; dissimilarity metric passed to \code{vegan::vegdist}
+(e.g., \code{"bray"}, \code{"jaccard"}, \code{"euclidean"}). Default is \code{"bray"}.}
 
-\item{transform}{Character. Community data transformation via \code{vegan::decostand}:
-\code{"none"} (default), \code{"hellinger"} (recommended), \code{"log"}, \code{"pa"}, or \code{"wisconsin"}.}
+\item{transform}{Character string; pre-transformation applied to community counts via \code{vegan::decostand}:
+\code{"none"} (default), \code{"hellinger"} (recommended for abundance data), \code{"log"},
+\code{"pa"} (presence/absence), or \code{"wisconsin"}. Default is \code{"none"}.}
 
-\item{k}{Integer. Number of ordination dimensions (default: 2).}
+\item{k}{Numeric integer; number of ordination dimensions. Default is \code{2}.}
 
-\item{trymax}{Integer. Maximum number of random starts for \code{metaMDS} (default: 100).}
+\item{trymax}{Numeric integer; maximum number of random starts for \code{vegan::metaMDS}. Default is \code{100}.}
 
-\item{palette}{Character. RColorBrewer palette name for group ellipses and points (default: \code{"Dark2"}).}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name for group ellipses and points. Default is \code{"Dark2"}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Plot}{A publication-ready \code{ggplot} ordination object.}
+  \item{Plot}{A publication-ready \code{ggplot2} ordination object.}
   \item{Plot_Data}{Tidy data frame of NMDS site coordinates and grouping factors.}
   \item{Stress}{The final stress value of the ordination.}
-  \item{NMDS_Object}{The underlying \code{metaMDS} object from vegan.}
-  \item{Envfit_Results}{Vector fit results if environmental variables were supplied.}
+  \item{NMDS_Object}{The underlying \code{metaMDS} object from \code{vegan}.}
+  \item{Envfit_Results}{Vector fit results from \code{vegan::envfit} if environmental variables were supplied.}
 }
 \description{
 Performs NMDS ordination with automated data transformations (Hellinger, log, etc.),

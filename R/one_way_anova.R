@@ -4,23 +4,28 @@
 #' extracts Estimated Marginal Means (EMMs), and generates a publication-ready plot
 #' with optional faceting by a secondary categorical variable.
 #'
-#' @param data A data frame in long format.
-#' @param factor_var Character; the name of the primary categorical independent variable.
-#' @param numeric_var Character; the name of the continuous response variable.
-#' @param facet_var Optional character; the name of a secondary categorical variable to facet the plot by (default: \code{NULL}).
-#' @param factor_levels Optional character vector; specifies the exact order of the categorical levels on the x-axis.
-#' @param plot_type Character; type of plot: "boxplot", "barplot", or "pointrange". Default is "boxplot".
-#' @param error_type Character; error bar type for bar/pointrange plots: "se" (Standard Error) or "sd" (Standard Deviation).
-#' @param sig_display Character; display significance via "letters" (compact letter display) or "stars" (p-value brackets).
-#' @param y_limits Optional numeric vector of length 2; explicitly sets the Y-axis limits.
-#' @param add_jitter Logical; if TRUE, adds jittered points to the boxplot.
-#' @param show_mean Logical; if TRUE, displays a mean point inside the boxplot.
-#' @param mean_color Character; color for the mean point in the boxplot.
-#' @param color_palette Character; name of a color palette from RColorBrewer.
+#' @param data A data frame containing the variables for analysis.
+#' @param factor_var Character string; column name in \code{data} representing the primary categorical grouping factor (x-axis).
+#' @param numeric_var Character string; column name in \code{data} representing the continuous numeric response variable.
+#' @param facet_var Optional character string; column name in \code{data} representing a secondary categorical factor to facet panels by. Default is \code{NULL}.
+#' @param factor_levels Optional character vector; custom level ordering for \code{factor_var}. Default is \code{NULL}.
+#' @param plot_type Character string; display geometry: \code{"boxplot"}, \code{"barplot"}, or \code{"pointrange"}. Default is \code{"boxplot"}.
+#' @param error_type Character string; error bar dispersion metric for bar and point-range plots: \code{"se"} (Standard Error) or \code{"sd"} (Standard Deviation). Default is \code{"se"}.
+#' @param sig_display Character string; method to annotate statistical significance: \code{"letters"} (compact letter display from Tukey's HSD) or \code{"stars"} (pairwise significance brackets). Default is \code{"letters"}.
+#' @param y_limits Optional numeric vector of length 2; lower and upper limits for the y-axis (e.g., \code{c(0, 100)}). Default is \code{NULL}.
+#' @param add_jitter Logical; if \code{TRUE}, overlays jittered raw observation points on boxplots. Default is \code{TRUE}.
+#' @param show_mean Logical; if \code{TRUE}, displays group mean indicator diamonds inside boxplots. Default is \code{TRUE}.
+#' @param mean_color Character string; hex code or color name for group mean indicators. Default is \code{"darkred"}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.
 #'
-#' @return A list containing the ANOVA summary, Tukey HSD results, EMMs, summary table, and ggplot object.
-#'
+#' @return A list containing:
+#' \item{ANOVA_Summary}{Global ANOVA summary table (F-statistic and p-value).}
+#' \item{TukeyHSD}{Tukey HSD post-hoc pairwise comparisons.}
+#' \item{EMMs}{Estimated Marginal Means object from \code{emmeans}.}
+#' \item{Summary_Table}{Aggregated sample sizes, means, SDs, SEs, and confidence limits.}
+#' \item{Plot}{The publication-ready \code{ggplot2} object.}
 #' @export
+#'
 #' @import ggplot2 emmeans multcomp RColorBrewer ggpubr
 #' @importFrom stats aov as.formula sd TukeyHSD
 #' @importFrom dplyr group_by summarise mutate n

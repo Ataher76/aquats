@@ -23,43 +23,43 @@ three_way_anova(
 )
 }
 \arguments{
-\item{data}{A data frame or matrix in long format.}
+\item{data}{A data frame or matrix in long format containing the variables for analysis.}
 
-\item{factor1_var}{Character; the first categorical independent variable (x-axis).}
+\item{factor1_var}{Character string; column name in \code{data} representing the first categorical factor (x-axis).}
 
-\item{factor2_var}{Character; the second categorical independent variable (groups/fill).}
+\item{factor2_var}{Character string; column name in \code{data} representing the second categorical factor (fill/color/groups).}
 
-\item{factor3_var}{Character; the third categorical independent variable (facets).}
+\item{factor3_var}{Character string; column name in \code{data} representing the third categorical factor (facet panels).}
 
-\item{numeric_var}{Character; the continuous response variable.}
+\item{numeric_var}{Character string; column name in \code{data} representing the continuous numeric response variable.}
 
-\item{factor1_levels}{Optional character vector; custom order for the first factor.}
+\item{factor1_levels}{Optional character vector; custom level ordering for factor 1. Default is \code{NULL}.}
 
-\item{factor2_levels}{Optional character vector; custom order for the second factor.}
+\item{factor2_levels}{Optional character vector; custom level ordering for factor 2. Default is \code{NULL}.}
 
-\item{factor3_levels}{Optional character vector; custom order for the third factor.}
+\item{factor3_levels}{Optional character vector; custom level ordering for factor 3. Default is \code{NULL}.}
 
-\item{plot_type}{Character; "boxplot", "barplot", or "pointrange". Default is "boxplot".}
+\item{plot_type}{Character string; display geometry: \code{"boxplot"}, \code{"barplot"}, or \code{"pointrange"}. Default is \code{"boxplot"}.}
 
-\item{error_type}{Character; error bar type: "se" (Standard Error) or "sd" (Standard Deviation).}
+\item{error_type}{Character string; error bar dispersion metric: \code{"se"} (Standard Error) or \code{"sd"} (Standard Deviation). Default is \code{"se"}.}
 
-\item{y_limits}{Optional numeric vector of length 2; explicitly sets the Y-axis limits.}
+\item{y_limits}{Optional numeric vector of length 2; lower and upper limits for the y-axis (e.g., \code{c(0, 100)}). Default is \code{NULL}.}
 
-\item{add_jitter}{Logical; if TRUE, adds jittered points to boxplots. Default is TRUE.}
+\item{add_jitter}{Logical; if \code{TRUE}, overlays jittered raw observation points. Default is \code{TRUE}.}
 
-\item{show_mean}{Logical; if TRUE, displays mean points inside boxplots. Default is TRUE.}
+\item{show_mean}{Logical; if \code{TRUE}, displays group mean indicator diamonds. Default is \code{TRUE}.}
 
-\item{mean_color}{Character; color for mean markers. Default is "darkred".}
+\item{mean_color}{Character string; hex code or color name for group mean indicators. Default is \code{"darkred"}.}
 
-\item{color_palette}{Character; valid RColorBrewer palette name. Default is "Set1".}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.}
 }
 \value{
 A list containing:
-  \item{ANOVA_Summary}{Global ANOVA summary table with 3-way interaction terms.}
-  \item{TukeyHSD}{Tukey HSD pairwise comparison results.}
-  \item{EMMs}{Estimated Marginal Means object.}
-  \item{Summary_Table}{Aggregated means, SDs, SEs, and confidence limits.}
-  \item{Plot}{The publication-ready faceted ggplot object.}
+\item{ANOVA_Summary}{Global ANOVA summary table with 3-way interaction terms.}
+\item{TukeyHSD}{Tukey HSD pairwise comparison results across interaction levels.}
+\item{EMMs}{Estimated Marginal Means object from \code{emmeans}.}
+\item{Summary_Table}{Aggregated sample sizes, means, SDs, SEs, and confidence limits.}
+\item{Plot}{The publication-ready faceted \code{ggplot2} object.}
 }
 \description{
 Performs a three-way factorial ANOVA with full interaction effects, calculates

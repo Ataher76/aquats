@@ -1,20 +1,24 @@
 #' Publication-Ready 3D Depth Pie Chart
 #'
 #' Generates an isometric 3D pie chart with perspective tilt, extruded
-#' depth ribbons, and realistic shading natively in ggplot2.
+#' depth ribbons, and realistic shading natively in \code{ggplot2}.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.
-#' @param x Character. Categorical variable for the pie slices.
-#' @param y Optional character. Numeric variable to aggregate. If \code{NULL}, calculates counts.
-#' @param stat Character. Aggregation method: \code{"sum"} (default), \code{"mean"}, or \code{"identity"}.
-#' @param tilt Numeric. Perspective vertical compression factor between 0.2 and 0.8 (default: 0.5).
-#' @param depth Numeric. Extrusion thickness of the 3D rim (default: 0.25).
-#' @param show_labels Logical. If \code{TRUE}, displays percentage labels on slices.
-#' @param min_percent Numeric. Minimum percentage required to display slice text (default: 4).
-#' @param palette Character. RColorBrewer palette name (default: \code{"Set2"}).
-#' @param title Optional character. Plot title.
+#' @param data A \code{data.frame}, \code{matrix}, or character string file path
+#'   to a \code{.csv} or \code{.xlsx} file containing the category data.
+#' @param x Character string; column name in \code{data} representing the categorical
+#'   factor for slice partitioning.
+#' @param y Optional character string; column name in \code{data} representing the numeric
+#'   variable to aggregate. If \code{NULL}, observation frequencies (counts) are plotted. Default is \code{NULL}.
+#' @param stat Character string; aggregation statistic when \code{y} is provided:
+#'   \code{"sum"} (default), \code{"mean"}, or \code{"identity"} (values plotted as-is). Default is \code{"sum"}.
+#' @param tilt Numeric; perspective vertical compression factor between 0.2 and 0.8. Default is \code{0.5}.
+#' @param depth Numeric; extrusion depth thickness for the 3D base rim. Default is \code{0.25}.
+#' @param show_labels Logical; if \code{TRUE}, displays percentage labels directly on the slices. Default is \code{TRUE}.
+#' @param min_percent Numeric; minimum threshold percentage required to display slice label text. Default is \code{4}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set2"}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
-#' @return A \code{ggplot} object.
+#' @return A publication-ready \code{ggplot2} object.
 #' @export
 #'
 #' @import ggplot2

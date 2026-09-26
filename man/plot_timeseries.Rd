@@ -24,44 +24,44 @@ plot_timeseries(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.}
+\item{data}{A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file containing the time-series data.}
 
-\item{time_var}{Character. Column name representing time steps (Date, POSIXct, numeric year, or factor).}
+\item{time_var}{Character string; column name in \code{data} representing time steps (Date, POSIXct, numeric year, or calendar factor).}
 
-\item{y_var}{Character. Column name of the continuous response variable.}
+\item{y_var}{Character string; column name in \code{data} representing the continuous numeric response variable.}
 
-\item{color_var}{Optional character. Categorical variable mapped to line/point colors (2nd factor).}
+\item{color_var}{Optional character string; column name in \code{data} mapped to line and point colors (secondary factor). Default is \code{NULL}.}
 
-\item{linetype_var}{Optional character. Categorical variable mapped to line types (3rd factor).}
+\item{linetype_var}{Optional character string; column name in \code{data} mapped to line styles (tertiary factor). Default is \code{NULL}.}
 
-\item{facet_var}{Optional character. Categorical variable used to facet plots into panels.}
+\item{facet_var}{Optional character string; column name in \code{data} used to facet plots into sub-panels. Default is \code{NULL}.}
 
-\item{ribbon}{Character. Uncertainty band style when replicates exist per time point:
+\item{ribbon}{Character string; uncertainty band style when replicates exist per time point:
 \code{"ci"} (95% Confidence Interval, default), \code{"se"} (\eqn{\pm 1} Standard Error),
-\code{"sd"} (\eqn{\pm 1} Standard Deviation), or \code{"none"}.}
+\code{"sd"} (\eqn{\pm 1} Standard Deviation), or \code{"none"}. Default is \code{"ci"}.}
 
-\item{show_points}{Logical. If \code{TRUE} (default), renders points at each observation/mean time point.}
+\item{show_points}{Logical; if \code{TRUE} (default), renders points at each observation or aggregated mean time step.}
 
-\item{point_size}{Numeric. Size of data points (default: 2.5).}
+\item{point_size}{Numeric; size of data points. Default is \code{2.5}.}
 
-\item{line_width}{Numeric. Thickness of the trajectory lines (default: 1.0).}
+\item{line_width}{Numeric; thickness of trajectory lines. Default is \code{1.0}.}
 
-\item{ribbon_alpha}{Numeric. Opacity of uncertainty ribbons (default: 0.20).}
+\item{ribbon_alpha}{Numeric; opacity of uncertainty ribbons (0 to 1). Default is \code{0.20}.}
 
-\item{smooth}{Logical. If \code{TRUE}, adds a LOESS or spline smoothing trendline (default: \code{FALSE}).}
+\item{smooth}{Logical; if \code{TRUE}, adds a smoothing trendline. Default is \code{FALSE}.}
 
-\item{color_palette}{Character. RColorBrewer palette name (default: \code{"Dark2"}).}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.}
 
-\item{xlab}{Optional character. Custom x-axis label.}
+\item{xlab}{Optional character string; custom x-axis label. Default is \code{NULL}.}
 
-\item{ylab}{Optional character. Custom y-axis label.}
+\item{ylab}{Optional character string; custom y-axis label. Default is \code{NULL}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Plot}{The publication-ready \code{ggplot} object.}
-  \item{Summary_Data}{A tidy data frame of aggregated Means, SD, SE, and Confidence Intervals.}
+  \item{Plot}{The publication-ready \code{ggplot2} object.}
+  \item{Summary_Data}{A tidy data frame of aggregated Means, SDs, SEs, and Confidence Intervals.}
 }
 \description{
 Generates publication-ready time-series and line graphs for aquatic,

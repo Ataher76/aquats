@@ -3,21 +3,27 @@
 #' Identifies which species primarily contribute to the differences between groups
 #' using Bray-Curtis dissimilarity decomposition (\code{vegan::simper}).
 #' Automatically cleans empty samples, validates missing values, supports ecological
-#' transformations, and generates a publication-ready ggplot2 bar chart.
+#' transformations, and generates a publication-ready \code{ggplot2} bar chart.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or \code{list} where grouping
-#'   metadata is at the start, followed by numeric species counts.
-#' @param group_col Character or integer specifying the grouping metadata column (default: 1).
-#' @param top_n Integer. Number of top contributing species to display per comparison (default: 5).
-#' @param transform Character. Optional pre-transformation via \code{vegan::decostand}:
-#'   \code{"none"} (default), \code{"hellinger"} (recommended), \code{"log"}, \code{"pa"}, or \code{"wisconsin"}.
-#' @param permutations Integer. Number of permutations for p-value calculation (default: 999).
-#' @param seed Optional integer. Random seed for reproducible permutations (default: 42).
+#' @param data A \code{data.frame} or \code{matrix} where grouping metadata
+#'   is at the start, followed by numeric species abundance counts.
+#' @param group_col Character string or integer; column name or index in \code{data}
+#'   specifying the categorical grouping factor. Default is \code{1}.
+#' @param top_n Numeric integer; number of top contributing species to display per
+#'   pairwise comparison. Default is \code{5}.
+#' @param transform Character string; pre-transformation applied to community counts
+#'   via \code{vegan::decostand}: \code{"none"} (default), \code{"hellinger"}
+#'   (recommended for abundance data), \code{"log"}, \code{"pa"} (presence/absence),
+#'   or \code{"wisconsin"}. Default is \code{"none"}.
+#' @param permutations Numeric integer; number of permutations for \eqn{p}-value
+#'   estimation. Default is \code{999}.
+#' @param seed Optional integer; random seed for reproducible permutation testing.
+#'   Default is \code{42}.
 #'
 #' @return A list containing:
-#'   \item{SIMPER_Object}{The raw \code{simper} object from vegan.}
-#'   \item{Summary_Table}{Tidy summary data frame of top contributing species per group comparison.}
-#'   \item{Plot}{A publication-ready \code{ggplot} bar chart of top contributors.}
+#'   \item{SIMPER_Object}{The raw \code{simper} ordination/decomposition object from \code{vegan}.}
+#'   \item{Summary_Table}{Tidy data frame of top contributing species, average contributions, cumulative percentages, and significance per group comparison.}
+#'   \item{Plot}{A publication-ready \code{ggplot2} bar chart of top contributors.}
 #' @export
 #'
 #' @import ggplot2

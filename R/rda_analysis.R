@@ -4,22 +4,24 @@
 #' Automatically cleans empty samples from both datasets, runs permutation significance tests,
 #' and generates a publication-ready ggplot2 Triplot with ggrepel label adjustments.
 #'
-#' @param comm_data A data frame or matrix where grouping metadata is at the start,
-#'   followed by numeric species counts.
-#' @param env_data A data frame or matrix containing environmental variables.
+#' @param comm_data A \code{data.frame} or \code{matrix} where grouping metadata is at the start,
+#'   followed by numeric species abundance counts.
+#' @param env_data A \code{data.frame} or \code{matrix} containing environmental predictor variables.
 #'   Must have the exact same number of rows as \code{comm_data}.
-#' @param group_col Integer or character specifying the grouping column in \code{comm_data}. Default is 1.
-#' @param transform Character. Optional pre-transformation: \code{"none"} (default),
-#'   \code{"hellinger"}, \code{"log"}, \code{"pa"}, or \code{"wisconsin"}.
-#' @param color_palette Character; a valid RColorBrewer palette name (default: "Dark2").
-#' @param species_arrow_mult Numeric; scaling factor for species arrows (default: 1).
-#' @param env_arrow_mult Numeric; scaling factor for environmental arrows (default: 1).
+#' @param group_col Character string or integer; column name or index in \code{comm_data}
+#'   specifying the categorical grouping factor. Default is \code{1}.
+#' @param transform Character string; pre-transformation applied to community counts via
+#'   \code{vegan::decostand}: \code{"none"} (default), \code{"hellinger"}, \code{"log"},
+#'   \code{"pa"} (presence/absence), or \code{"wisconsin"}. Default is \code{"none"}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.
+#' @param species_arrow_mult Numeric; scaling multiplier for species vector arrows. Default is \code{1}.
+#' @param env_arrow_mult Numeric; scaling multiplier for environmental vector arrows. Default is \code{1}.
 #'
 #' @return A list containing:
-#'   \item{RDA_Object}{The underlying \code{rda} ordination object.}
+#'   \item{RDA_Object}{The underlying \code{rda} ordination object from \code{vegan}.}
 #'   \item{Model_Significance}{Permutation ANOVA test for overall model significance.}
 #'   \item{Variable_Significance}{Permutation ANOVA test for marginal term significance.}
-#'   \item{Plot}{The publication-ready ggplot2 triplot.}
+#'   \item{Plot}{The publication-ready \code{ggplot2} triplot.}
 #' @export
 #'
 #' @import ggplot2 vegan ggrepel

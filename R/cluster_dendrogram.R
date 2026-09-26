@@ -8,26 +8,26 @@
 #'
 #' @param data A \code{data.frame}, \code{matrix}, or \code{list} containing
 #'   community abundance counts or environmental parameters with optional grouping metadata.
-#' @param group_col Character or integer specifying the grouping metadata column (default: 1).
-#'   If \code{NULL}, clustering runs without group categorization.
-#' @param dist_method Character. Dissimilarity metric passed to \code{vegan::vegdist}:
+#' @param group_col Character string or integer; column name or index in \code{data} specifying grouping metadata.
+#'   Default is \code{1}. If \code{NULL}, clustering runs without group categorization.
+#' @param dist_method Character string; dissimilarity metric passed to \code{vegan::vegdist}:
 #'   \code{"bray"} (default), \code{"jaccard"}, \code{"euclidean"}, \code{"horn"},
-#'   \code{"kulczynski"}, \code{"gower"}, \code{"manhattan"}, or \code{"canberra"}.
-#' @param transform Character. Transformation applied via \code{vegan::decostand}:
+#'   \code{"kulczynski"}, \code{"gower"}, \code{"manhattan"}, or \code{"canberra"}. Default is \code{"bray"}.
+#' @param transform Character string; transformation applied via \code{vegan::decostand}:
 #'   \code{"none"} (default), \code{"hellinger"} (recommended for abundance data),
 #'   \code{"log"} (\eqn{\ln(x + 1)}), \code{"pa"} (presence/absence binary),
-#'   \code{"standardize"} (z-score, recommended for water chemistry), or \code{"sqrt"}.
-#' @param cluster_method Character. Agglomeration method passed to \code{stats::hclust}:
+#'   \code{"standardize"} (z-score, recommended for water chemistry), or \code{"sqrt"}. Default is \code{"none"}.
+#' @param cluster_method Character string; agglomeration method passed to \code{stats::hclust}:
 #'   \code{"average"} (UPGMA, default), \code{"ward.D2"}, \code{"ward.D"},
-#'   \code{"complete"}, \code{"single"}, or \code{"centroid"}.
-#' @param k Optional integer. Number of clusters to cut into (defaults to number of group levels).
-#' @param h Optional numeric. Specific distance height threshold to cut the dendrogram.
-#' @param palette Character. RColorBrewer palette name for group leaf tips (default: \code{"Set2"}).
-#' @param orientation Character. Tree layout: \code{"vertical"} (default) or \code{"horizontal"}.
-#' @param title Optional character. Plot title.
+#'   \code{"complete"}, \code{"single"}, or \code{"centroid"}. Default is \code{"average"}.
+#' @param k Optional integer; number of clusters to partition the tree into. If \code{NULL}, defaults to the number of group levels. Default is \code{NULL}.
+#' @param h Optional numeric; specific dissimilarity height threshold at which to cut the dendrogram. Default is \code{NULL}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name for group leaf tips. Default is \code{"Set2"}.
+#' @param orientation Character string; tree layout: \code{"vertical"} (default) or \code{"horizontal"}. Default is \code{"vertical"}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
 #' @return A list containing:
-#'   \item{Plot}{A publication-ready \code{ggplot} dendrogram object.}
+#'   \item{Plot}{A publication-ready \code{ggplot2} dendrogram object.}
 #'   \item{Cluster_Assignments}{Tidy data frame showing sample cluster memberships.}
 #'   \item{Distance_Matrix}{The computed \code{dist} object.}
 #'   \item{HClust_Object}{The underlying \code{hclust} object.}

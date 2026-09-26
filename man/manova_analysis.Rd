@@ -14,23 +14,23 @@ manova_analysis(
 )
 }
 \arguments{
-\item{data}{A data frame or matrix in long format.}
+\item{data}{A \code{data.frame} or \code{matrix} containing the variables for analysis.}
 
-\item{response_vars}{Character vector; the names of the continuous numeric response variables.}
+\item{response_vars}{Character vector; column names in \code{data} representing continuous numeric response variables.}
 
-\item{factor_var}{Character; the name of the categorical independent variable.}
+\item{factor_var}{Character string; column name in \code{data} representing the categorical grouping factor.}
 
-\item{factor_levels}{Optional character vector; custom order for the factor levels.}
+\item{factor_levels}{Optional character vector; custom level ordering for \code{factor_var}. Default is \code{NULL}.}
 
-\item{plot_type}{Character; type of visualization: "boxplot" or "lda". Default is "boxplot".}
+\item{plot_type}{Character string; visualization layout: \code{"boxplot"} (faceted response boxplots) or \code{"lda"} (linear discriminant ordination plot). Default is \code{"boxplot"}.}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.}
 }
 \value{
 A list containing:
-  \item{MANOVA_Summary}{Multivariate test summary based on Pillai's trace.}
-  \item{Univariate_ANOVAs}{Univariate ANOVA tables for each response variable.}
-  \item{Plot}{Publication-ready ggplot object.}
+  \item{MANOVA_Summary}{Multivariate test summary table based on Pillai's trace.}
+  \item{Univariate_ANOVAs}{Univariate ANOVA summary tables for each response variable.}
+  \item{Plot}{The publication-ready \code{ggplot2} object.}
 }
 \description{
 Performs a one-way MANOVA across multiple continuous response variables grouped

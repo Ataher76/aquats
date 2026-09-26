@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_circular_bar.R
 \name{plot_circular_bar}
 \alias{plot_circular_bar}
-\title{Publication-Grade Circular / Radial Bar Plot}
+\title{Publication-Grade Circular or Radial Bar Plot}
 \usage{
 plot_circular_bar(
   data,
@@ -17,28 +17,35 @@ plot_circular_bar(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path (.csv, .xlsx).}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing the category observations.}
 
-\item{x}{Character. Grouping variable (categories positioned around circle).}
+\item{x}{Character string; column name in \code{data} representing the primary categorical
+grouping factor positioned radially around the circle.}
 
-\item{y}{Optional character. Numeric variable. If NULL, calculates counts.}
+\item{y}{Optional character string; column name in \code{data} representing the numeric
+variable to aggregate. If \code{NULL}, observation frequencies (counts) are plotted. Default is \code{NULL}.}
 
-\item{group}{Optional character. Secondary variable for bar fill coloring.}
+\item{group}{Optional character string; column name in \code{data} representing a secondary
+categorical factor for bar fill coloring. Default is \code{NULL}.}
 
-\item{stat}{Character. Aggregation method: "mean" (default), "sum", or "identity".}
+\item{stat}{Character string; aggregation statistic when \code{y} is provided:
+\code{"mean"} (default), \code{"sum"}, or \code{"identity"} (values plotted as-is). Default is \code{"mean"}.}
 
-\item{inner_radius}{Numeric. Fraction of plot reserved for central void (default: 0.35).}
+\item{inner_radius}{Numeric; fractional proportion of the plot radius reserved for the
+central inner void (between 0 and 1). Default is \code{0.35}.}
 
-\item{show_grid}{Logical. If TRUE, renders concentric reference rings and scale values.}
+\item{show_grid}{Logical; if \code{TRUE}, renders concentric reference grid rings and
+numeric scale values. Default is \code{TRUE}.}
 
-\item{palette}{Character. RColorBrewer palette name.}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set2"}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
-A ggplot object.
+A publication-ready \code{ggplot2} object.
 }
 \description{
 Builds circular bar charts with concentric reference gridlines, scale labels,
-and category labels. Best suited for data with 6 or more categories.
+and category labels. Best suited for data with six or more categories.
 }

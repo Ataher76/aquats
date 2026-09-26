@@ -17,34 +17,33 @@ specaccum_plot(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or \code{list} containing
-community abundance counts with optional grouping metadata column(s).}
+\item{data}{A \code{data.frame} or \code{matrix} containing community abundance counts
+with optional grouping metadata column(s).}
 
-\item{group_col}{Optional character or integer vector specifying the grouping
-column(s) to exclude from the community matrix or to group by. Default is 1.}
+\item{group_col}{Character string or integer vector; column name(s) or index/indices in \code{data}
+specifying grouping metadata. Default is \code{1}.}
 
-\item{by_group}{Logical. If \code{TRUE}, generates comparative accumulation
-curves for each level of the first grouping column (default: \code{FALSE}).}
+\item{by_group}{Logical; if \code{TRUE}, generates comparative accumulation curves
+for each level of the grouping factor. Default is \code{FALSE}.}
 
-\item{method}{Character. Accumulation method passed to \code{vegan::specaccum}
-(default: \code{"exact"}).}
+\item{method}{Character string; accumulation method passed to \code{vegan::specaccum}
+(e.g., \code{"exact"}, \code{"random"}, \code{"collector"}). Default is \code{"exact"}.}
 
-\item{palette}{Character. RColorBrewer palette name for grouped curves (default: \code{"Set2"}).}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name for grouped curves. Default is \code{"Set2"}.}
 
-\item{line_color}{Character. Hex code or color name for single curves (default: \code{"#2A9D8F"}).}
+\item{line_color}{Character string; hex code or color name for single pooled curves. Default is \code{"#2A9D8F"}.}
 
-\item{ci}{Numeric. Multiplier for confidence intervals (default: 1.96).}
+\item{ci}{Numeric; multiplier for confidence intervals (e.g., \code{1.96} for 95\% confidence intervals). Default is \code{1.96}.}
 
-\item{show_ci}{Logical. If \code{TRUE}, displays confidence ribbons when standard
-deviations are available (default: \code{TRUE}).}
+\item{show_ci}{Logical; if \code{TRUE}, displays confidence ribbons when standard deviations are available. Default is \code{TRUE}.}
 
-\item{title}{Optional character. Plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Specaccum_Object}{The raw \code{specaccum} object (or list of objects if grouped).}
-  \item{Curve_Data}{A data frame with site counts, richness, and bounds.}
-  \item{Plot}{A publication-ready \code{ggplot} object.}
+  \item{Specaccum_Object}{The raw \code{specaccum} object (or list of objects if grouped) from \code{vegan}.}
+  \item{Curve_Data}{A tidy data frame with sampling effort, estimated species richness, and confidence bounds.}
+  \item{Plot}{The publication-ready \code{ggplot2} object.}
 }
 \description{
 Computes and plots species accumulation curves using \code{vegan::specaccum}.

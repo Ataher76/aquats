@@ -1,18 +1,21 @@
 #' Publication-Ready Likert Scale Visualization
 #'
-#' Generates modern diverging or 100% stacked horizontal bar charts
+#' Generates modern diverging or 100\% stacked horizontal bar charts
 #' for survey items and perception data.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or file path to a .csv or .xlsx file.
-#' @param items Character vector. Column names of Likert question items.
-#' @param levels Optional character vector of ordered response levels.
-#' @param type Character. Plot style: "diverging" (default) or "stacked".
-#' @param palette Character. RColorBrewer palette name (default: "RdYlBu").
-#' @param show_labels Logical. If TRUE, displays percentage numbers on segments.
-#' @param clean_labels Logical. If TRUE, replaces underscores with spaces in item names.
-#' @param title Optional character. Plot title.
+#' @param data A \code{data.frame}, \code{matrix}, or character string file path
+#'   to a \code{.csv} or \code{.xlsx} file containing survey responses.
+#' @param items Character vector; column names in \code{data} representing Likert question items.
+#' @param levels Optional character vector; custom ordered levels of the Likert response scale
+#'   (e.g., from strongly disagree to strongly agree). Default is \code{NULL}.
+#' @param type Character string; plot display style: \code{"diverging"} (default) or
+#'   \code{"stacked"} (100\% stacked). Default is \code{"diverging"}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"RdYlBu"}.
+#' @param show_labels Logical; if \code{TRUE}, displays percentage labels on segments. Default is \code{TRUE}.
+#' @param clean_labels Logical; if \code{TRUE}, replaces underscores with spaces in item label names. Default is \code{TRUE}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
-#' @return A ggplot object.
+#' @return A publication-ready \code{ggplot2} object.
 #' @export
 #'
 #' @import ggplot2

@@ -7,15 +7,30 @@
 calc_diversity(data, group_col = NULL)
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or \code{list} of community counts.}
+\item{data}{A \code{data.frame}, \code{matrix}, or single-element \code{list}
+containing community abundance counts and optional metadata columns.}
 
-\item{group_col}{Optional integer or character vector. Explicit metadata column(s) to retain.}
+\item{group_col}{Optional character or integer vector; column name(s) or index/indices
+in \code{data} specifying metadata variables to retain alongside calculated diversity
+indices. Default is \code{NULL}.}
 }
 \value{
-A tidy \code{data.frame} containing metadata and computed diversity indices.
+A tidy \code{data.frame} containing sample identifiers, retained metadata
+  columns, and the following computed diversity metrics:
+  \item{Sample}{Sample row names or integer index identifiers.}
+  \item{Abundance}{Total observed individual count/abundance per sample (\eqn{N}).}
+  \item{Richness}{Observed species richness count (\eqn{S}).}
+  \item{Shannon}{Shannon-Wiener diversity index (\eqn{H'}, natural log base \eqn{e}).}
+  \item{Simpson}{Gini-Simpson diversity index (\eqn{1 - D}).}
+  \item{Margalef}{Margalef richness index (\eqn{d = (S - 1) / \ln(N)}).}
+  \item{Menhinick}{Menhinick richness index (\eqn{R = S / \sqrt{N}}).}
+  \item{Pielou}{Pielou's evenness index (\eqn{J' = H' / \ln(S)}).}
 }
 \description{
-Computes Richness, Abundance, Shannon, Simpson, Margalef, Menhinick,
-and Pielou's Evenness indices simultaneously from community abundance data.
-Automatically isolates metadata columns to prevent non-numeric errors.
+Computes species richness, total abundance, Shannon-Wiener (\eqn{H'}),
+Gini-Simpson (\eqn{1 - D}), Margalef (\eqn{d}), Menhinick (\eqn{R}),
+and Pielou's evenness (\eqn{J'}) indices simultaneously from community
+abundance matrices. Automatically isolates non-numeric metadata columns,
+guards against mathematical domain errors (e.g., division by zero), and
+removes empty sample observations.
 }

@@ -5,17 +5,17 @@
 #' provides univariate ANOVA breakdowns, and generates either faceted trait boxplots
 #' or a Canonical Discriminant Analysis (LDA) multivariate ordination scatter plot.
 #'
-#' @param data A data frame or matrix in long format.
-#' @param response_vars Character vector; the names of the continuous numeric response variables.
-#' @param factor_var Character; the name of the categorical independent variable.
-#' @param factor_levels Optional character vector; custom order for the factor levels.
-#' @param plot_type Character; type of visualization: "boxplot" or "lda". Default is "boxplot".
-#' @param color_palette Character; name of a color palette from RColorBrewer. Default is "Set1".
+#' @param data A \code{data.frame} or \code{matrix} containing the variables for analysis.
+#' @param response_vars Character vector; column names in \code{data} representing continuous numeric response variables.
+#' @param factor_var Character string; column name in \code{data} representing the categorical grouping factor.
+#' @param factor_levels Optional character vector; custom level ordering for \code{factor_var}. Default is \code{NULL}.
+#' @param plot_type Character string; visualization layout: \code{"boxplot"} (faceted response boxplots) or \code{"lda"} (linear discriminant ordination plot). Default is \code{"boxplot"}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.
 #'
 #' @return A list containing:
-#'   \item{MANOVA_Summary}{Multivariate test summary based on Pillai's trace.}
-#'   \item{Univariate_ANOVAs}{Univariate ANOVA tables for each response variable.}
-#'   \item{Plot}{Publication-ready ggplot object.}
+#'   \item{MANOVA_Summary}{Multivariate test summary table based on Pillai's trace.}
+#'   \item{Univariate_ANOVAs}{Univariate ANOVA summary tables for each response variable.}
+#'   \item{Plot}{The publication-ready \code{ggplot2} object.}
 #' @export
 #'
 #' @import ggplot2 RColorBrewer

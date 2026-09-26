@@ -1,21 +1,31 @@
 #' Analysis of Covariance (ANCOVA) with Adjusted Means Visualization
 #'
-#' This function performs an Analysis of Covariance to test group differences in a
-#' continuous response variable while controlling for a continuous covariate. It extracts
-#' the ANCOVA table, estimated marginal means (EMMs), and generates a publication-ready
-#' regression scatter plot with parallel trend lines matching the additive model.
+#' Performs an Analysis of Covariance (ANCOVA) to test group differences in a
+#' continuous response variable while controlling for a continuous covariate.
+#' Extracts the ANCOVA summary table, estimated marginal means (EMMs), and generates
+#' a publication-ready regression scatter plot with parallel trend lines matching
+#' the additive model.
 #'
-#' @param data A data frame in long format.
-#' @param response_var Character; the name of the continuous numeric response variable.
-#' @param factor_var Character; the name of the categorical independent variable (groups).
-#' @param covariate_var Character; the name of the continuous covariate variable.
-#' @param factor_levels Optional character vector; custom order for the factor levels.
-#' @param facet Logical. If \code{TRUE}, panels are split by factor levels using \code{facet_wrap} (default: \code{FALSE}).
-#' @param color_palette Character; name of a color palette from RColorBrewer. Default is "Set1".
+#' @param data A \code{data.frame} or \code{matrix} containing the variables for analysis.
+#' @param response_var Character string; column name in \code{data} representing
+#'   the continuous numeric response variable.
+#' @param factor_var Character string; column name in \code{data} representing
+#'   the categorical grouping factor.
+#' @param covariate_var Character string; column name in \code{data} representing
+#'   the continuous numeric covariate.
+#' @param factor_levels Optional character vector; custom level ordering for \code{factor_var}.
+#'   Default is \code{NULL}.
+#' @param facet Logical; if \code{TRUE}, facets panels by factor level using
+#'   \code{ggplot2::facet_wrap}. Default is \code{FALSE}.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name.
+#'   Default is \code{"Set1"}.
 #'
-#' @return A list containing the ANCOVA model summary, EMMs, and the ggplot object.
-#'
+#' @return A list containing:
+#'   \item{ANCOVA_Table}{Analysis of variance table (\code{anova.lm}) evaluating factor and covariate effects.}
+#'   \item{EMMs}{Estimated marginal means summary object from \code{emmeans}.}
+#'   \item{Plot}{The publication-ready \code{ggplot2} scatter and regression plot.}
 #' @export
+#'
 #' @import ggplot2 emmeans RColorBrewer
 #' @importFrom stats lm anova as.formula predict
 #' @importFrom rlang .data

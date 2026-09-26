@@ -6,27 +6,27 @@
 #' and automated contrast text adjustment.
 #'
 #' @param data A \code{data.frame} or \code{matrix} containing numeric variables.
-#' @param numeric_vars Optional character vector specifying numeric columns to include.
-#'   If \code{NULL}, all numeric columns are automatically detected.
-#' @param method Character. Correlation method: \code{"pearson"} (default),
-#'   \code{"spearman"}, or \code{"kendall"}.
-#' @param shape Character. Heatmap marker shape: \code{"square"} (default) or \code{"circle"}.
-#' @param view Character. Matrix layout view: \code{"lower"} (default), \code{"upper"}, or \code{"full"}.
-#' @param diag Logical. Whether to show diagonal self-correlations (default: \code{FALSE}).
-#' @param label_type Character. Content displayed inside cells: \code{"both"} (number + stars),
-#'   \code{"stars"} (only asterisks, recommended for circles), \code{"values"} (only numbers),
-#'   or \code{"none"}. Defaults to \code{"both"} for squares and \code{"stars"} for circles.
-#' @param sig_level Optional numeric (e.g., 0.05). If specified, non-significant correlations
-#'   are rendered transparent or blanked out.
-#' @param color_palette Character. Diverging palette name for \code{scale_fill_distiller}
-#'   (default: \code{"RdBu"}). Alternatives: \code{"RdYlBu"}, \code{"Spectral"}, \code{"BrBG"}.
-#' @param title Optional character. Plot title.
+#' @param numeric_vars Optional character vector; specific numeric column names in \code{data} to include.
+#'   If \code{NULL}, all numeric columns are automatically detected. Default is \code{NULL}.
+#' @param method Character string; correlation method: \code{"pearson"} (default),
+#'   \code{"spearman"}, or \code{"kendall"}. Default is \code{"pearson"}.
+#' @param shape Character string; heatmap marker shape: \code{"square"} (default) or \code{"circle"}. Default is \code{"square"}.
+#' @param view Character string; matrix layout view: \code{"lower"} (default), \code{"upper"}, or \code{"full"}. Default is \code{"lower"}.
+#' @param diag Logical; whether to show diagonal self-correlations. Default is \code{FALSE}.
+#' @param label_type Character string; content displayed inside cells: \code{"both"} (numeric value and asterisks),
+#'   \code{"stars"} (only asterisks), \code{"values"} (only numeric values), or \code{"none"}.
+#'   Defaults to \code{"both"} for squares and \code{"stars"} for circles.
+#' @param sig_level Optional numeric; significance threshold (e.g., \code{0.05}). If specified, non-significant correlations
+#'   are rendered transparent or blanked out. Default is \code{NULL}.
+#' @param color_palette Character string; a valid diverging palette name for \code{scale_fill_distiller}
+#'   (e.g., \code{"RdBu"}, \code{"RdYlBu"}, \code{"Spectral"}, \code{"BrBG"}). Default is \code{"RdBu"}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
 #' @return A list containing:
 #'   \item{Correlation_Matrix}{Symmetric matrix of correlation coefficients.}
-#'   \item{P_Value_Matrix}{Matrix of p-values.}
-#'   \item{Summary_Table}{Tidy data frame of pairwise correlations, p-values, and significance.}
-#'   \item{Plot}{A publication-ready \code{ggplot} object.}
+#'   \item{P_Value_Matrix}{Matrix of exact \eqn{p}-values.}
+#'   \item{Summary_Table}{Tidy data frame of pairwise correlations, \eqn{p}-values, and significance tiers.}
+#'   \item{Plot}{A publication-ready \code{ggplot2} object.}
 #' @export
 #'
 #' @import ggplot2

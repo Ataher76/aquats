@@ -5,24 +5,22 @@
 #' R-squared values, and p-values, displays confidence or prediction intervals, and renders
 #' publication-ready ggplot2 graphics.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or tibble.
-#' @param x_var Character. Name of the independent predictor variable.
-#' @param y_var Character. Name of the dependent response variable.
-#' @param fit_type Character. Model type: \code{"linear"} (default), \code{"power"} (allometric),
+#' @param data A \code{data.frame}, \code{matrix}, or tibble containing the variables for analysis.
+#' @param x_var Character string; column name in \code{data} representing the independent numeric predictor variable.
+#' @param y_var Character string; column name in \code{data} representing the dependent numeric response variable.
+#' @param fit_type Character string; regression model functional form: \code{"linear"} (default), \code{"power"} (allometric),
 #'   \code{"exponential"}, \code{"logarithmic"}, \code{"polynomial"} (quadratic), or \code{"cubic"}.
-#' @param group_var Optional character. Grouping factor for multi-category regression.
-#' @param facet Logical. If \code{TRUE} and \code{group_var} is provided, facets by group. Default is \code{FALSE}.
-#' @param interval Character. Uncertainty band type: \code{"confidence"} (default),
-#'   \code{"prediction"}, or \code{"none"}.
-#' @param show_equation Logical. If \code{TRUE} (default), prints the regression equation,
-#'   \eqn{R^2}, and p-value on the canvas.
-#' @param color_palette Character. RColorBrewer palette name (default: \code{"Set1"}).
-#' @param point_size Numeric. Size of scatter points (default: 2.2).
-#' @param point_alpha Numeric. Opacity of scatter points (default: 0.75).
-#' @param title Optional character. Plot title.
+#' @param group_var Optional character string; column name in \code{data} representing a categorical grouping factor for stratified analysis. Default is \code{NULL}.
+#' @param facet Logical; if \code{TRUE} and \code{group_var} is provided, facets panels by group. Default is \code{FALSE}.
+#' @param interval Character string; uncertainty band type: \code{"confidence"} (default), \code{"prediction"}, or \code{"none"}.
+#' @param show_equation Logical; if \code{TRUE} (default), prints the fitted algebraic formula, \eqn{R^2}, and p-value on the canvas.
+#' @param color_palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set1"}.
+#' @param point_size Numeric; size of scatter plot points. Default is \code{2.2}.
+#' @param point_alpha Numeric; opacity of scatter plot points (0 to 1). Default is \code{0.75}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
 #' @return A list containing:
-#'   \item{Plot}{Publication-grade \code{ggplot} object.}
+#'   \item{Plot}{Publication-ready \code{ggplot2} object.}
 #'   \item{Models}{Named list of fitted \code{lm} model objects per group.}
 #'   \item{Equation_Table}{Data frame of algebraic formulas, \eqn{R^2}, and p-values.}
 #'   \item{Predictions}{Data frame of calculated predictions with confidence/prediction limits.}

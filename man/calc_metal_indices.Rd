@@ -13,23 +13,28 @@ calc_metal_indices(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path (.csv, .xlsx).}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing metal concentration data.}
 
-\item{id_col}{Character. Column identifying stations/sites (default: \code{"Station"}).}
+\item{id_col}{Character string; column name in \code{data} identifying sampling stations
+or monitoring sites. Default is \code{"Station"}.}
 
-\item{standards}{Named numeric vector of permissible guideline limits (Si) (ug/L or mg/L).}
+\item{standards}{Named numeric vector of permissible guideline limits (\eqn{S_i})
+in matching concentration units (\eqn{\mu}g/L or mg/L).}
 
-\item{ci}{Numeric. Confidence level for interval estimation (default: 0.95).}
+\item{ci}{Numeric; confidence level for interval estimation (e.g., \code{0.95} for 95\% confidence intervals).
+Default is \code{0.95}.}
 
-\item{file}{Optional character. File path to export results (.xlsx or .csv).}
+\item{file}{Optional character string; file path to export tabular results (\code{.xlsx} or \code{.csv}).
+Default is \code{NULL}.}
 }
 \value{
 A list containing:
-  \item{Replicate_Data}{Data frame containing computed indices for each individual sample.}
-  \item{Summary_Data}{Station-level summary statistics (Mean, SD, SE, 95\% CI, Status).}
+  \item{Replicate_Data}{Data frame containing computed indices for each individual sample observation.}
+  \item{Summary_Data}{Data frame of station-level aggregated statistics (Mean, SD, SE, 95\% CI, and pollution status).}
 }
 \description{
 Computes five heavy metal pollution indices (HPI, HEI, Cd, PLI, and Nemerow PN)
 per observation or replicate. If replicated sampling is detected, it calculates
-station-level summary statistics including Mean, SD, SE, and 95% Confidence Intervals.
+station-level summary statistics including Mean, SD, SE, and 95\% confidence intervals.
 }

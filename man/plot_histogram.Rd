@@ -21,34 +21,37 @@ plot_histogram(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or file path to a \code{.csv} or \code{.xlsx} file.}
+\item{data}{A \code{data.frame}, \code{matrix}, or character string file path
+to a \code{.csv} or \code{.xlsx} file containing the observations.}
 
-\item{x}{Character. Name of the continuous numeric variable to plot.}
+\item{x}{Character string; column name in \code{data} representing the continuous
+numeric variable to plot.}
 
-\item{group}{Optional character. Categorical grouping variable for faceting or fill coloring.}
+\item{group}{Optional character string; column name in \code{data} representing
+a categorical grouping factor for faceting or fill coloring. Default is \code{NULL}.}
 
-\item{bins}{Integer. Number of bins (default: 30).}
+\item{bins}{Numeric integer; number of histogram bins. Default is \code{30}.}
 
-\item{binwidth}{Optional numeric. Explicit bin width (overrides \code{bins}).}
+\item{binwidth}{Optional numeric; explicit width of the histogram bins (overrides \code{bins}). Default is \code{NULL}.}
 
-\item{add_density}{Logical. If \code{TRUE}, overlays an empirical kernel density curve.}
+\item{add_density}{Logical; if \code{TRUE}, overlays an empirical kernel density curve. Default is \code{FALSE}.}
 
-\item{add_normal}{Logical. If \code{TRUE}, overlays a theoretical normal distribution curve.}
+\item{add_normal}{Logical; if \code{TRUE}, overlays a theoretical normal distribution curve. Default is \code{FALSE}.}
 
-\item{show_stats}{Logical. If \code{TRUE}, adds dashed reference lines for the mean and median.}
+\item{show_stats}{Logical; if \code{TRUE}, adds dashed reference lines indicating the mean and median. Default is \code{FALSE}.}
 
-\item{facet}{Logical. If \code{TRUE} and \code{group} is provided, facets the plot by group.}
+\item{facet}{Logical; if \code{TRUE} and \code{group} is provided, facets panels by group. Default is \code{FALSE}.}
 
-\item{palette}{Character. RColorBrewer palette name (default: \code{"Blues"}).}
+\item{palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Blues"}.}
 
-\item{xlab}{Optional character. Custom x-axis label.}
+\item{xlab}{Optional character string; custom x-axis label. Default is \code{NULL}.}
 
-\item{ylab}{Optional character. Custom y-axis label (default: \code{"Frequency"}).}
+\item{ylab}{Optional character string; custom y-axis label. Default is \code{"Frequency"}.}
 
-\item{title}{Optional character. Custom plot title.}
+\item{title}{Optional character string; custom plot title. Default is \code{NULL}.}
 }
 \value{
-A \code{ggplot} object.
+A publication-ready \code{ggplot2} object.
 }
 \description{
 Generates publication-ready frequency histograms for continuous fisheries

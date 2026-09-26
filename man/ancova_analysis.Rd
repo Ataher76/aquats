@@ -15,26 +15,36 @@ ancova_analysis(
 )
 }
 \arguments{
-\item{data}{A data frame in long format.}
+\item{data}{A \code{data.frame} or \code{matrix} containing the variables for analysis.}
 
-\item{response_var}{Character; the name of the continuous numeric response variable.}
+\item{response_var}{Character string; column name in \code{data} representing
+the continuous numeric response variable.}
 
-\item{factor_var}{Character; the name of the categorical independent variable (groups).}
+\item{factor_var}{Character string; column name in \code{data} representing
+the categorical grouping factor.}
 
-\item{covariate_var}{Character; the name of the continuous covariate variable.}
+\item{covariate_var}{Character string; column name in \code{data} representing
+the continuous numeric covariate.}
 
-\item{factor_levels}{Optional character vector; custom order for the factor levels.}
+\item{factor_levels}{Optional character vector; custom level ordering for \code{factor_var}.
+Default is \code{NULL}.}
 
-\item{facet}{Logical. If \code{TRUE}, panels are split by factor levels using \code{facet_wrap} (default: \code{FALSE}).}
+\item{facet}{Logical; if \code{TRUE}, facets panels by factor level using
+\code{ggplot2::facet_wrap}. Default is \code{FALSE}.}
 
-\item{color_palette}{Character; name of a color palette from RColorBrewer. Default is "Set1".}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name.
+Default is \code{"Set1"}.}
 }
 \value{
-A list containing the ANCOVA model summary, EMMs, and the ggplot object.
+A list containing:
+  \item{ANCOVA_Table}{Analysis of variance table (\code{anova.lm}) evaluating factor and covariate effects.}
+  \item{EMMs}{Estimated marginal means summary object from \code{emmeans}.}
+  \item{Plot}{The publication-ready \code{ggplot2} scatter and regression plot.}
 }
 \description{
-This function performs an Analysis of Covariance to test group differences in a
-continuous response variable while controlling for a continuous covariate. It extracts
-the ANCOVA table, estimated marginal means (EMMs), and generates a publication-ready
-regression scatter plot with parallel trend lines matching the additive model.
+Performs an Analysis of Covariance (ANCOVA) to test group differences in a
+continuous response variable while controlling for a continuous covariate.
+Extracts the ANCOVA summary table, estimated marginal means (EMMs), and generates
+a publication-ready regression scatter plot with parallel trend lines matching
+the additive model.
 }

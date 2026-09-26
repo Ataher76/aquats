@@ -17,27 +17,34 @@ plot_diversity(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame}, \code{matrix}, or \code{list}.}
+\item{data}{A \code{data.frame} or \code{matrix} containing community abundance
+counts and grouping metadata columns.}
 
-\item{group_col}{Character or integer vector specifying 1 or 2 grouping variables.}
+\item{group_col}{Character string or integer vector; column name(s) or index/indices in \code{data}
+specifying one or two categorical grouping factors.}
 
-\item{facet_var}{Optional character specifying a column to facet by.}
+\item{facet_var}{Optional character string; column name in \code{data} to facet panels by.
+Default is \code{NULL}.}
 
-\item{index}{Character. Metric to plot: \code{"shannon"} (default), \code{"simpson"},
-\code{"richness"}, \code{"abundance"}, \code{"margalef"}, \code{"menhinick"}, or \code{"pielou"}.}
+\item{index}{Character string; alpha diversity metric to compute and plot:
+\code{"shannon"} (default), \code{"simpson"}, \code{"richness"}, \code{"abundance"},
+\code{"margalef"}, \code{"menhinick"}, or \code{"pielou"}. Default is \code{"shannon"}.}
 
-\item{test}{Character. Hypothesis test to perform: \code{"anova"} (default),
-\code{"kruskal"}, or \code{"none"}.}
+\item{test}{Character string; statistical hypothesis test to perform across groups:
+\code{"anova"} (default), \code{"kruskal"}, or \code{"none"}. Default is \code{"anova"}.}
 
-\item{color_palette}{Character. RColorBrewer palette name (default: \code{"Dark2"}).}
+\item{color_palette}{Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Dark2"}.}
 
-\item{permutations}{Integer. Bootstrap iterations for confidence intervals (default: 1000).}
+\item{permutations}{Numeric integer; number of bootstrap iterations for confidence intervals. Default is \code{1000}.}
 
-\item{file}{Optional character. Export path for summary tables (\code{.xlsx} or \code{.csv}).}
+\item{file}{Optional character string; export file path for summary tables (\code{.xlsx} or \code{.csv}). Default is \code{NULL}.}
 }
 \value{
-A list with elements \code{Diversity_Data}, \code{Group_Summary},
-  \code{Test_Result}, and \code{Plot}.
+A list containing:
+  \item{Diversity_Data}{Data frame of individual sample diversity metric values.}
+  \item{Group_Summary}{Data frame of aggregated group-level summary statistics.}
+  \item{Test_Result}{Statistical test summary object (\code{aov} or \code{kruskal.test}).}
+  \item{Plot}{A publication-ready \code{ggplot2} boxplot object.}
 }
 \description{
 Generates publication-ready boxplots for alpha diversity metrics across

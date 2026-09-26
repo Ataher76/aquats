@@ -1,19 +1,26 @@
-#' Publication-Grade Circular / Radial Bar Plot
+#' Publication-Grade Circular or Radial Bar Plot
 #'
 #' Builds circular bar charts with concentric reference gridlines, scale labels,
-#' and category labels. Best suited for data with 6 or more categories.
+#' and category labels. Best suited for data with six or more categories.
 #'
-#' @param data A \code{data.frame}, \code{matrix}, or file path (.csv, .xlsx).
-#' @param x Character. Grouping variable (categories positioned around circle).
-#' @param y Optional character. Numeric variable. If NULL, calculates counts.
-#' @param group Optional character. Secondary variable for bar fill coloring.
-#' @param stat Character. Aggregation method: "mean" (default), "sum", or "identity".
-#' @param inner_radius Numeric. Fraction of plot reserved for central void (default: 0.35).
-#' @param show_grid Logical. If TRUE, renders concentric reference rings and scale values.
-#' @param palette Character. RColorBrewer palette name.
-#' @param title Optional character. Plot title.
+#' @param data A \code{data.frame}, \code{matrix}, or character string file path
+#'   to a \code{.csv} or \code{.xlsx} file containing the category observations.
+#' @param x Character string; column name in \code{data} representing the primary categorical
+#'   grouping factor positioned radially around the circle.
+#' @param y Optional character string; column name in \code{data} representing the numeric
+#'   variable to aggregate. If \code{NULL}, observation frequencies (counts) are plotted. Default is \code{NULL}.
+#' @param group Optional character string; column name in \code{data} representing a secondary
+#'   categorical factor for bar fill coloring. Default is \code{NULL}.
+#' @param stat Character string; aggregation statistic when \code{y} is provided:
+#'   \code{"mean"} (default), \code{"sum"}, or \code{"identity"} (values plotted as-is). Default is \code{"mean"}.
+#' @param inner_radius Numeric; fractional proportion of the plot radius reserved for the
+#'   central inner void (between 0 and 1). Default is \code{0.35}.
+#' @param show_grid Logical; if \code{TRUE}, renders concentric reference grid rings and
+#'   numeric scale values. Default is \code{TRUE}.
+#' @param palette Character string; a valid \code{RColorBrewer} palette name. Default is \code{"Set2"}.
+#' @param title Optional character string; custom plot title. Default is \code{NULL}.
 #'
-#' @return A ggplot object.
+#' @return A publication-ready \code{ggplot2} object.
 #' @export
 #'
 #' @import ggplot2

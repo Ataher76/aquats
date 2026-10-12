@@ -33,7 +33,13 @@ for numeric variables across optional grouping factors. Supports direct file
 ingestion and exporting publication-ready tables directly to Excel (.xlsx) or CSV.
 }
 \examples{
-\dontrun{
+# Generate self-contained sample survey data
+fish_survey <- data.frame(
+  River = rep(c("River A", "River B"), each = 15),
+  Length = c(rnorm(15, 20, 2), rnorm(15, 24, 3)),
+  Weight = c(rnorm(15, 120, 15), rnorm(15, 180, 20))
+)
+
 summary_tbl <- summarize_obs(
   data = fish_survey,
   vars = c("Length", "Weight"),
@@ -41,5 +47,5 @@ summary_tbl <- summarize_obs(
   digits = 2
 )
 head(summary_tbl)
-}
+
 }

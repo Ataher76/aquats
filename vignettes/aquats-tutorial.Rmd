@@ -1,6 +1,6 @@
 ---
 title: "Comprehensive Ecological and Fisheries Data Analysis with aquats"
-author: "Ataher Ali and Mohammed Shahidul Alam"
+author: "Ataher Ali"
 date: "`r Sys.Date()`"
 vignette: >
   %\VignetteIndexEntry{Comprehensive Ecological and Fisheries Data Analysis with aquats}
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Introduction
+# Introduction {-}
 
 The `aquats` package provides a robust, streamlined statistical and visualization toolkit tailored specifically for fisheries science, stock assessment workflows, and aquatic ecology. It bridges standard parametric models (ANOVA, ANCOVA, MANOVA) with advanced ecological tools, including non-linear morphometric regressions, generalized linear models (GLMs) for count data, customizable correlation heatmaps, and integrated Mantel test network linkages.
 
@@ -3878,7 +3878,7 @@ I also extend my sincere appreciation to the open-source R development community
 
 - **Clarke, K. R. (1993).** Non-parametric multivariate analyses of changes in community structure. *Australian Journal of Ecology*, 18(1), 117–143. <https://doi.org/10.1111/j.1442-9993.1993.tb00438.x>
 
-- **Coleman, B. D., Mares, M. A., Willig, M. R., & Hsieh, Y.-H. (1982).** Randomness, area, and species richness. *Science*, 217(4558), 463–464. <https://doi.org/10.1126/science.217.4558.463>
+- **Coleman, B. D., Mares, M. A., Willig, M. R., & Hsieh, Y.-H. (1982).** Randomness, area, and species richness. *Ecology*, 63(4), 1121–1133. <https://doi.org/10.2307/1937249>
 
 - **Gotelli, N. J., & Colwell, R. K. (2001).** Quantifying biodiversity: procedures and pitfalls in the measurement and comparison of species-richness. *Ecology Letters*, 4(4), 379–391. <https://doi.org/10.1046/j.1461-0248.2001.00230.x>
 
@@ -3890,20 +3890,19 @@ I also extend my sincere appreciation to the open-source R development community
 
 - **Legendre, P., & Gallagher, E. D. (2001).** Ecologically meaningful transformations for ordination of species data. *Oecologia*, 129(2), 271–280. <https://doi.org/10.1007/s004420100716>
 
-- **Legendre, P., & Legendre, L. (2012).** *Numerical Ecology* (3rd English ed.). Elsevier Science, Amsterdam. <https://doi.org/10.1016/B978-0-444-53868-0.50001-8>
+- **Legendre, P., & Legendre, L. (2012).** *Numerical Ecology* (3rd English ed.). Elsevier Science. ISBN: 978-0-444-53868-0.
 
 - **Mantel, N. (1967).** The detection of disease clustering and a generalized regression approach. *Cancer Research*, 27(2), 209–220.
+
 - **Margalef, R. (1958).** Information theory in ecology. *General Systems*, 3, 36–71.
 
-- **McCullagh, P., & Nelder, J. A. (1989).** *Generalized Linear Models* (2nd ed.). Chapman and Hall/CRC, London. <https://doi.org/10.1007/978-1-4899-3242-6>
+- **McCullagh, P., & Nelder, J. A. (1989).** *Generalized Linear Models* (2nd ed.). Chapman & Hall/CRC. ISBN: 978-0-412-31760-6.
 
 - **Oksanen, J., Simpson, G. L., Blanchet, F. G., Kindt, R., Legendre, P., Minchin, P. R., O'Hara, R. B., et al. (2022).** *vegan: Community Ecology Package*. R package version 2.6-4. <https://CRAN.R-project.org/package=vegan>
 
 - **Pielou, E. C. (1966).** The measurement of diversity in different types of biological collections. *Journal of Theoretical Biology*, 13, 131–144. <https://doi.org/10.1016/0022-5193(66)90013-0>
 
 - **Pillai, K. C. S. (1955).** Some new test criteria in multivariate analysis. *The Annals of Mathematical Statistics*, 26(1), 117–121. <https://doi.org/10.1214/aoms/1177728607>
-
-- **Prasad, B., & Bose, J. M. (2001).** Evaluation of heavy metal pollution in surface and ground water of an extractive mining area. *Environmental Monitoring and Assessment*, 69(1), 69–88. <https://doi.org/10.1023/A:1010729805908>
 
 - **Shannon, C. E. (1948).** A mathematical theory of communication. *Bell System Technical Journal*, 27(3), 379–423. <https://doi.org/10.1002/j.1538-7305.1948.tb01338.x>
 

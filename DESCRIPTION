@@ -1,7 +1,7 @@
 Package: aquats
 Type: Package
 Title: Robust Ecological and Fisheries Data Analysis and Visualization
-Version: 1.2.1
+Version: 1.2.2
 Authors@R: c(
     person(
       given = "Ataher",
@@ -19,16 +19,22 @@ Authors@R: c(
     )
   )
 Description: A comprehensive statistical and visualization toolkit tailored
-    for observational data in fisheries science and aquatic ecology. It
-    provides streamlined wrappers for univariate and factorial ANOVA,
-    ANCOVA, MANOVA, generalized linear models, non-linear morphometric
-    regressions with embedded algebraic equations, ordination techniques
-    (NMDS, PCA, RDA, db-RDA, hierarchical clustering), correlation heatmaps,
-    integrated Mantel test network linkages, alpha diversity indices,
-    species accumulation curves, water quality indices (WAWQI), heavy metal
-    ecotoxicological contamination indices, and multi-factor longitudinal
-    time-series tracking with uncertainty ribbons. Methodological
-    formulations for non-parametric multivariate permutation tests follow
+    for observational data in fisheries science and aquatic ecology. Provides
+    streamlined workflows for univariate and factorial analysis of variance
+    (ANOVA), analysis of covariance (ANCOVA), multivariate analysis of
+    variance (MANOVA), permutational multivariate analysis of variance
+    (PERMANOVA), similarity percentages (SIMPER), generalized linear models,
+    non-linear morphometric regressions, two-group hypothesis testing, and
+    chi-square tests. Features multivariate ordination methods including
+    non-metric multidimensional scaling (NMDS), principal component analysis
+    (PCA), redundancy analysis (RDA), distance-based redundancy analysis
+    (db-RDA), and hierarchical cluster dendrograms. Computes alpha diversity
+    metrics, species accumulation curves, water quality index (WQI) values,
+    heavy metal ecotoxicological contamination indices, correlation heatmaps,
+    and Mantel test network linkages. Offers specialized environmental
+    visualizations including Sankey diagrams, Likert plots, circular bar
+    charts, and longitudinal time-series with uncertainty ribbons.
+    Methodological formulations for multivariate permutation tests follow
     Anderson (2001) <doi:10.1111/j.1442-9993.2001.01070.pp.x>. Ecological
     community dissimilarity transformations follow Legendre and Gallagher
     (2001) <doi:10.1007/s004420100716>, and ecotoxicological contamination

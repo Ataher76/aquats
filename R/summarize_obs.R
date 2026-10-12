@@ -23,9 +23,14 @@
 #' @importFrom stats sd median na.omit
 #' @importFrom utils write.csv read.csv
 #' @importFrom tools file_ext
-#'
 #' @examples
-#' \dontrun{
+#' # Generate self-contained sample survey data
+#' fish_survey <- data.frame(
+#'   River = rep(c("River A", "River B"), each = 15),
+#'   Length = c(rnorm(15, 20, 2), rnorm(15, 24, 3)),
+#'   Weight = c(rnorm(15, 120, 15), rnorm(15, 180, 20))
+#' )
+#'
 #' summary_tbl <- summarize_obs(
 #'   data = fish_survey,
 #'   vars = c("Length", "Weight"),
@@ -33,7 +38,7 @@
 #'   digits = 2
 #' )
 #' head(summary_tbl)
-#' }
+#'
 summarize_obs <- function(data,
                           vars = NULL,
                           group = NULL,

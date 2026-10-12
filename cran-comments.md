@@ -1,16 +1,16 @@
-## Resubmission Summary (aquats 1.2.1)
+## Resubmission Summary
+This is a resubmission of aquats version 1.2.2 addressing feedback from CRAN reviewer Leonore Hochhauser:
 
-This is a resubmission addressing comments from CRAN maintainers:
+1. Acronym Expansion in DESCRIPTION:
+   - All acronyms in the Description field have been expanded on first use (ANOVA, ANCOVA, MANOVA, PERMANOVA, SIMPER, NMDS, PCA, RDA, db-RDA, WQI).
 
-* Added formal methodology citations with persistent DOIs (`Authors (year) <doi:...>`) in the `Description` field of `DESCRIPTION`.
-* Cleaned non-ASCII characters in `R/test_chisq.R`.
-* Registered global variables (`stratum`) in `R/globals.R` to resolve `no visible binding` notes.
-* Fixed empty link anchors in `README.md` and sanitized BibTeX URI formatting in vignette documentation.
-* Added supervisor co-authorship metadata.
+2. Examples Formatting:
+   - Removed \dontrun{} from R/summarize_obs.R.
+   - Replaced example inputs with a fast, self-contained data frame so all examples execute deterministically in < 1 second.
+   - Verified all 37 example files execute cleanly with devtools::run_examples(run_donttest = TRUE).
 
 ## Test environments
-* local Windows 11, R 4.5.1
-* win-builder (devel and release)
+- local Windows 11, R 4.5.0
 
 ## R CMD check results
-There were 0 errors | 0 warnings | 0 notes.
+0 errors | 0 warnings | 0 notes

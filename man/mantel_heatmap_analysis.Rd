@@ -8,17 +8,29 @@ mantel_heatmap_analysis(
   comm_data,
   env_data,
   plot_type = c("network", "bars"),
+  matrix_type = c("lower", "upper"),
+  cell_shape = c("tile", "circle", "square"),
   line_style = c("curve", "straight"),
-  method = c("pearson", "spearman"),
+  mantel_type = c("simple", "partial"),
+  method = c("pearson", "spearman", "kendall"),
+  mantel_method = NULL,
   spec_dist = "bray",
   env_dist = "euclidean",
   transform = c("none", "hellinger", "log", "pa", "sqrt"),
+  p_adjust = c("none", "BH", "holm", "bonferroni"),
+  r_breaks = c(0.2, 0.4),
+  p_breaks = c(0.01, 0.05),
   only_significant = FALSE,
+  hide_ns_lines = TRUE,
   line_color_by = c("significance", "community"),
+  curviness = 0.2,
   permutations = 999,
   seed = 42,
   show_cor_text = TRUE,
+  show_cor_sig = FALSE,
+  diag_label = c("outside", "inside", "axis"),
   color_palette = "RdBu",
+  sig_colors = NULL,
   title = NULL
 )
 }
@@ -28,31 +40,80 @@ data frames representing distinct biological communities.}
 
 \item{env_data}{A \code{data.frame} or \code{matrix} of numeric environmental variables.}
 
-\item{plot_type}{Character string; visualization layout: \code{"network"} (default curved/straight diagram)
+\item{plot_type}{Character string; visualization layout: \code{"network"} (default)
 or \code{"bars"} (synchronized side-by-side barplot). Default is \code{"network"}.}
 
-\item{line_style}{Character string; linkage geometry: \code{"curve"} (default) or \code{"straight"}. Default is \code{"curve"}.}
+\item{matrix_type}{Character string; triangle orientation for network mode:
+\code{"lower"} (default, matrix at bottom-left, communities at top-right) or
+\code{"upper"} (matrix at top-right, communities at bottom-left).}
 
-\item{method}{Character string; correlation method: \code{"pearson"} (default) or \code{"spearman"}. Default is \code{"pearson"}.}
+\item{cell_shape}{Character string; geometry of correlation cells:
+\code{"tile"} (default full square), \code{"circle"} (proportional circle scaled by |r|),
+or \code{"square"} (proportional square scaled by |r|).}
 
-\item{spec_dist}{Character string; dissimilarity metric for community abundance data (e.g., \code{"bray"}, \code{"jaccard"}). Default is \code{"bray"}.}
+\item{line_style}{Character string; linkage geometry: \code{"curve"} (default) or \code{"straight"}.}
+
+\item{mantel_type}{Character string; \code{"simple"} (default standard Mantel test via
+\code{vegan::mantel}) or \code{"partial"} (partial Mantel test via \code{vegan::mantel.partial}
+controlling for all remaining environmental variables).}
+
+\item{method}{Character string; correlation method for environmental variables:
+\code{"pearson"} (default), \code{"spearman"}, or \code{"kendall"}.}
+
+\item{mantel_method}{Optional character string; correlation method for the Mantel test
+(\code{"pearson"}, \code{"spearman"}, or \code{"kendall"}). If \code{NULL} (default),
+inherits the value of \code{method}.}
+
+\item{spec_dist}{Character string; dissimilarity metric for community abundance data
+via \code{vegan::vegdist} (e.g., \code{"bray"}, \code{"jaccard"}). Default is \code{"bray"}.}
 
 \item{env_dist}{Character string; distance metric for environmental parameters. Default is \code{"euclidean"}.}
 
-\item{transform}{Character string; transformation applied to community counts via \code{vegan::decostand}:
-\code{"none"} (default), \code{"hellinger"} (recommended for abundance), \code{"log"}, \code{"pa"}, or \code{"sqrt"}. Default is \code{"none"}.}
+\item{transform}{Character string; transformation applied to community counts via
+\code{vegan::decostand}: \code{"none"} (default), \code{"hellinger"}, \code{"log"},
+\code{"pa"}, or \code{"sqrt"}.}
 
-\item{only_significant}{Logical; if \code{TRUE}, displays only statistically significant Mantel linkages (\eqn{p < 0.05}). Default is \code{FALSE}.}
+\item{p_adjust}{Character string; multiple-testing correction method for Mantel p-values
+passed to \code{stats::p.adjust} (e.g., \code{"none"}, \code{"BH"}, \code{"holm"},
+\code{"bonferroni"}). Default is \code{"none"}.}
 
-\item{line_color_by}{Character string; variable mapping for linkage line colors: \code{"significance"} (default) or \code{"community"}. Default is \code{"significance"}.}
+\item{r_breaks}{Numeric vector of length 2 defining the three Mantel r tiers.
+Default is \code{c(0.20, 0.40)}.}
 
-\item{permutations}{Numeric integer; number of Monte Carlo permutations for Mantel significance testing. Default is \code{999}.}
+\item{p_breaks}{Numeric vector of length 2 defining the three significance tiers.
+Default is \code{c(0.01, 0.05)}.}
+
+\item{only_significant}{Logical; if \code{TRUE}, displays only statistically significant
+Mantel linkages (\eqn{p < p\_breaks[2]}). Default is \code{FALSE}.}
+
+\item{hide_ns_lines}{Logical; if \code{TRUE}, renders non-significant linkages with low
+opacity so significant drivers stand out clearly. Default is \code{TRUE}.}
+
+\item{line_color_by}{Character string; variable mapping for linkage line colors:
+\code{"significance"} (default) or \code{"community"}.}
+
+\item{curviness}{Numeric; base curvature multiplier for network arcs. Default is \code{0.20}.}
+
+\item{permutations}{Numeric integer; number of Monte Carlo permutations for Mantel testing.
+Default is \code{999}.}
 
 \item{seed}{Optional integer; random seed for reproducible permutations. Default is \code{42}.}
 
-\item{show_cor_text}{Logical; if \code{TRUE}, displays correlation coefficients inside tiles. Default is \code{TRUE}.}
+\item{show_cor_text}{Logical; if \code{TRUE}, displays correlation coefficients inside cells.
+Default is \code{TRUE}.}
 
-\item{color_palette}{Character string; a valid diverging \code{RColorBrewer} palette name for the correlation heatmap. Default is \code{"RdBu"}.}
+\item{show_cor_sig}{Logical; if \code{TRUE}, appends significance stars (\code{*}, \code{**},
+\code{***}) to correlation values in the heatmap. Default is \code{FALSE}.}
+
+\item{diag_label}{Character string; placement of variable names along the diagonal:
+\code{"outside"} (default, collision-free beside anchor pins), \code{"inside"} (inside
+diagonal tiles), or \code{"axis"} (only on outer x/y axes).}
+
+\item{color_palette}{Character string of a diverging \code{RColorBrewer} palette (default \code{"RdBu"})
+or a character vector of 3 custom colors (low, mid, high) for the correlation heatmap.}
+
+\item{sig_colors}{Optional character vector of 3 colors for the Mantel significance
+tiers (strong, moderate, non-significant).}
 
 \item{title}{Optional character string; master figure title. Default is \code{NULL}.}
 }
@@ -60,11 +121,13 @@ or \code{"bars"} (synchronized side-by-side barplot). Default is \code{"network"
 A list containing:
   \item{Plot}{The primary publication-ready \code{ggplot2} object.}
   \item{Correlation_Matrix}{Symmetric matrix of environmental correlation coefficients.}
-  \item{Mantel_Results}{Tidy data frame containing community-specific Mantel \eqn{r} values, \eqn{p}-values, and significance tiers.}
+  \item{Correlation_P_Matrix}{Symmetric matrix of pairwise environmental correlation p-values.}
+  \item{Mantel_Results}{Tidy data frame containing community-specific Mantel \eqn{r} values, raw and adjusted \eqn{p}-values, and significance tiers.}
 }
 \description{
-Computes pairwise environmental correlations while performing Mantel tests
-across single or multiple biological communities (e.g., Phytoplankton,
-Zooplankton, Benthos, Fish). Generates publication-ready network diagrams
-with customizable straight or curved linkages and anchor pins.
+Computes pairwise environmental correlations (with significance testing) while
+performing simple or partial Mantel tests across single or multiple biological
+communities (e.g., Phytoplankton, Zooplankton, Benthos, Fish). Generates
+publication-ready lower or upper triangular matrices coupled with smooth
+Bezier or straight multi-community network linkages.
 }

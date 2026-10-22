@@ -2242,46 +2242,50 @@ head(res_cor_square$Summary_Table, 8)
 ```
 
 ***
-
 ## Integrated Environmental Correlation and Mantel Network Analysis
 
-The `mantel_heatmap_analysis()` function models and visualizes the coupling between abiotic environmental gradients and biological community structures. In aquatic ecology, researchers often analyze pairwise physico-chemical parameters alongside multivariate dissimilarity matrices across multiple trophic levels (e.g., Phytoplankton, Zooplankton, Benthos, Fish).
+The `mantel_heatmap_analysis()` function models and visualizes the coupling between abiotic environmental gradients and biological community structures. In aquatic ecology, researchers frequently evaluate pairwise physico-chemical correlations alongside multivariate dissimilarity matrices across multiple trophic levels (e.g., Phytoplankton, Zooplankton, Benthos, Fish).
 
-This function integrates these two workflows into a single display:
-1. A pairwise environmental correlation matrix (Pearson or Spearman) rendered as a lower-triangular heatmap.
-2. Community-wide Mantel tests connecting biological community nodes to corresponding environmental parameters using curved or straight linkage vectors.
+This function integrates these analytical workflows into a unified visualization:
+1. A pairwise environmental correlation matrix (Pearson, Spearman, or Kendall) with exact significance testing, rendered as a lower- or upper-triangular matrix using full tiles, proportional circles, or proportional squares.
+2. Simple or partial Mantel tests connecting biological community hubs to individual environmental parameters via smooth Bezier curves or straight vectors.
 
-Linkage attributes convey statistical properties: line thickness indicates the magnitude of the Mantel correlation coefficient ($r$), while color and line style denote permutation-derived significance thresholds ($p < 0.01$, $p < 0.05$, $p \ge 0.05$).
+Linkage aesthetics encode statistical strength and significance: line width represents the magnitude of the Mantel correlation coefficient ($\vert{}r\vert{}$), while color and line style indicate permutation-based significance tiers (with optional false discovery rate or family-wise error rate adjustments).
 
 ### Conceptual Framework and Statistical Formulation
 
-The analytical framework combines pairwise variable correlation with matrix permutation testing.
+The analytical framework combines pairwise environmental correlation analysis with distance-matrix permutation testing.
 
-#### Mantel Matrix Correlation
-Let $\mathbf{D}_M$ represent the ecological dissimilarity matrix (e.g., Bray-Curtis) among $n$ sampling stations for a biological community:
+#### Simple Mantel Matrix Correlation
+Let $\mathbf{D}_M$ represent the ecological dissimilarity matrix (e.g., Bray-Curtis dissimilarity following Hellinger transformation) among $n$ sampling stations for a biological community containing $p$ taxa:
 
-$$d_{ij}^{(M)} = \frac{\sum_{k=1}^p |y_{ik} - y_{jk}|}{\sum_{k=1}^p (y_{ik} + y_{jk})}$$
+$$d_{ij}^{(M)} = \frac{\sum_{k=1}^p \vert{}y_{ik} - y_{jk}\vert{}}{\sum_{k=1}^p (y_{ik} + y_{jk})}$$
 
-Let $\mathbf{D}_E$ denote the standardized Euclidean distance matrix computed across one or more environmental variables between the same sampling stations:
+Let $\mathbf{D}_E$ denote the Euclidean distance matrix computed for a standardized environmental variable $z$ across the same $n$ sampling stations:
 
-$$d_{ij}^{(E)} = \sqrt{\sum_{m=1}^q (z_{im} - z_{jm})^2}$$
+$$d_{ij}^{(E)} = \sqrt{(z_i - z_j)^2}$$
 
-The Mantel test computes the Pearson correlation coefficient between the lower triangular elements ($j < i$) of the two unfolded distance matrices:
+The simple Mantel test computes the correlation coefficient between the $n(n - 1)/2$ lower-triangular elements ($j < i$) of the two unfolded distance matrices:
 
-$$r_M = \frac{\sum_{i > j} (d_{ij}^{(M)} - \bar{d}_M)(d_{ij}^{(E)} - \bar{d}_E)}{\sqrt{\sum_{i > j} (d_{ij}^{(M)} - \bar{d}_M)^2 \sum_{i > j} (d_{ij}^{(E)} - \bar{d}_E)^2}}$$
+$$r_{ME} = \frac{\sum_{i > j} (d_{ij}^{(M)} - \bar{d}_M)(d_{ij}^{(E)} - \bar{d}_E)}{\sqrt{\sum_{i > j} (d_{ij}^{(M)} - \bar{d}_M)^2 \sum_{i > j} (d_{ij}^{(E)} - \bar{d}_E)^2}}$$
 
-where $r_M \in [-1, 1]$.
+where $r_{ME} \in [-1, 1]$.
 
-#### Permutation Significance Testing
-Because elements within a distance matrix are not mutually independent, standard parametric tests for correlation significance are invalid. Instead, significance is assessed through Monte Carlo permutation of the rows and columns of one distance matrix (e.g., $\mathbf{D}_M$) while holding the second ($\mathbf{D}_E$) fixed:
+#### Partial Mantel Correlation Under Environmental Collinearity
+Because limnological parameters often exhibit strong collinearity (such as temperature and dissolved oxygen, or turbidity and total phosphorus), a simple Mantel test can be confounded by co-varying gradients. Setting `mantel_type = "partial"` computes a partial Mantel statistic ($r_{ME \cdot Z}$) that quantifies the correlation between community dissimilarity ($\mathbf{D}_M$) and a target environmental variable ($\mathbf{D}_E$) while controlling for the multi-parameter Euclidean distance matrix of all remaining environmental variables ($\mathbf{D}_Z$):
 
-$$p = \frac{\sum_{\pi=1}^B \mathbb{I}(r_M^{(\pi)} \ge r_M^{\text{obs}}) + 1}{B + 1}$$
+$$r_{ME \cdot Z} = \frac{r_{ME} - r_{MZ} r_{EZ}}{\sqrt{(1 - r_{MZ}^2)(1 - r_{EZ}^2)}}$$
 
-where $B$ is the number of random permutations (default: 999).
+#### Permutation Significance and Multiple-Testing Correction
+Because pairwise distances within a matrix share common sampling stations and violate independence assumptions, significance is evaluated via Monte Carlo permutation of the rows and columns of the community dissimilarity matrix ($\mathbf{D}_M$):
+
+$$p_{\text{raw}} = \frac{\sum_{\pi=1}^B \mathbb{I}(r_M^{(\pi)} \ge r_M^{\text{obs}}) + 1}{B + 1}$$
+
+where $B$ is the number of random permutations (default: 999). When testing multiple environmental variables across several communities, raw permutation $p$-values can be adjusted using `p_adjust` (e.g., `"BH"` for Benjamini-Hochberg false discovery rate, `"holm"`, or `"bonferroni"`).
 
 ### In-Vignette Data Generation
 
-We simulate a limnological survey across 35 sampling stations containing six continuous environmental variables (Water Temperature, Dissolved Oxygen, pH, Turbidity, Total Phosphorus, Total Nitrogen) paired with two biological trophic communities: Phytoplankton (6 taxa) and Zooplankton (5 taxa):
+We simulate a limnological survey across 35 sampling stations containing six continuous water quality parameters (Water Temperature, Dissolved Oxygen, pH, Turbidity, Total Phosphorus, and Total Nitrogen) paired with three biological trophic communities: Phytoplankton (6 taxa), Zooplankton (5 taxa), and Benthos (4 taxa):
 
 ```{r mantel_data_prep}
 set.seed(1717)
@@ -2296,25 +2300,25 @@ tp_mgl   <- 0.03 + (0.007 * turb_ntu) + rnorm(n_stations, 0, 0.015)
 tn_mgl   <- 0.70 + (14.0 * tp_mgl) + rnorm(n_stations, 0, 0.12)
 
 env_matrix <- data.frame(
-  Temp     = temp_c,
-  DO       = do_mgl,
-  pH       = ph_val,
-  Turb     = turb_ntu,
-  Total_P  = tp_mgl,
-  Total_N  = tn_mgl
+  Temp    = temp_c,
+  DO      = do_mgl,
+  pH      = ph_val,
+  Turb    = turb_ntu,
+  Total_P = tp_mgl,
+  Total_N = tn_mgl
 )
 
-# 2. Phytoplankton Community Counts (sensitive to nutrients and turbidity)
+# 2. Phytoplankton Community Counts (responsive to nutrients and turbidity)
 phyto_mat <- data.frame(
-  Cyanob_1  = rpois(n_stations, lambda = pmax(1, round(5 + 80 * tp_mgl))),
-  Cyanob_2  = rpois(n_stations, lambda = pmax(1, round(3 + 60 * tp_mgl))),
-  Diatom_1  = rpois(n_stations, lambda = pmax(1, round(28 - 0.4 * turb_ntu))),
-  Diatom_2  = rpois(n_stations, lambda = pmax(1, round(20 - 0.3 * turb_ntu))),
+  Cyanob_1   = rpois(n_stations, lambda = pmax(1, round(5 + 80 * tp_mgl))),
+  Cyanob_2   = rpois(n_stations, lambda = pmax(1, round(3 + 60 * tp_mgl))),
+  Diatom_1   = rpois(n_stations, lambda = pmax(1, round(28 - 0.4 * turb_ntu))),
+  Diatom_2   = rpois(n_stations, lambda = pmax(1, round(20 - 0.3 * turb_ntu))),
   Chloroph_1 = rpois(n_stations, lambda = pmax(1, round(12 + 2.5 * ph_val))),
   Chloroph_2 = rpois(n_stations, lambda = pmax(1, round(10 + 1.8 * ph_val)))
 )
 
-# 3. Zooplankton Community Counts (sensitive to temperature and dissolved oxygen)
+# 3. Zooplankton Community Counts (responsive to temperature and dissolved oxygen)
 zoo_mat <- data.frame(
   Cladocera_1 = rpois(n_stations, lambda = pmax(1, round(2 + 2.2 * do_mgl))),
   Cladocera_2 = rpois(n_stations, lambda = pmax(1, round(4 + 1.8 * do_mgl))),
@@ -2323,10 +2327,19 @@ zoo_mat <- data.frame(
   Rotifer_1   = rpois(n_stations, lambda = pmax(1, round(15 + 0.3 * turb_ntu)))
 )
 
+# 4. Benthic Macroinvertebrate Counts (responsive to dissolved oxygen and turbidity)
+benthos_mat <- data.frame(
+  Chironomid_1 = rpois(n_stations, lambda = pmax(1, round(18 - 0.35 * turb_ntu))),
+  Oligochaet_1 = rpois(n_stations, lambda = pmax(1, round(4 + 1.9 * do_mgl))),
+  Mollusca_1   = rpois(n_stations, lambda = pmax(1, round(6 + 1.4 * do_mgl))),
+  Insecta_1    = rpois(n_stations, lambda = pmax(1, round(10 - 0.20 * turb_ntu)))
+)
+
 # Bundle biological communities into a named list
 aquatic_trophic_comms <- list(
   "Phytoplankton" = phyto_mat,
-  "Zooplankton"   = zoo_mat
+  "Zooplankton"   = zoo_mat,
+  "Benthos"       = benthos_mat
 )
 
 head(env_matrix, 4)
@@ -2334,48 +2347,69 @@ head(env_matrix, 4)
 
 ### Visualization Styles
 
-The `mantel_heatmap_analysis()` function provides both an integrated network linkage diagram and a side-by-side barplot comparison.
+The `mantel_heatmap_analysis()` function supports multiple layout geometries and statistical configurations.
 
-#### Style A: Curved Linkage Network Diagram (Default)
+#### Style A: Lower-Triangular Tile Network with Significance Stars
 
-Projects environmental correlations as lower-triangular tiles while connecting community nodes to environmental anchors with curved vectors:
+Displays pairwise environmental correlations as lower-triangular tiles with significance asterisks (`show_cor_sig = TRUE`) while connecting community hubs to diagonal anchor pins via smooth Bezier arcs:
 
-```{r mantel_plot_network, fig.width = 8.5, fig.height = 6.2, fig.align = "center"}
+```{r mantel_plot_network, fig.width = 9.0, fig.height = 6.2, fig.align = "center"}
 res_mantel_net <- mantel_heatmap_analysis(
-  comm_data        = aquatic_trophic_comms,
-  env_data         = env_matrix,
-  plot_type        = "network",
-  line_style       = "curve",
-  method           = "pearson",
-  spec_dist        = "bray",
-  transform        = "hellinger",
-  only_significant = FALSE,
-  line_color_by    = "significance",
-  permutations     = 999,
-  seed             = 42,
-  show_cor_text    = TRUE,
-  color_palette    = "RdBu"
+  comm_data    = aquatic_trophic_comms,
+  env_data     = env_matrix,
+  plot_type    = "network",
+  matrix_type  = "lower",
+  cell_shape   = "tile",
+  line_style   = "curve",
+  mantel_type  = "simple",
+  method       = "pearson",
+  spec_dist    = "bray",
+  transform    = "hellinger",
+  show_cor_sig = TRUE,
+  permutations = 999,
+  seed         = 42
 )
 
-# Render publication network plot
 res_mantel_net$Plot
 ```
 
-#### Style B: Side-by-Side Correlation Heatmap and Mantel Bars
+#### Style B: Proportional Circle Network with Partial Mantel and FDR Correction
 
-Displays the full environmental correlation matrix alongside horizontal bars showing Mantel $r$ effect sizes faceted across trophic communities:
+Encodes environmental correlation magnitude through proportional circles (`cell_shape = "circle"`) and performs partial Mantel tests (`mantel_type = "partial"`) with Benjamini-Hochberg false discovery rate adjustment (`p_adjust = "BH"`):
 
-```{r mantel_plot_bars, fig.width = 8.5, fig.height = 5.2, fig.align = "center"}
-res_mantel_bars <- mantel_heatmap_analysis(
+```{r mantel_plot_partial, fig.width = 9.0, fig.height = 6.2, fig.align = "center"}
+res_mantel_partial <- mantel_heatmap_analysis(
   comm_data     = aquatic_trophic_comms,
   env_data      = env_matrix,
-  plot_type     = "bars",
-  method        = "pearson",
-  spec_dist     = "bray",
+  plot_type     = "network",
+  matrix_type   = "lower",
+  cell_shape    = "circle",
+  mantel_type   = "partial",
+  p_adjust      = "BH",
   transform     = "hellinger",
+  show_cor_text = FALSE,
   permutations  = 999,
   seed          = 42,
-  color_palette = "RdBu"
+  title         = "Partial Mantel Network with Proportional Correlation Circles"
+)
+
+res_mantel_partial$Plot
+```
+
+#### Style C: Side-by-Side Correlation Heatmap and Faceted Mantel Bars
+
+Pairs the full environmental correlation heatmap with horizontal bars showing Mantel $r$ effect sizes faceted by community:
+
+```{r mantel_plot_bars, fig.width = 9.0, fig.height = 5.6, fig.align = "center"}
+res_mantel_bars <- mantel_heatmap_analysis(
+  comm_data    = aquatic_trophic_comms,
+  env_data     = env_matrix,
+  plot_type    = "bars",
+  method       = "pearson",
+  spec_dist    = "bray",
+  transform    = "hellinger",
+  permutations = 999,
+  seed         = 42
 )
 
 res_mantel_bars$Plot
@@ -2383,14 +2417,17 @@ res_mantel_bars$Plot
 
 ### Model Inspection and Numerical Summaries
 
-The returned list provides the pairwise environmental correlation matrix and a tidy data frame of community-specific Mantel statistics:
+The returned list contains the correlation matrix, the pairwise correlation $p$-value matrix, and a tidy data frame of raw and adjusted Mantel statistics:
 
 ```{r mantel_inspection}
-# 1. Environmental Correlation Matrix (First 4 Variables)
+# 1. Environmental Correlation Coefficients (First 4 Variables)
 round(res_mantel_net$Correlation_Matrix[1:4, 1:4], 3)
 
-# 2. Tidy Mantel Test Statistics and Permutation P-Values
-head(res_mantel_net$Mantel_Results, 8)
+# 2. Pairwise Environmental Correlation P-Values (First 4 Variables)
+round(res_mantel_net$Correlation_P_Matrix[1:4, 1:4], 4)
+
+# 3. Tidy Mantel Test Statistics (Raw and Adjusted P-Values)
+head(res_mantel_net$Mantel_Results, 9)
 ```
 
 ***
